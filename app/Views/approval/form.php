@@ -121,7 +121,6 @@
                         <?php endif; ?>
                     </div>
                 </div>
-                </div>
 
                 <!-- Alerta formularios relacionados con observaciones -->
                 <?php if (!empty($related_forms)): ?>
@@ -213,13 +212,19 @@
 
                 <!-- Formularios relacionados (Declaración adjunta) -->
                 <?php
+                // Solo mostrar formularios relacionados si el formulario principal NO es una declaración
+                $isDeclaracion = str_starts_with((string)($form['form_type'] ?? ''), 'declaracion');
+                if (!$isDeclaracion):
                 $dbRel    = \App\Core\Database::getConnection();
                 $stmtRel  = $dbRel->prepare("SELECT * FROM forms WHERE related_form_id = ? ORDER BY id ASC");
                 $stmtRel->execute([$form['id']]);
                 $relForms = $stmtRel->fetchAll(\PDO::FETCH_ASSOC);
                 $decReviewPath = __DIR__ . '/../forms/review_forms/declaracion_fondos.php';
                 foreach ($relForms as $rf):
-                    $rfTitle = str_starts_with((string)($rf['form_type'] ?? ''), 'declaracion') ? 'Declaración de Origen de Fondos' : 'Formulario Relacionado #' . $rf['id'];
+                    $rfFormType = (string)($rf['form_type'] ?? '');
+                    $rfReviewFile = $reviewFormMap[$rfFormType] ?? (str_starts_with($rfFormType, 'declaracion') ? 'declaracion_fondos' : null);
+                    $rfReviewPath = $rfReviewFile ? __DIR__ . '/../forms/review_forms/' . $rfReviewFile . '.php' : $decReviewPath;
+                    $rfTitle = str_starts_with($rfFormType, 'declaracion') ? 'Declaración de Origen de Fondos' : 'Formulario Relacionado #' . $rf['id'];
                 ?>
                 <div style="border:2px solid #93c5fd; border-radius:6px; margin-bottom:1rem; overflow:hidden;">
                     <div style="background:#eff6ff; padding:10px 14px; font-size:11px; font-weight:700; color:#1d4ed8; text-transform:uppercase; letter-spacing:1px; border-bottom:1px solid #93c5fd;">
@@ -228,11 +233,12 @@
                     <?php
                     $parentForm = $form;
                     $form = $rf;
-                    if (file_exists($decReviewPath)) { include $decReviewPath; }
+                    if (file_exists($rfReviewPath)) { include $rfReviewPath; }
                     $form = $parentForm;
                     ?>
                 </div>
-                <?php endforeach; ?>
+                <?php endforeach;
+                endif; ?>
 
 
                 <!-- Decisión del Revisor -->

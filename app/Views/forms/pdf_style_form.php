@@ -1164,8 +1164,15 @@
             }
         }
 
-        // Descargar PDF: guarda el formulario y abre el PDF generado por FPDF
+        // Descargar PDF: valida el formulario y luego guarda + abre el PDF
         async function descargarPDF() {
+            // Validar campos requeridos primero
+            const form = document.getElementById('pdfForm');
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+
             const btn = document.querySelector('.btn.btn-secondary');
             const orig = btn.textContent;
             btn.disabled = true;

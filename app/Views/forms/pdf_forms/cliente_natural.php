@@ -85,7 +85,7 @@
                 <input type="text" name="dia_nacimiento" id="diaNac_cn" readonly placeholder="Día" style="max-width:70px;">
             </div>
             <div class="fl">VENDEDOR:</div>
-            <div class="fv"><input type="text" name="nombre_vendedor" required placeholder="Nombre" oninvalid="this.setCustomValidity('Requerido')" oninput="this.setCustomValidity('')"></div>
+            <div class="fv"><input type="text" name="nombre_vendedor" required placeholder="Nombre" value="<?= htmlspecialchars($asesor_nombre ?? '') ?>" oninvalid="this.setCustomValidity('Requerido')" oninput="this.setCustomValidity('')"></div>
             <div class="fl">CLASE CLIENTE:</div>
             <div class="fv"><input type="text" name="clase_cliente" required placeholder="Clase" oninvalid="this.setCustomValidity('Requerido')" oninput="this.setCustomValidity('')"></div>
         </div>
@@ -95,9 +95,34 @@
             </div>
         </div>
         <div class="fr c1">
-            <div class="fl">DESCRIPCIÓN FIRMA:</div>
-            <div class="fv"><input type="text" name="descripcion_firma" required placeholder="Descripción" oninvalid="this.setCustomValidity('Requerido')" oninput="this.setCustomValidity('')"></div>
+            <div class="fl">FIRMA:</div>
+            <div class="fv" style="padding:8px;">
+                <input type="hidden" name="descripcion_firma" id="firma_data_cn" required oninvalid="this.setCustomValidity('Firma requerida')" oninput="this.setCustomValidity('')">
+                <canvas id="firma_canvas_cn" width="400" height="80" style="border:1px solid #ccc;border-radius:4px;cursor:crosshair;background:#fff;max-width:100%;touch-action:none;"></canvas>
+                <div style="margin-top:4px;display:flex;gap:8px;">
+                    <button type="button" onclick="clearFirmaCN()" style="font-size:11px;padding:3px 10px;background:#f1f5f9;border:1px solid #cbd5e1;border-radius:3px;cursor:pointer;">Limpiar</button>
+                    <span style="font-size:10px;color:#64748b;align-self:center;">Firme con el mouse o dedo</span>
+                </div>
+            </div>
         </div>
+        <script>
+        (function(){
+            const canvas = document.getElementById('firma_canvas_cn');
+            const input  = document.getElementById('firma_data_cn');
+            const ctx    = canvas.getContext('2d');
+            let drawing  = false;
+            function pos(e){ const r=canvas.getBoundingClientRect(); const t=e.touches?e.touches[0]:e; return {x:(t.clientX-r.left)*(canvas.width/r.width),y:(t.clientY-r.top)*(canvas.height/r.height)}; }
+            canvas.addEventListener('mousedown',  e=>{drawing=true; ctx.beginPath(); const p=pos(e); ctx.moveTo(p.x,p.y);});
+            canvas.addEventListener('mousemove',  e=>{if(!drawing)return; const p=pos(e); ctx.lineTo(p.x,p.y); ctx.stroke();});
+            canvas.addEventListener('mouseup',    ()=>{drawing=false; input.value=canvas.toDataURL();});
+            canvas.addEventListener('mouseleave', ()=>{drawing=false;});
+            canvas.addEventListener('touchstart', e=>{e.preventDefault();drawing=true;ctx.beginPath();const p=pos(e);ctx.moveTo(p.x,p.y);},{passive:false});
+            canvas.addEventListener('touchmove',  e=>{e.preventDefault();if(!drawing)return;const p=pos(e);ctx.lineTo(p.x,p.y);ctx.stroke();},{passive:false});
+            canvas.addEventListener('touchend',   ()=>{drawing=false;input.value=canvas.toDataURL();});
+            ctx.strokeStyle='#1e293b'; ctx.lineWidth=1.5; ctx.lineCap='round';
+        })();
+        function clearFirmaCN(){ const c=document.getElementById('firma_canvas_cn'); c.getContext('2d').clearRect(0,0,c.width,c.height); document.getElementById('firma_data_cn').value=''; }
+        </script>
     </div>
 </div>
 

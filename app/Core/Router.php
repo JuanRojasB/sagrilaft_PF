@@ -79,10 +79,11 @@ class Router
         if ($basePath !== '' && strpos($uri, $basePath) === 0) {
             $uri = substr($uri, strlen($basePath));
         }
-        
-        // Asegurar que URI empiece con /
-        if (empty($uri) || $uri === '') {
-            $uri = '/';
+
+        // Normalizar URI
+        if ($uri === '' || $uri === $basePath) $uri = '/';
+        if ($uri !== '/' && substr($uri, -1) === '/') {
+            $uri = rtrim($uri, '/');
         }
         
         // Buscar ruta que coincida

@@ -66,8 +66,12 @@
         <div class="fr c33">
             <div class="fl">LISTA PRECIOS:</div>
             <div class="fv"><?= rv($form,'lista_precios') ?></div>
+            <div class="fl">ASESOR / VENDEDOR:</div>
+            <div class="fv"><?= rv($form,'nombre_vendedor') ?></div>
             <div class="fl">CÓD. VENDEDOR:</div>
             <div class="fv"><?= rv($form,'codigo_vendedor') ?></div>
+        </div>
+        <div class="fr c22">
             <div class="fl">ACTIVIDAD ECON.:</div>
             <div class="fv"><?= rv($form,'codigo_ciiu') ?></div>
         </div>

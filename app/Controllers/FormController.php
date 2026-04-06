@@ -809,6 +809,16 @@ class FormController extends Controller
         // Cargar asesores comerciales
         $asesorModel = new \App\Models\AsesorComercial();
         $asesoresGrouped = $asesorModel->getAllGroupedBySede();
+
+        // Obtener nombre del asesor seleccionado
+        $asesorNombre = '';
+        if (!empty($tempData['asesor_comercial_id'])) {
+            $db = \App\Core\Database::getConnection();
+            $stmt = $db->prepare("SELECT nombre_completo FROM asesores_comerciales WHERE id = ?");
+            $stmt->execute([$tempData['asesor_comercial_id']]);
+            $asesor = $stmt->fetch(\PDO::FETCH_ASSOC);
+            $asesorNombre = $asesor['nombre_completo'] ?? '';
+        }
         
         // Determinar qué formulario mostrar según tipo de usuario, persona y ubicación
         $userType = $tempData['role'] ?? 'cliente';
@@ -903,7 +913,8 @@ class FormController extends Controller
             'fechaActualizacion' => $formConfig['fechaActualizacion'],
             'version' => $formConfig['version'],
             'codigo' => $formConfig['codigo'],
-            'asesores_grouped' => $asesoresGrouped
+            'asesores_grouped' => $asesoresGrouped,
+            'asesor_nombre' => $asesorNombre
         ]);
     }
 
@@ -1864,7 +1875,7 @@ class FormController extends Controller
             'nit' => $this->input('nit_empresa') ?: $tempData['document_number'],
             'status' => 'submitted',
             'related_form_id' => $originalFormId, // Vincular con el formulario principal
-            'form_type' => ($pendingData['user_type'] === 'proveedor') ? 'proveedor' : 'cliente',
+            'form_type' => ($pendingData['user_type'] === 'proveedor') ? 'declaracion_fondos_proveedores' : 'declaracion_fondos_clientes',
             'person_type' => 'declaracion',
             
             // Datos de la declaración
