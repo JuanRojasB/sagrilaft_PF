@@ -1,0 +1,16 @@
+.env
+/vendor/
+/storage/logs/*.log
+/storage/uploads/*
+/storage/pdf/*
+/storage/firmas/*
+!storage/logs/.gitkeep
+!storage/uploads/.gitkeep
+!storage/pdf/.gitkeep
+!storage/firmas/.gitkeep
+composer.lock
+public/send_test_emails.php
+public/compress_images.php
+public/check_email_size.php
+.DS_Store
+Thumbs.db

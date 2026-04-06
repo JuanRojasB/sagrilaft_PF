@@ -1,0 +1,16 @@
+{
+  "enabled": true,
+  "name": "Fix FormController PHP Tag",
+  "description": "Detecta y repara el byte faltante al inicio de FormController.php cuando se edita",
+  "version": "1",
+  "when": {
+    "type": "fileEdited",
+    "patterns": [
+      "app/Controllers/FormController.php"
+    ]
+  },
+  "then": {
+    "type": "runCommand",
+    "command": "powershell -Command \"$p='app/Controllers/FormController.php'; $b=[System.IO.File]::ReadAllBytes($p); if($b[0] -eq 63){$n=[byte[]]@(60)+$b; [System.IO.File]::WriteAllBytes($p,$n); Write-Host 'Fixed FormController.php'}\""
+  }
+}

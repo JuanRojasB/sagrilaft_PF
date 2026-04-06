@@ -1,0 +1,25 @@
+{
+    "name": "sagrilaft/system",
+    "description": "Sistema web de gestión SAGRILAFT - MVC puro (Sin dependencias externas)",
+    "type": "project",
+    "require": {
+        "php": ">=8.0",
+        "setasign/fpdf": "^1.8",
+        "setasign/fpdi": "^2.3"
+    },
+    "autoload": {
+        "psr-4": {
+            "App\\": "app/"
+        }
+    },
+    "config": {
+        "optimize-autoloader": true,
+        "sort-packages": true
+    },
+    "minimum-stability": "stable",
+    "suggest": {
+        "ext-gd": "Para manipulación de imágenes",
+        "ext-mbstring": "Para soporte de caracteres multibyte",
+        "ext-openssl": "Para funciones de encriptación"
+    }
+}
