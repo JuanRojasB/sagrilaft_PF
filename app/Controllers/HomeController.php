@@ -174,9 +174,7 @@ class HomeController extends Controller
                 'error' => $e->getMessage()
             ]);
             
-            $_SESSION['error'] = 'Error al procesar el registro. Intenta nuevamente.';
-            header('Location: /gestion-sagrilaft/public/');
-            exit;
+            die('<h2>ERROR DE BD:</h2><pre>' . htmlspecialchars($e->getMessage()) . '</pre>');
         }
     }
 }
