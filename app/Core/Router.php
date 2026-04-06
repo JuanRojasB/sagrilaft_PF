@@ -74,8 +74,9 @@ class Router
         $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
         
         // Remover el path base si está presente (para subdirectorios)
-        $basePath = '/gestion-sagrilaft/public';
-        if (strpos($uri, $basePath) === 0) {
+        $appUrl = $_ENV['APP_URL'] ?? '';
+        $basePath = rtrim(parse_url($appUrl, PHP_URL_PATH) ?? '', '/');
+        if ($basePath !== '' && strpos($uri, $basePath) === 0) {
             $uri = substr($uri, strlen($basePath));
         }
         
