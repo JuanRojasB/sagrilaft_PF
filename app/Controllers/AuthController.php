@@ -90,10 +90,8 @@ class AuthController extends Controller
         ]);
 
         // Redirigir según el rol
-        $redirect = '/gestion-sagrilaft/public/forms';
-        if ($result['user']['role'] === 'admin') {
-            $redirect = '/gestion-sagrilaft/public/admin';
-        } elseif ($result['user']['role'] === 'revisor') {
+        $redirect = '/gestion-sagrilaft/public/admin';
+        if ($result['user']['role'] === 'revisor') {
             $redirect = '/gestion-sagrilaft/public/reviewer/dashboard';
         }
 
