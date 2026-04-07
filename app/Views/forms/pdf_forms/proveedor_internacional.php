@@ -228,7 +228,7 @@
                 <div style="display:flex; gap:8px; flex-wrap:wrap;">
                     <button type="button" id="sig_prov_pi_add" class="btn btn-primary" onclick="sigProvPI('open')" style="display:inline-flex; align-items:center; gap:6px; font-size:12px; padding:8px 14px;">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 19l7-7 3 3-7 7-3-3z"></path><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"></path></svg>
-                        Firmar
+                        Agregar Firma
                     </button>
                     <button type="button" id="sig_prov_pi_change" class="btn btn-secondary" onclick="sigProvPI('open')" style="display:none; font-size:12px; padding:8px 14px;">Cambiar</button>
                     <button type="button" id="sig_prov_pi_clear" class="btn btn-secondary" onclick="sigProvPI('clear')" style="display:none; font-size:12px; padding:8px 14px;">Limpiar</button>

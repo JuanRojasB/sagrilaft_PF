@@ -96,33 +96,19 @@
         </div>
         <div class="fr c1">
             <div class="fl">FIRMA:</div>
-            <div class="fv" style="padding:8px;">
-                <input type="hidden" name="descripcion_firma" id="firma_data_cn" required oninvalid="this.setCustomValidity('Firma requerida')" oninput="this.setCustomValidity('')">
-                <canvas id="firma_canvas_cn" width="400" height="80" style="border:1px solid #ccc;border-radius:4px;cursor:crosshair;background:#fff;max-width:100%;touch-action:none;"></canvas>
-                <div style="margin-top:4px;display:flex;gap:8px;">
-                    <button type="button" onclick="clearFirmaCN()" style="font-size:11px;padding:3px 10px;background:#f1f5f9;border:1px solid #cbd5e1;border-radius:3px;cursor:pointer;">Limpiar</button>
-                    <span style="font-size:10px;color:#64748b;align-self:center;">Firme con el mouse o dedo</span>
+            <div class="fv" style="flex-direction:column; align-items:flex-start; gap:8px; padding:12px;">
+                <input type="hidden" id="signature_cn" name="descripcion_firma" required oninvalid="this.setCustomValidity('Firma requerida')" oninput="this.setCustomValidity('')">
+                <img id="sig_cn_preview" src="" alt="Firma" style="display:none; max-width:300px; max-height:80px; border:1px solid var(--border-secondary); padding:5px; border-radius:4px; background:white;">
+                <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                    <button type="button" id="sig_cn_add" class="btn btn-primary" onclick="sigCN('open')" style="display:inline-flex; align-items:center; gap:6px; font-size:12px; padding:8px 14px;">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 19l7-7 3 3-7 7-3-3z"></path><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"></path></svg>
+                        Agregar Firma
+                    </button>
+                    <button type="button" id="sig_cn_change" class="btn btn-secondary" onclick="sigCN('open')" style="display:none; font-size:12px; padding:8px 14px;">Cambiar</button>
+                    <button type="button" id="sig_cn_clear" class="btn btn-secondary" onclick="sigCN('clear')" style="display:none; font-size:12px; padding:8px 14px;">Limpiar</button>
                 </div>
             </div>
         </div>
-        <script>
-        (function(){
-            const canvas = document.getElementById('firma_canvas_cn');
-            const input  = document.getElementById('firma_data_cn');
-            const ctx    = canvas.getContext('2d');
-            let drawing  = false;
-            function pos(e){ const r=canvas.getBoundingClientRect(); const t=e.touches?e.touches[0]:e; return {x:(t.clientX-r.left)*(canvas.width/r.width),y:(t.clientY-r.top)*(canvas.height/r.height)}; }
-            canvas.addEventListener('mousedown',  e=>{drawing=true; ctx.beginPath(); const p=pos(e); ctx.moveTo(p.x,p.y);});
-            canvas.addEventListener('mousemove',  e=>{if(!drawing)return; const p=pos(e); ctx.lineTo(p.x,p.y); ctx.stroke();});
-            canvas.addEventListener('mouseup',    ()=>{drawing=false; input.value=canvas.toDataURL();});
-            canvas.addEventListener('mouseleave', ()=>{drawing=false;});
-            canvas.addEventListener('touchstart', e=>{e.preventDefault();drawing=true;ctx.beginPath();const p=pos(e);ctx.moveTo(p.x,p.y);},{passive:false});
-            canvas.addEventListener('touchmove',  e=>{e.preventDefault();if(!drawing)return;const p=pos(e);ctx.lineTo(p.x,p.y);ctx.stroke();},{passive:false});
-            canvas.addEventListener('touchend',   ()=>{drawing=false;input.value=canvas.toDataURL();});
-            ctx.strokeStyle='#1e293b'; ctx.lineWidth=1.5; ctx.lineCap='round';
-        })();
-        function clearFirmaCN(){ const c=document.getElementById('firma_canvas_cn'); c.getContext('2d').clearRect(0,0,c.width,c.height); document.getElementById('firma_data_cn').value=''; }
-        </script>
     </div>
 </div>
 
@@ -218,8 +204,6 @@
 <script>
 let _sigModalCN = null;
 document.addEventListener('DOMContentLoaded', () => {
-    _sigModalCN = new SignatureModal({ modalId: 'sigModalOficialCN', onSave: (d) => {} });
-
     fetch('<?= $_ENV['APP_URL'] ?>/api/actividades-economicas.php')
         .then(r => r.json()).then(data => {
             const s = document.getElementById('codigoCiiu_cn');
@@ -234,5 +218,93 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('mesNac_cn').value = meses[d.getMonth()];
         document.getElementById('diaNac_cn').value = d.getDate();
     });
+
+    // Inicializar modal de firma
+    _sigModalCN = new SignatureModal({ modalId: 'sigModalCN', onSave: (d) => {
+        document.getElementById('signature_cn').value = d;
+        const p = document.getElementById('sig_cn_preview'); p.src = d; p.style.display = 'block';
+        document.getElementById('sig_cn_add').style.display = 'none';
+        document.getElementById('sig_cn_change').style.display = 'inline-flex';
+        document.getElementById('sig_cn_clear').style.display = 'inline-flex';
+    }});
+
+    // Botón de auto-llenado para pruebas
+    const autoFillBtn = document.createElement('button');
+    autoFillBtn.type = 'button';
+    autoFillBtn.textContent = '🧪 Auto-llenar para Prueba';
+    autoFillBtn.style.cssText = 'position:fixed;top:10px;right:10px;z-index:9999;background:#10b981;color:white;border:none;padding:10px 20px;border-radius:6px;font-weight:700;cursor:pointer;box-shadow:0 4px 6px rgba(0,0,0,0.1);';
+    autoFillBtn.onclick = function() {
+        // Espacio Cartera
+        document.querySelector('[name="vinculacion"]').value = 'Nueva';
+        document.querySelector('[name="actualizacion"]').value = 'Primera vez';
+        document.querySelector('[name="fecha_vinculacion"]').value = '2026-04-07';
+        
+        // Datos Generales
+        document.querySelector('[name="principal"]').value = 'Sede Principal';
+        document.querySelector('[name="sucursal"]').value = 'Sucursal Centro';
+        document.querySelector('[name="nombre_cliente"]').value = 'Carlos Alberto Rodríguez Pérez';
+        document.querySelector('[name="cc"]').value = '1234567890';
+        document.querySelector('[name="nombre_establecimiento"]').value = 'Restaurante El Buen Sabor';
+        document.querySelector('[name="direccion"]').value = 'Calle 45 # 23-67';
+        document.querySelector('[name="ciudad"]').value = 'Bogotá';
+        document.querySelector('[name="barrio"]').value = 'Chapinero';
+        document.querySelector('[name="localidad"]').value = 'Localidad 2';
+        document.querySelector('[name="lista_precios"]').value = 'Lista A';
+        document.querySelector('[name="codigo_vendedor"]').value = 'V001';
+        document.querySelector('[name="telefono_fijo"]').value = '6012345678';
+        document.querySelector('[name="celular"]').value = '3101234567';
+        document.querySelector('[name="email"]').value = 'carlos.rodriguez@ejemplo.com';
+        
+        // Actividad Económica
+        const ciiu = document.querySelector('[name="codigo_ciiu"]');
+        if (ciiu.options.length > 1) ciiu.selectedIndex = 1;
+        
+        // Forma de Pago
+        const contado = document.querySelector('[name="forma_pago"][value="contado"]');
+        if (contado) contado.checked = true;
+        
+        // Fecha de Nacimiento
+        const fechaNac = document.querySelector('[name="fecha_nacimiento"]');
+        fechaNac.value = '1985-03-15';
+        fechaNac.dispatchEvent(new Event('change'));
+        
+        document.querySelector('[name="nombre_vendedor"]').value = 'María González';
+        document.querySelector('[name="clase_cliente"]').value = 'Premium';
+        
+        // Información Financiera
+        document.querySelector('[name="activos"]').value = '150000000';
+        document.querySelector('[name="ingresos"]').value = '80000000';
+        document.querySelector('[name="pasivos"]').value = '50000000';
+        document.querySelector('[name="gastos"]').value = '60000000';
+        document.querySelector('[name="patrimonio"]').value = '100000000';
+        document.querySelector('[name="otros_ingresos"]').value = '5000000';
+        document.querySelector('[name="detalle_otros_ingresos"]').value = 'Ingresos por arrendamiento de local comercial';
+        
+        // Datos Tributarios
+        const tipoContrib = document.querySelector('[name="tipo_contribuyente"]');
+        if (tipoContrib) tipoContrib.value = 'persona_juridica';
+        
+        const regimen = document.querySelector('[name="regimen_tributario"]');
+        if (regimen) regimen.value = 'ordinario';
+        
+        // Autorizaciones
+        const autorizaListas = document.querySelector('[name="autoriza_centrales_riesgo"][value="si"]');
+        if (autorizaListas) autorizaListas.checked = true;
+        
+        const autorizaCentrales = document.querySelector('[name="autoriza_centrales"][value="si"]');
+        if (autorizaCentrales) autorizaCentrales.checked = true;
+        
+        alert('✅ Formulario auto-llenado con datos de prueba!\n\nAhora solo necesitas:\n1. Hacer clic en "Agregar Firma"\n2. Dibujar la firma en el modal\n3. Hacer clic en "Enviar Formulario"');
+    };
+    document.body.appendChild(autoFillBtn);
 });
+
+function sigCN(action) {
+    if (action === 'open' && _sigModalCN) { _sigModalCN.open(); return; }
+    document.getElementById('signature_cn').value = '';
+    document.getElementById('sig_cn_preview').style.display = 'none';
+    document.getElementById('sig_cn_add').style.display = 'inline-flex';
+    document.getElementById('sig_cn_change').style.display = 'none';
+    document.getElementById('sig_cn_clear').style.display = 'none';
+}
 </script>

@@ -223,33 +223,19 @@
         </div>
         <div class="fr c1">
             <div class="fl">FIRMA:</div>
-            <div class="fv" style="padding:8px;">
-                <input type="hidden" name="descripcion_firma" id="firma_data_cj" required oninvalid="this.setCustomValidity('Firma requerida')" oninput="this.setCustomValidity('')">
-                <canvas id="firma_canvas_cj" width="400" height="80" style="border:1px solid #ccc;border-radius:4px;cursor:crosshair;background:#fff;max-width:100%;touch-action:none;"></canvas>
-                <div style="margin-top:4px;display:flex;gap:8px;">
-                    <button type="button" onclick="clearFirmaCJ()" style="font-size:11px;padding:3px 10px;background:#f1f5f9;border:1px solid #cbd5e1;border-radius:3px;cursor:pointer;">Limpiar</button>
-                    <span style="font-size:10px;color:#64748b;align-self:center;">Firme con el mouse o dedo</span>
+            <div class="fv" style="flex-direction:column; align-items:flex-start; gap:8px; padding:12px;">
+                <input type="hidden" id="signature_cj" name="descripcion_firma" required oninvalid="this.setCustomValidity('Firma requerida')" oninput="this.setCustomValidity('')">
+                <img id="sig_cj_preview" src="" alt="Firma" style="display:none; max-width:300px; max-height:80px; border:1px solid var(--border-secondary); padding:5px; border-radius:4px; background:white;">
+                <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                    <button type="button" id="sig_cj_add" class="btn btn-primary" onclick="sigCJ('open')" style="display:inline-flex; align-items:center; gap:6px; font-size:12px; padding:8px 14px;">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 19l7-7 3 3-7 7-3-3z"></path><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"></path></svg>
+                        Agregar Firma
+                    </button>
+                    <button type="button" id="sig_cj_change" class="btn btn-secondary" onclick="sigCJ('open')" style="display:none; font-size:12px; padding:8px 14px;">Cambiar</button>
+                    <button type="button" id="sig_cj_clear" class="btn btn-secondary" onclick="sigCJ('clear')" style="display:none; font-size:12px; padding:8px 14px;">Limpiar</button>
                 </div>
             </div>
         </div>
-        <script>
-        (function(){
-            const canvas = document.getElementById('firma_canvas_cj');
-            const input  = document.getElementById('firma_data_cj');
-            const ctx    = canvas.getContext('2d');
-            let drawing  = false;
-            function pos(e){ const r=canvas.getBoundingClientRect(); const t=e.touches?e.touches[0]:e; return {x:(t.clientX-r.left)*(canvas.width/r.width),y:(t.clientY-r.top)*(canvas.height/r.height)}; }
-            canvas.addEventListener('mousedown',  e=>{drawing=true; ctx.beginPath(); const p=pos(e); ctx.moveTo(p.x,p.y);});
-            canvas.addEventListener('mousemove',  e=>{if(!drawing)return; const p=pos(e); ctx.lineTo(p.x,p.y); ctx.stroke();});
-            canvas.addEventListener('mouseup',    ()=>{drawing=false; input.value=canvas.toDataURL();});
-            canvas.addEventListener('mouseleave', ()=>{drawing=false;});
-            canvas.addEventListener('touchstart', e=>{e.preventDefault();drawing=true;ctx.beginPath();const p=pos(e);ctx.moveTo(p.x,p.y);},{passive:false});
-            canvas.addEventListener('touchmove',  e=>{e.preventDefault();if(!drawing)return;const p=pos(e);ctx.lineTo(p.x,p.y);ctx.stroke();},{passive:false});
-            canvas.addEventListener('touchend',   ()=>{drawing=false;input.value=canvas.toDataURL();});
-            ctx.strokeStyle='#1e293b'; ctx.lineWidth=1.5; ctx.lineCap='round';
-        })();
-        function clearFirmaCJ(){ const c=document.getElementById('firma_canvas_cj'); c.getContext('2d').clearRect(0,0,c.width,c.height); document.getElementById('firma_data_cj').value=''; }
-        </script>
     </div>
 </div>
 
@@ -273,13 +259,27 @@
 <script>
 let _sigModalCJ = null;
 document.addEventListener('DOMContentLoaded', () => {
-    _sigModalCJ = new SignatureModal({ modalId: 'sigModalOficialCJ', onSave: (d) => {} });
+    _sigModalCJ = new SignatureModal({ modalId: 'sigModalCJ', onSave: (d) => {
+        document.getElementById('signature_cj').value = d;
+        const p = document.getElementById('sig_cj_preview'); p.src = d; p.style.display = 'block';
+        document.getElementById('sig_cj_add').style.display = 'none';
+        document.getElementById('sig_cj_change').style.display = 'inline-flex';
+        document.getElementById('sig_cj_clear').style.display = 'inline-flex';
+    }});
     fetch('<?= $_ENV['APP_URL'] ?>/api/actividades-economicas.php')
         .then(r => r.json()).then(data => {
             const s = document.getElementById('codigoCiiu_cj');
             data.forEach(a => { const o = document.createElement('option'); o.value = a.codigo; o.textContent = `${a.codigo} - ${a.descripcion}`; s.appendChild(o); });
         }).catch(() => {});
 });
+function sigCJ(action) {
+    if (action === 'open' && _sigModalCJ) { _sigModalCJ.open(); return; }
+    document.getElementById('signature_cj').value = '';
+    document.getElementById('sig_cj_preview').style.display = 'none';
+    document.getElementById('sig_cj_add').style.display = 'inline-flex';
+    document.getElementById('sig_cj_change').style.display = 'none';
+    document.getElementById('sig_cj_clear').style.display = 'none';
+}
 function addAcc_cj() {
     const tbody = document.getElementById('accionistasBody_cj');
     const row = document.createElement('tr');

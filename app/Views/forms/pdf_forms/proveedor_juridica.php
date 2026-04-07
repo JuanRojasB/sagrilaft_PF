@@ -201,6 +201,21 @@
             <div class="fl">NOMBRE:</div>
             <div class="fv"><input type="text" name="nombre_firma_representante" required placeholder="Nombre completo" oninvalid="this.setCustomValidity('Requerido')" oninput="this.setCustomValidity('')"></div>
         </div>
+        <div class="fr c1">
+            <div class="fl">FIRMA:</div>
+            <div class="fv" style="flex-direction:column; align-items:flex-start; gap:8px; padding:12px;">
+                <input type="hidden" id="signature_proveedor_pj" name="firma_representante_data" required oninvalid="this.setCustomValidity('Firma requerida')" oninput="this.setCustomValidity('')">
+                <img id="sig_prov_pj_preview" src="" alt="Firma" style="display:none; max-width:300px; max-height:80px; border:1px solid var(--border-secondary); padding:5px; border-radius:4px; background:white;">
+                <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                    <button type="button" id="sig_prov_pj_add" class="btn btn-primary" onclick="sigProvPJ('open')" style="display:inline-flex; align-items:center; gap:6px; font-size:12px; padding:8px 14px;">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 19l7-7 3 3-7 7-3-3z"></path><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"></path></svg>
+                        Agregar Firma
+                    </button>
+                    <button type="button" id="sig_prov_pj_change" class="btn btn-secondary" onclick="sigProvPJ('open')" style="display:none; font-size:12px; padding:8px 14px;">Cambiar</button>
+                    <button type="button" id="sig_prov_pj_clear" class="btn btn-secondary" onclick="sigProvPJ('clear')" style="display:none; font-size:12px; padding:8px 14px;">Limpiar</button>
+                </div>
+            </div>
+        </div>
         <div class="info-box" style="margin:0; border-radius:0;">
             <strong>AVISO:</strong> Autorizo a Pollo Fiesta S.A. (NIT 860.032.450-9) para tratamiento de datos según Ley 1581/2012. Política en www.pollo-fiesta.com
         </div>
@@ -226,8 +241,15 @@
 <?php endif; ?>
 
 <script>
-let _sigPrepPJ = null, _sigOficPJ = null;
+let _sigProvPJ = null, _sigPrepPJ = null, _sigOficPJ = null;
 document.addEventListener('DOMContentLoaded', () => {
+    _sigProvPJ = new SignatureModal({ modalId: 'sigModalProvPJ', onSave: (d) => {
+        document.getElementById('signature_proveedor_pj').value = d;
+        const p = document.getElementById('sig_prov_pj_preview'); p.src = d; p.style.display = 'block';
+        document.getElementById('sig_prov_pj_add').style.display = 'none';
+        document.getElementById('sig_prov_pj_change').style.display = 'inline-flex';
+        document.getElementById('sig_prov_pj_clear').style.display = 'inline-flex';
+    }});
     _sigPrepPJ = new SignatureModal({ modalId: 'sigModalPrepPJ', onSave: (d) => {} });
     _sigOficPJ = new SignatureModal({ modalId: 'sigModalOficPJ', onSave: (d) => {} });
     fetch('<?= $_ENV['APP_URL'] ?>/api/actividades-economicas.php')
@@ -236,6 +258,14 @@ document.addEventListener('DOMContentLoaded', () => {
             data.forEach(a => { const o = document.createElement('option'); o.value = a.codigo; o.textContent = `${a.codigo} - ${a.descripcion}`; s.appendChild(o); });
         }).catch(() => {});
 });
+function sigProvPJ(action) {
+    if (action === 'open' && _sigProvPJ) { _sigProvPJ.open(); return; }
+    document.getElementById('signature_proveedor_pj').value = '';
+    document.getElementById('sig_prov_pj_preview').style.display = 'none';
+    document.getElementById('sig_prov_pj_add').style.display = 'inline-flex';
+    document.getElementById('sig_prov_pj_change').style.display = 'none';
+    document.getElementById('sig_prov_pj_clear').style.display = 'none';
+}
 function addAccionistaPJ() {
     const tbody = document.getElementById('accionistasBody');
     const row = document.createElement('tr');
