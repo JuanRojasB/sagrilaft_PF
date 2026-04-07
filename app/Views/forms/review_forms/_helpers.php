@@ -62,6 +62,22 @@ if (!function_exists('format_document_type')) {
     }
 }
 
+// Renderizar firma como imagen si es base64 data URI
+if (!function_exists('rv_signature')) {
+    function rv_signature(array $form, string $key, string $empty = '—'): string {
+        $v = $form[$key] ?? null;
+        if ($v === null || $v === '') return "<em style='color:#475569;'>$empty</em>";
+        
+        // Detectar si es un data URI de imagen
+        if (preg_match('/^data:image\/(png|jpeg|jpg|gif);base64,/', $v)) {
+            return '<img src="' . htmlspecialchars($v) . '" alt="Firma" style="max-width:200px; max-height:80px; border:1px solid #e2e8f0; padding:4px; border-radius:4px; background:#fff;">';
+        }
+        
+        // Si no es imagen, mostrar como texto normal
+        return nl2br(htmlspecialchars((string)$v));
+    }
+}
+
 // Renderizar sección de observaciones si tiene contenido
 if (!function_exists('rv_observaciones')) {
     function rv_observaciones(array $form): void {

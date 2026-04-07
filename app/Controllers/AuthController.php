@@ -90,9 +90,9 @@ class AuthController extends Controller
         ]);
 
         // Redirigir según el rol
-        $redirect = '/admin';
+        $redirect = ($_ENV['APP_URL'] ?? '') . '/admin';
         if ($result['user']['role'] === 'revisor') {
-            $redirect = '/reviewer/dashboard';
+            $redirect = ($_ENV['APP_URL'] ?? '') . '/reviewer/dashboard';
         }
 
         $this->json([

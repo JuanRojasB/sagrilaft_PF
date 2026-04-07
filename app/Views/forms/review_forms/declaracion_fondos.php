@@ -126,6 +126,32 @@
             <div class="fl">CIUDAD:</div>
             <div class="fv"><?= rv($form,'ciudad_declaracion') ?></div>
         </div>
+        <?php 
+        // Buscar firma del declarante en múltiples campos posibles
+        $sigFields = ['firma_declarante_data', 'firma_representante_data', 'firma_data', 'signature_data'];
+        $hasSig = false;
+        foreach ($sigFields as $field) {
+            if (!empty($form[$field])) {
+                $hasSig = true;
+                break;
+            }
+        }
+        if ($hasSig): 
+        ?>
+        <div class="fr c1">
+            <div class="fl">FIRMA DECLARANTE:</div>
+            <div class="fv">
+                <?php
+                foreach ($sigFields as $field) {
+                    if (!empty($form[$field])) {
+                        echo rv_signature($form, $field);
+                        break;
+                    }
+                }
+                ?>
+            </div>
+        </div>
+        <?php endif; ?>
     </div>
 </div>
 

@@ -191,4 +191,17 @@ if (is_array($accionistas) && count($accionistas)):
     </div>
 </div>
 
+<!-- FIRMA REPRESENTANTE LEGAL -->
+<?php if (!empty($form['firma_representante_data']) || !empty($form['firma_data'])): ?>
+<div class="form-section">
+    <div class="section-title">FIRMA DEL REPRESENTANTE LEGAL</div>
+    <div class="section-content">
+        <div class="fr c1">
+            <div class="fl">FIRMA:</div>
+            <div class="fv"><?= rv_signature($form, !empty($form['firma_representante_data']) ? 'firma_representante_data' : 'firma_data') ?></div>
+        </div>
+    </div>
+</div>
+<?php endif; ?>
+
 <?php rv_observaciones($form); ?>

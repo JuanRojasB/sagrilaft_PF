@@ -92,7 +92,7 @@ class ApprovalController extends Controller
         $this->json([
             'success' => true,
             'message' => 'Inicio de sesión exitoso',
-            'redirect' => '/reviewer/dashboard'
+            'redirect' => ($_ENV['APP_URL'] ?? '') . '/reviewer/dashboard'
         ]);
     }
 
