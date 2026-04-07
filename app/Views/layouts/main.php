@@ -31,7 +31,7 @@
             <?php if (isset($_SESSION['user_id'])): ?>
             <div class="header-actions">
                 <span class="user-info"><?= htmlspecialchars($_SESSION['user_email']) ?></span>
-                <form method="POST" action="/logout" style="margin: 0;">
+                <form method="POST" action="<?= $_ENV['APP_URL'] ?>/logout" style="margin: 0;">
                     <button type="submit" class="btn btn-error">Cerrar Sesión</button>
                 </form>
             </div>

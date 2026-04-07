@@ -168,7 +168,7 @@
                 <button onclick="mostrarModalFirma()" class="btn-firma" style="background: #f1f5f9; color: #334155; border: 1px solid #cbd5e1; padding: 0.4rem 0.75rem; border-radius: 0.25rem; cursor: pointer; font-weight: 600; font-size: 0.8rem; transition: all 0.15s; display: flex; align-items: center; gap: 0.3rem; white-space: nowrap;">
                     <span>Firma Digital</span>
                 </button>
-                <form method="POST" action="/gestion-sagrilaft/public/reviewer/logout" style="margin: 0;">
+                <form method="POST" action="<?= $_ENV['APP_URL'] ?>/reviewer/logout" style="margin: 0;">
                     <button type="submit" class="btn-logout" style="background: #fee2e2; color: #dc2626; border: 1px solid #fca5a5; padding: 0.4rem 0.75rem; border-radius: 0.25rem; cursor: pointer; font-weight: 600; font-size: 0.8rem; transition: all 0.15s; white-space: nowrap;">Salir</button>
                 </form>
             </div>

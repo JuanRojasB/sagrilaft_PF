@@ -576,42 +576,56 @@ class ApprovalController extends Controller
             $tempFiles = [];
             $filler = new \App\Services\FormPdfFiller();
 
-            // 1) PDF principal
+            // 1) PDF del formulario principal
             $mainPdf = $this->buildFormPdfBinary($mainForm, null, $filler);
             if ($mainPdf !== null) {
-                $mainPath = $tempDir . '/form_' . (int)$mainForm['id'] . '_main.pdf';
+                $mainPath = $tempDir . '/01_formulario_principal.pdf';
                 file_put_contents($mainPath, $mainPdf);
                 $pdfPaths[] = $mainPath;
                 $tempFiles[] = $mainPath;
             }
 
-            // 2) PDFs de formularios relacionados
+            // 2) PDFs de formularios relacionados (declaraciones)
+            $relatedIndex = 2;
             foreach ($relatedForms as $rf) {
                 $rfPdf = $this->buildFormPdfBinary($rf, $mainForm, $filler);
                 if ($rfPdf === null) {
                     continue;
                 }
-                $rfPath = $tempDir . '/form_' . (int)$rf['id'] . '_related.pdf';
+                $rfPath = $tempDir . '/0' . $relatedIndex . '_declaracion_' . (int)$rf['id'] . '.pdf';
                 file_put_contents($rfPath, $rfPdf);
                 $pdfPaths[] = $rfPath;
                 $tempFiles[] = $rfPath;
+                $relatedIndex++;
             }
 
-            // 3) PDFs adjuntos del usuario
+            // 3) PDFs adjuntos del usuario (evidencias, documentos adicionales)
+            // NOTA: Solo incluir PDFs que NO sean el formulario generado automáticamente
+            $attachmentIndex = 10; // Empezar desde 10 para dejar espacio
             foreach ($attachments as $attachment) {
                 if (empty($attachment['file_data'])) {
                     continue;
                 }
+                
+                // Verificar que sea PDF
                 $mime = strtolower((string)($attachment['mime_type'] ?? ''));
                 $name = strtolower((string)($attachment['filename'] ?? ''));
                 $isPdf = ($mime === 'application/pdf') || str_ends_with($name, '.pdf');
                 if (!$isPdf) {
                     continue;
                 }
-                $attPath = $tempDir . '/attachment_' . (int)$attachment['id'] . '.pdf';
+                
+                // Saltar si es el PDF generado automáticamente (evitar duplicados)
+                $generatedFilename = $mainForm['generated_pdf_filename'] ?? '';
+                if (!empty($generatedFilename) && $attachment['filename'] === $generatedFilename) {
+                    continue;
+                }
+                
+                $attPath = $tempDir . '/' . $attachmentIndex . '_adjunto_' . (int)$attachment['id'] . '.pdf';
                 file_put_contents($attPath, $attachment['file_data']);
                 $pdfPaths[] = $attPath;
                 $tempFiles[] = $attPath;
+                $attachmentIndex++;
             }
 
             if (empty($pdfPaths)) {
@@ -734,11 +748,24 @@ class ApprovalController extends Controller
                 }
             }
 
-            $tempData = [
-                'role' => $form['form_type'] ?? 'cliente',
-                'user_type' => $form['form_type'] ?? 'cliente',
-                'person_type' => $form['person_type'] ?? 'natural',
-            ];
+            // Determinar el tipo de formulario correctamente
+            $formType = $form['form_type'] ?? 'cliente';
+            $personType = $form['person_type'] ?? 'natural';
+            
+            // Para declaraciones, mantener el form_type original
+            if (str_starts_with($formType, 'declaracion')) {
+                $tempData = [
+                    'role' => $formType,
+                    'user_type' => $formType,
+                    'person_type' => 'declaracion',
+                ];
+            } else {
+                $tempData = [
+                    'role' => $formType,
+                    'user_type' => $formType,
+                    'person_type' => $personType,
+                ];
+            }
 
             if ($relatedForm) {
                 $tempData['related_form'] = $relatedForm;

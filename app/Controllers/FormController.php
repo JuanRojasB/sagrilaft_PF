@@ -800,7 +800,7 @@ class FormController extends Controller
     {
         // Verificar que existan datos temporales
         if (!isset($_SESSION['temp_user_data'])) {
-            header('Location: /');
+            header('Location: ' . $_ENV['APP_URL']);
             exit;
         }
 
@@ -1832,7 +1832,7 @@ class FormController extends Controller
     {
         // Verificar que haya una declaración pendiente
         if (!isset($_SESSION['pending_declaracion'])) {
-            header('Location: /');
+            header('Location: ' . $_ENV['APP_URL']);
             exit;
         }
 

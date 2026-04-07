@@ -220,7 +220,7 @@ let _sigModalCN = null;
 document.addEventListener('DOMContentLoaded', () => {
     _sigModalCN = new SignatureModal({ modalId: 'sigModalOficialCN', onSave: (d) => {} });
 
-    fetch('/api/actividades-economicas.php')
+    fetch('<?= $_ENV['APP_URL'] ?>/api/actividades-economicas.php')
         .then(r => r.json()).then(data => {
             const s = document.getElementById('codigoCiiu_cn');
             data.forEach(a => { const o = document.createElement('option'); o.value = a.codigo; o.textContent = `${a.codigo} - ${a.descripcion}`; s.appendChild(o); });

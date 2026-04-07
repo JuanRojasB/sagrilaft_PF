@@ -436,9 +436,14 @@
                 </div>
             </div>
 
-            <button type="submit" class="btn btn-primary">
-                Enviar Formulario para Revisión →
-            </button>
+            <div style="display: flex; gap: 10px; justify-content: center; margin-top: 20px;">
+                <button type="button" class="btn btn-secondary" onclick="window.history.back()" style="background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; padding: 12px 24px; border-radius: 6px; cursor: pointer; font-weight: 600;">
+                    ← Volver
+                </button>
+                <button type="submit" class="btn btn-primary">
+                    Enviar Formulario para Revisión →
+                </button>
+            </div>
         </form>
 
         <div id="message" class="message"></div>
@@ -466,7 +471,7 @@
         }
 
         // Cargar actividades económicas
-        fetch('/api/actividades-economicas')
+        fetch('<?= $_ENV['APP_URL'] ?>/api/actividades-economicas')
             .then(res => res.json())
             .then(data => {
                 const select = document.getElementById('codigoCiiu');
@@ -624,7 +629,7 @@
                     xhr.onerror = () => reject(new Error('Error de conexión'));
                 });
                 
-                xhr.open('POST', '/form/store');
+                xhr.open('POST', '<?= $_ENV['APP_URL'] ?>/form/store');
                 xhr.send(formData);
                 
                 const data = await uploadPromise;
@@ -638,7 +643,7 @@
                     messageDiv.textContent = data.message;
                     
                     setTimeout(() => {
-                        window.location.href = '/form/success';
+                        window.location.href = '<?= $_ENV['APP_URL'] ?>/form/success';
                     }, 2000);
                 } else {
                     throw new Error(data.error || 'Error al enviar el formulario');

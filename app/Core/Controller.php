@@ -54,10 +54,14 @@ abstract class Controller
     /**
      * Redirige a una URL
      * 
-     * @param string $url URL de destino
+     * @param string $url URL de destino (puede ser relativa o absoluta)
      */
     protected function redirect(string $url): void
     {
+        // Si la URL es relativa (empieza con /), agregar APP_URL
+        if (strpos($url, '/') === 0 && strpos($url, 'http') !== 0) {
+            $url = ($_ENV['APP_URL'] ?? '') . $url;
+        }
         header("Location: {$url}");
         exit;
     }

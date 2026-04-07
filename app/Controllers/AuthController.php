@@ -122,7 +122,7 @@ class AuthController extends Controller
             'samesite' => 'Strict'
         ]);
         
-        header('Location: /login');
+        header('Location: ' . $_ENV['APP_URL'] . '/login');
         exit;
     }
 

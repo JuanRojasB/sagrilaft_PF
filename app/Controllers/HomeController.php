@@ -64,14 +64,14 @@ class HomeController extends Controller
             if (empty($userType) || empty($personType) || empty($companyName) || 
                 empty($documentType) || empty($documentNumber) || empty($email) || empty($phone)) {
                 $_SESSION['error'] = 'Todos los campos son obligatorios';
-                header('Location: /');
+                header('Location: ' . $_ENV['APP_URL']);
                 exit;
             }
 
             // Validar email
             if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
                 $_SESSION['error'] = 'Email inválido';
-                header('Location: /');
+                header('Location: ' . $_ENV['APP_URL']);
                 exit;
             }
 
@@ -166,7 +166,7 @@ class HomeController extends Controller
             ]);
 
             // Redirigir al formulario
-            header('Location: /form/create');
+            header('Location: ' . $_ENV['APP_URL'] . '/form/create');
             exit;
 
         } catch (\Exception $e) {

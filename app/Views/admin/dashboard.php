@@ -35,7 +35,7 @@
                     <span style="filter: grayscale(1);">←</span>
                     <span>Formularios</span>
                 </a>
-                <form method="POST" action="/gestion-sagrilaft/public/logout" style="margin: 0;">
+                <form method="POST" action="<?= $_ENV['APP_URL'] ?>/logout" style="margin: 0;">
                     <button type="submit" style="background: var(--error-bg); color: var(--error-light); border: 1px solid var(--error-border); padding: 0.4rem 0.75rem; border-radius: var(--radius-sm); cursor: pointer; font-weight: 600; font-size: 0.8rem; transition: all var(--transition-fast); white-space: nowrap;">Salir</button>
                 </form>
             </div>

@@ -1090,11 +1090,14 @@
             
             <!-- BOTONES DE ACCIÓN -->
             <div class="form-actions">
+                <button type="button" class="btn btn-secondary" onclick="window.history.back()" style="background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1;">
+                    ← Volver
+                </button>
                 <button type="button" class="btn btn-secondary" onclick="descargarPDF()">
-                    Descargar PDF
+                    📄 Descargar PDF
                 </button>
                 <button type="submit" class="btn btn-primary">
-                    Enviar Formulario
+                    ✓ Enviar Formulario
                 </button>
             </div>
         </form>
@@ -1182,7 +1185,7 @@
                 const formData = new FormData(document.getElementById('pdfForm'));
                 formData.append('pdf_preview_only', '1'); // Indicar que es solo preview
 
-                const response = await fetch('/form/pdf-preview', {
+                const response = await fetch('<?= $_ENV['APP_URL'] ?>/form/pdf-preview', {
                     method: 'POST',
                     body: formData
                 });
@@ -1352,8 +1355,8 @@
             
             // Determinar URL de envío según el paso
             const submitUrl = isStep2 
-                ? '/form/declaracion/store'
-                : '/form/store-pdf';
+                ? '<?= $_ENV['APP_URL'] ?>/form/declaracion/store'
+                : '<?= $_ENV['APP_URL'] ?>/form/store-pdf';
             
             try {
                 const response = await fetch(submitUrl, {
@@ -1400,7 +1403,7 @@
                     } else {
                         // Si es paso 2 o no necesita declaración, ir a página de éxito
                         setTimeout(() => {
-                            window.location.href = '/form/success';
+                            window.location.href = '<?= $_ENV['APP_URL'] ?>/form/success';
                         }, 2000);
                     }
                 } else {

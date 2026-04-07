@@ -245,7 +245,7 @@
                 <div style="background:#ffffff; border:1px solid #e2e8f0; border-radius:0.5rem; padding:1.5rem; margin-bottom:1rem; box-shadow:0 1px 3px rgba(0,0,0,0.06);">
                     <h3 style="margin:0 0 1rem; font-size:0.9rem; color:#0f172a; font-weight:700; text-transform:uppercase; letter-spacing:0.08em;">Decisión del Revisor</h3>
 
-                    <form id="approvalForm" method="POST" action="/gestion-sagrilaft/public/approval/<?= htmlspecialchars($token) ?>" data-return-url="/gestion-sagrilaft/public/approval/<?= htmlspecialchars($token) ?>">
+                    <form id="approvalForm" method="POST" action="<?= $_ENV['APP_URL'] ?>/approval/<?= htmlspecialchars($token) ?>" data-return-url="<?= $_ENV['APP_URL'] ?>/approval/<?= htmlspecialchars($token) ?>">
                         <input type="hidden" name="csrf_token" value="<?= $csrf_token ?>">
                         <input type="hidden" name="approved_by" value="<?= htmlspecialchars($reviewer_name) ?>">
 

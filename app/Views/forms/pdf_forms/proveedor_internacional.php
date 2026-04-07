@@ -268,7 +268,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('sig_prov_pi_clear').style.display = 'inline-flex';
     }});
     _sigOficPI = new SignatureModal({ modalId: 'sigModalOficPI', onSave: (d) => {} });
-    fetch('/api/actividades-economicas.php')
+    fetch('<?= $_ENV['APP_URL'] ?>/api/actividades-economicas.php')
         .then(r => r.json()).then(data => {
             const s = document.getElementById('codigoCiiu_pi');
             data.forEach(a => { const o = document.createElement('option'); o.value = a.codigo; o.textContent = `${a.codigo} - ${a.descripcion}`; s.appendChild(o); });
