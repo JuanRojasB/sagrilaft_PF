@@ -439,6 +439,13 @@
                 box-shadow: 0 6px 12px rgba(56, 189, 248, 0.3);
             }
             
+            .btn-primary:disabled {
+                background: linear-gradient(135deg, var(--success), #34d399);
+                color: #ffffff !important;
+                cursor: not-allowed;
+                opacity: 0.9;
+            }
+            
             .btn-secondary {
                 background: linear-gradient(135deg, #94a3b8, #64748b);
                 color: #ffffff;
@@ -464,13 +471,13 @@
             .message.success {
                 background: var(--success-bg);
                 border: 2px solid var(--success-border);
-                color: var(--success-light);
+                color: #15803d;
             }
             
             .message.error {
                 background: var(--error-bg);
                 border: 2px solid var(--error-border);
-                color: var(--error-light);
+                color: #dc2626;
             }
         }
         

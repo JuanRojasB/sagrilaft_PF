@@ -1425,7 +1425,7 @@ class FormController extends Controller
                     'message' => 'Formulario principal enviado. Ahora completa la Declaración de Origen de Fondos.',
                     'form_id' => $formId,
                     'needs_declaracion' => true,
-                    'redirect_url' => '/form/declaracion'
+                    'redirect_url' => $_ENV['APP_URL'] . '/form/declaracion'
                 ]);
                 exit;
             } else {
