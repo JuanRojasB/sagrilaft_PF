@@ -64,14 +64,14 @@ class HomeController extends Controller
             if (empty($userType) || empty($personType) || empty($companyName) || 
                 empty($documentType) || empty($documentNumber) || empty($email) || empty($phone)) {
                 $_SESSION['error'] = 'Todos los campos son obligatorios';
-                header('Location: /gestion-sagrilaft/public/');
+                header('Location: /');
                 exit;
             }
 
             // Validar email
             if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
                 $_SESSION['error'] = 'Email inválido';
-                header('Location: /gestion-sagrilaft/public/');
+                header('Location: /');
                 exit;
             }
 
@@ -166,7 +166,7 @@ class HomeController extends Controller
             ]);
 
             // Redirigir al formulario
-            header('Location: /gestion-sagrilaft/public/form/create');
+            header('Location: /form/create');
             exit;
 
         } catch (\Exception $e) {

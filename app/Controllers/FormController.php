@@ -215,7 +215,7 @@ class FormController extends Controller
             $to = $_ENV['MAIL_ALERT_TO'] ?? 'juan.david.rojas.burbano0@gmail.com';
             $subject = 'SAGRILAFT - Nuevo Formulario para Aprobar';
             
-            $approvalUrl = $_ENV['APP_URL'] . "/gestion-sagrilaft/public/approval/{$approvalToken}";
+            $approvalUrl = $_ENV['APP_URL'] . "/approval/{$approvalToken}";
             
             // Generar lista de archivos adjuntos
             $attachmentsHtml = '';
@@ -266,7 +266,7 @@ class FormController extends Controller
             </table>
             {$attachmentsHtml}
             <div style='text-align:center;margin-top:24px;'>
-                <a href='{$approvalUrl}' class='btn'>Revisar Formulario</a>
+                <a href='{$approvalUrl}' class='btn' style='display:inline-block;padding:10px 22px;background:#1d4ed8;color:#ffffff;text-decoration:none;border-radius:5px;font-weight:600;font-size:13px;'>Revisar Formulario</a>
             </div>
             " . \App\Helpers\EmailHelper::emailFooter();
             
@@ -405,7 +405,7 @@ class FormController extends Controller
         // El binario del PDF se sirve al pedir ?raw=1.
         $isRaw = isset($_GET['raw']) && (string)$_GET['raw'] === '1';
         if (!$isRaw) {
-            $path = strtok($_SERVER['REQUEST_URI'] ?? '', '?') ?: ('/gestion-sagrilaft/public/forms/' . $id . '/pdf');
+            $path = strtok($_SERVER['REQUEST_URI'] ?? '', '?') ?: ('/forms/' . $id . '/pdf');
             $this->view('forms/pdf_viewer', [
                 'title' => $title,
                 'pdf_url' => $path . '?raw=1',
@@ -510,7 +510,7 @@ class FormController extends Controller
                 ?? ($code . "_Formulario_{$id}.pdf");
 
             header('Content-Type: application/pdf');
-            header('Link: </gestion-sagrilaft/public/assets/img/orb-logo.png>; rel="icon"; type="image/png"');
+            header('Link: </assets/img/orb-logo.png>; rel="icon"; type="image/png"');
             header('Content-Disposition: inline; filename="' . $filename . '"');
             header('Content-Length: ' . strlen($pdfContent));
             echo $pdfContent;
@@ -578,7 +578,7 @@ class FormController extends Controller
         $size = $form['generated_pdf_size'] ?? strlen($form['generated_pdf_content']);
         
         header('Content-Type: ' . $mimeType);
-        header('Link: </gestion-sagrilaft/public/assets/img/orb-logo.png>; rel="icon"; type="image/png"');
+        header('Link: </assets/img/orb-logo.png>; rel="icon"; type="image/png"');
         header('Content-Disposition: inline; filename="' . $filename . '"');
         header('Content-Length: ' . $size);
         header('Cache-Control: private, max-age=0, must-revalidate');
@@ -622,7 +622,7 @@ class FormController extends Controller
 
             // PDFs e imágenes sin ?raw: mostrar en visor HTML con favicon y título correcto
             if (($isPdf || $isImage) && !isset($_GET['raw'])) {
-                $rawUrl = '/gestion-sagrilaft/public/reviewer/attachment/' . (int)$id . '?raw=1';
+                $rawUrl = '/reviewer/attachment/' . (int)$id . '?raw=1';
                 $title  = pathinfo($filename, PATHINFO_FILENAME);
                 $this->view('forms/pdf_viewer', [
                     'title'   => $title,
@@ -737,7 +737,7 @@ class FormController extends Controller
                 'message' => 'PDFs consolidados exitosamente. Se firmará al aprobar el formulario.',
                 'consolidated_id' => $consolidatedId,
                 'total_pages' => $result['total_pages'],
-                'download_url' => '/gestion-sagrilaft/public/forms/consolidated/' . $consolidatedId . '/download'
+                'download_url' => '/forms/consolidated/' . $consolidatedId . '/download'
             ]);
         } catch (\Exception $e) {
             $this->logger->error('PDF consolidation failed', ['error' => $e->getMessage()]);
@@ -771,7 +771,7 @@ class FormController extends Controller
             }
 
             header('Content-Type: application/pdf');
-            header('Link: </gestion-sagrilaft/public/assets/img/orb-logo.png>; rel="icon"; type="image/png"');
+            header('Link: </assets/img/orb-logo.png>; rel="icon"; type="image/png"');
             header('Content-Disposition: attachment; filename="' . $filename . '"');
             header('Content-Length: ' . strlen($consolidated['file_data']));
             echo $consolidated['file_data'];
@@ -800,7 +800,7 @@ class FormController extends Controller
     {
         // Verificar que existan datos temporales
         if (!isset($_SESSION['temp_user_data'])) {
-            header('Location: /gestion-sagrilaft/public/');
+            header('Location: /');
             exit;
         }
 
@@ -1424,7 +1424,7 @@ class FormController extends Controller
                     'message' => 'Formulario principal enviado. Ahora completa la Declaración de Origen de Fondos.',
                     'form_id' => $formId,
                     'needs_declaracion' => true,
-                    'redirect_url' => '/gestion-sagrilaft/public/form/declaracion'
+                    'redirect_url' => '/form/declaracion'
                 ]);
                 exit;
             } else {
@@ -1832,7 +1832,7 @@ class FormController extends Controller
     {
         // Verificar que haya una declaración pendiente
         if (!isset($_SESSION['pending_declaracion'])) {
-            header('Location: /gestion-sagrilaft/public/');
+            header('Location: /');
             exit;
         }
 

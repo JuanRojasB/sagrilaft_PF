@@ -40,9 +40,9 @@ class AuthController extends Controller
             // Redirigir según el rol
             $role = $_SESSION['user_role'] ?? 'user';
             if ($role === 'revisor') {
-                $this->redirect('/gestion-sagrilaft/public/reviewer/dashboard');
+                $this->redirect('/reviewer/dashboard');
             } else {
-                $this->redirect('/gestion-sagrilaft/public/forms');
+                $this->redirect('/forms');
             }
         }
         
@@ -90,9 +90,9 @@ class AuthController extends Controller
         ]);
 
         // Redirigir según el rol
-        $redirect = '/gestion-sagrilaft/public/admin';
+        $redirect = '/admin';
         if ($result['user']['role'] === 'revisor') {
-            $redirect = '/gestion-sagrilaft/public/reviewer/dashboard';
+            $redirect = '/reviewer/dashboard';
         }
 
         $this->json([
@@ -122,7 +122,7 @@ class AuthController extends Controller
             'samesite' => 'Strict'
         ]);
         
-        header('Location: /gestion-sagrilaft/public/login');
+        header('Location: /login');
         exit;
     }
 
@@ -134,7 +134,7 @@ class AuthController extends Controller
     public function showRegister(): void
     {
         if ($this->authService->check()) {
-            $this->redirect('/gestion-sagrilaft/public/forms');
+            $this->redirect('/forms');
         }
         
         $this->view('auth/register', [

@@ -172,7 +172,7 @@
             <p>Complete el formulario para iniciar el proceso</p>
         </div>
 
-        <form id="registroForm" method="POST" action="/gestion-sagrilaft/public/home/register">
+        <form id="registroForm" method="POST" action="/home/register">
             <input type="hidden" name="csrf_token" value="<?= $csrf_token ?>">
             
             <div class="form-row">

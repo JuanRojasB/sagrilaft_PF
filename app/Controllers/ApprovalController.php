@@ -44,7 +44,7 @@ class ApprovalController extends Controller
     {
         // Check if already logged in as reviewer
         if (isset($_SESSION['reviewer_id'])) {
-            $this->redirect('/gestion-sagrilaft/public/reviewer/dashboard');
+            $this->redirect('/reviewer/dashboard');
         }
 
         $this->view('approval/login', [
@@ -92,7 +92,7 @@ class ApprovalController extends Controller
         $this->json([
             'success' => true,
             'message' => 'Inicio de sesión exitoso',
-            'redirect' => '/gestion-sagrilaft/public/reviewer/dashboard'
+            'redirect' => '/reviewer/dashboard'
         ]);
     }
 
@@ -103,7 +103,7 @@ class ApprovalController extends Controller
     {
         // Check if logged in
         if (!isset($_SESSION['reviewer_id'])) {
-            $this->redirect('/gestion-sagrilaft/public/reviewer/login');
+            $this->redirect('/reviewer/login');
         }
 
         $forms = $this->formModel->getAllForms();
@@ -126,7 +126,7 @@ class ApprovalController extends Controller
         unset($_SESSION['reviewer_name']);
         unset($_SESSION['reviewer_email']);
 
-        $this->redirect('/gestion-sagrilaft/public/reviewer/login');
+        $this->redirect('/reviewer/login');
     }
 
     /**
@@ -148,7 +148,7 @@ class ApprovalController extends Controller
         if ($isDeclaration && !empty($form['related_form_id'])) {
             $parent = $this->formModel->findById((int)$form['related_form_id']);
             if ($parent && !empty($parent['approval_token'])) {
-                $this->redirect('/gestion-sagrilaft/public/approval/' . $parent['approval_token']);
+                $this->redirect('/approval/' . $parent['approval_token']);
                 return;
             }
         }
@@ -699,7 +699,7 @@ class ApprovalController extends Controller
             }
             @rmdir($tempDir);
 
-            return '/gestion-sagrilaft/public/forms/consolidated/' . $consolidatedId . '/download';
+            return '/forms/consolidated/' . $consolidatedId . '/download';
 
         } catch (\Exception $e) {
             // No fallar la aprobación si falla la firma

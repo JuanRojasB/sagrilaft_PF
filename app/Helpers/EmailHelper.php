@@ -48,7 +48,7 @@ class EmailHelper
                 .obs-box p{font-size:13px;color:#fde68a;line-height:1.5;}
                 .obs-box.red p{color:#fecaca;}
                 .msg{font-size:13px;color:#94a3b8;margin-bottom:16px;}
-                .btn{display:inline-block;padding:10px 22px;background:#1d4ed8;color:#ffffff;text-decoration:none;border-radius:5px;font-weight:600;font-size:13px;margin-top:8px;}
+                .btn{display:inline-block;padding:10px 22px;background:#1d4ed8 !important;color:#ffffff !important;text-decoration:none !important;border-radius:5px;font-weight:600;font-size:13px;margin-top:8px;}
                 .divider{height:1px;background:#1e293b;margin:20px 0;}
                 @media only screen and (max-width:480px){
                     .body{padding:16px !important;}

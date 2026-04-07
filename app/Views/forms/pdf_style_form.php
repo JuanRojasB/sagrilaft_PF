@@ -1182,7 +1182,7 @@
                 const formData = new FormData(document.getElementById('pdfForm'));
                 formData.append('pdf_preview_only', '1'); // Indicar que es solo preview
 
-                const response = await fetch('/gestion-sagrilaft/public/form/pdf-preview', {
+                const response = await fetch('/form/pdf-preview', {
                     method: 'POST',
                     body: formData
                 });
@@ -1352,8 +1352,8 @@
             
             // Determinar URL de envío según el paso
             const submitUrl = isStep2 
-                ? '/gestion-sagrilaft/public/form/declaracion/store'
-                : '/gestion-sagrilaft/public/form/store-pdf';
+                ? '/form/declaracion/store'
+                : '/form/store-pdf';
             
             try {
                 const response = await fetch(submitUrl, {
@@ -1400,7 +1400,7 @@
                     } else {
                         // Si es paso 2 o no necesita declaración, ir a página de éxito
                         setTimeout(() => {
-                            window.location.href = '/gestion-sagrilaft/public/form/success';
+                            window.location.href = '/form/success';
                         }, 2000);
                     }
                 } else {

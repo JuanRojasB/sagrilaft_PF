@@ -230,7 +230,7 @@ let _sigPrepPJ = null, _sigOficPJ = null;
 document.addEventListener('DOMContentLoaded', () => {
     _sigPrepPJ = new SignatureModal({ modalId: 'sigModalPrepPJ', onSave: (d) => {} });
     _sigOficPJ = new SignatureModal({ modalId: 'sigModalOficPJ', onSave: (d) => {} });
-    fetch('/gestion-sagrilaft/public/api/actividades-economicas.php')
+    fetch('/api/actividades-economicas.php')
         .then(r => r.json()).then(data => {
             const s = document.getElementById('codigoCiiu_pj');
             data.forEach(a => { const o = document.createElement('option'); o.value = a.codigo; o.textContent = `${a.codigo} - ${a.descripcion}`; s.appendChild(o); });

@@ -25,7 +25,7 @@
         <div class="status">En Revisión</div>
         <p>Tu formulario ha sido recibido correctamente y está siendo revisado por nuestro equipo.</p>
         <p class="note">Recibirás una notificación por email con el resultado.</p>
-        <a href="/gestion-sagrilaft/public/" class="btn btn-primary">Enviar Otro Formulario</a>
+        <a href="/" class="btn btn-primary">Enviar Otro Formulario</a>
     </div>
 </body>
 </html>
