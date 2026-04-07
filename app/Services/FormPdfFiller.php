@@ -75,7 +75,17 @@ class FormPdfFiller
         $p->MultiCell($W, 3.8, $this->e('En mi calidad de funcionario de POLLO FIESTA S.A. declaro que la informacion aqui contenida corresponde con la realidad y que respondere personalmente por cualquier perjuicio que pueda sufrir POLLO FIESTA S.A. que se derive de la deliberada inexactitud de los datos ingresados en este formulario.'), 1, 'L');
 
         $this->row2('NOMBRE DEL VENDEDOR', $this->v('nombre_vendedor'), 40, 58, 'CLASE DE CLIENTE:', $this->v('clase_cliente'), 30, 72, $h);
-        $this->row2('FIRMA', '', 14, 84, 'DESCRIPCION:', $this->v('descripcion_firma'), 24, 78, $h);
+        
+        // Firma del cliente
+        $yFirma = $p->GetY();
+        $this->labelCell('FIRMA:', 14, 16);
+        $p->SetXY(5 + 14, $yFirma);
+        $p->Cell(84, 16, '', 1, 0, 'L');
+        $this->sigImage('descripcion_firma', 5 + 14 + 2, $yFirma + 1, 50, 14);
+        $this->labelCell('DESCRIPCION:', 24, 16);
+        $p->SetXY(5 + 14 + 84 + 24, $yFirma);
+        $p->SetFont('Arial', '', 6);
+        $p->Cell(78, 16, $this->e($this->v('descripcion_firma_texto')), 1, 1, 'L');
 
         $this->sectionTitle('INFORMACION FINANCIERA:', $W, $hs);
         $this->row2('ACTIVOS $', $this->money('activos'), 20, 58, 'INGRESOS $', $this->money('ingresos'), 20, 102, $h);
