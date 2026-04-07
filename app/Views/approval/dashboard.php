@@ -995,7 +995,7 @@
                 if (arrow) arrow.textContent = sortOrder === 'asc' ? '↑' : '↓';
             }
         }
-        
+
         function changePageSize(size) {
             pageSize = size;
             currentPage = 1;
@@ -1003,7 +1003,7 @@
             applyFilters();
             updatePageSizeButtons();
         }
-        
+
         function goToPage(action) {
             const totalPages = Math.ceil(totalFilteredResults / pageSize);
             
@@ -1093,7 +1093,7 @@
                     }
                 }
             });
-            
+
             // Segunda pasada: filtrar para mostrar
             links.forEach(link => {
                 const formStatus = link.getAttribute('data-status');
@@ -1172,7 +1172,7 @@
                     return 0;
                 }
             });
-            
+
             console.log('Primeros 5 después de ordenar:', 
                 filteredResults.slice(0, 5).map(el => ({
                     id: el.getAttribute('data-id'),

@@ -1,5 +1,8 @@
 <!-- FGF-17: DECLARACIÓN ORIGEN DE FONDOS - CLIENTES -->
 <?php
+// Incluir helpers
+require_once __DIR__ . '/../review_forms/_helpers.php';
+
 // Datos pre-llenados desde el formulario principal
 $fd = $form_data ?? [];
 $pre_nombre     = htmlspecialchars($fd['company_name'] ?? $temp_data['company_name'] ?? '');
@@ -7,7 +10,8 @@ $pre_documento  = htmlspecialchars($fd['nit'] ?? $temp_data['document_number'] ?
 $pre_ciudad     = htmlspecialchars($fd['ciudad'] ?? '');
 $pre_rep_nombre = htmlspecialchars($fd['representante_nombre'] ?? $fd['company_name'] ?? $temp_data['company_name'] ?? '');
 $pre_rep_doc    = htmlspecialchars($fd['representante_documento'] ?? $fd['nit'] ?? $temp_data['document_number'] ?? '');
-$pre_tipo_doc   = htmlspecialchars($fd['representante_tipo_doc'] ?? $fd['document_type'] ?? $temp_data['document_type'] ?? '');
+$pre_tipo_doc_raw = $fd['representante_tipo_doc'] ?? $fd['document_type'] ?? $temp_data['document_type'] ?? '';
+$pre_tipo_doc   = htmlspecialchars(format_document_type($pre_tipo_doc_raw));
 $pre_ingresos   = htmlspecialchars($fd['ingresos'] ?? '');
 $pre_gastos     = htmlspecialchars($fd['gastos'] ?? '');
 $pre_activos    = htmlspecialchars($fd['activos'] ?? '');

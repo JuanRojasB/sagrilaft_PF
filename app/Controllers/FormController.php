@@ -477,8 +477,8 @@ class FormController extends Controller
             $filler = new \App\Services\FormPdfFiller();
             $pdfContent = $filler->generate($form, $tempData);
 
-            // Buscar formulario relacionado (declaración) y concatenar
-            $stmt = $db->prepare("SELECT * FROM forms WHERE related_form_id = ? ORDER BY id ASC");
+            // Buscar formulario relacionado (declaración) y concatenar — solo el primero
+            $stmt = $db->prepare("SELECT * FROM forms WHERE related_form_id = ? AND form_type LIKE 'declaracion%' ORDER BY id DESC LIMIT 1");
             $stmt->execute([(int)$id]);
             $relatedForms = $stmt->fetchAll(\PDO::FETCH_ASSOC);
 
@@ -1038,6 +1038,59 @@ class FormController extends Controller
             ]);
             
             $this->json(['error' => 'Error al guardar el formulario: ' . $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * Generar PDF preview sin guardar en BD
+     * Solo para el botón "Descargar PDF" — no guarda nada
+     */
+    public function pdfPreview(): void
+    {
+        error_reporting(0);
+        ini_set('display_errors', '0');
+        while (ob_get_level()) ob_end_clean();
+
+        if (!$this->validateCsrf()) {
+            http_response_code(403);
+            echo 'Token CSRF inválido';
+            return;
+        }
+
+        $tempData = $_SESSION['temp_user_data'] ?? [];
+        $formType = $this->input('form_type') ?? ($tempData['role'] ?? 'cliente');
+
+        // Construir array de datos del formulario desde POST (sin guardar)
+        $formData = $_POST;
+        $formData['form_type'] = $formType;
+        $formData['person_type'] = $tempData['person_type'] ?? 'natural';
+        $formData['company_name'] = $this->input('nombre_cliente') ?: $this->input('razon_social') ?: ($tempData['company_name'] ?? '');
+        $formData['nit'] = $this->input('cc') ?: $this->input('nit') ?: ($tempData['document_number'] ?? '');
+
+        // Procesar accionistas si existen
+        $accionistas = $this->processAccionistas();
+        if ($accionistas) {
+            $decoded = json_decode($accionistas, true);
+            if (is_array($decoded)) {
+                $formData['accionista_nombre']        = array_column($decoded, 'nombre');
+                $formData['accionista_documento']     = array_column($decoded, 'documento');
+                $formData['accionista_participacion'] = array_column($decoded, 'participacion');
+                $formData['accionista_nacionalidad']  = array_column($decoded, 'nacionalidad');
+            }
+        }
+
+        try {
+            $filler = new \App\Services\FormPdfFiller();
+            $pdfContent = $filler->generate($formData, $tempData);
+
+            header('Content-Type: application/pdf');
+            header('Content-Disposition: inline; filename="preview.pdf"');
+            header('Content-Length: ' . strlen($pdfContent));
+            echo $pdfContent;
+            exit;
+        } catch (\Exception $e) {
+            http_response_code(500);
+            echo 'Error al generar PDF: ' . $e->getMessage();
         }
     }
 

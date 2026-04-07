@@ -1164,7 +1164,7 @@
             }
         }
 
-        // Descargar PDF: valida el formulario y luego guarda + abre el PDF
+        // Descargar PDF: solo genera y descarga el PDF sin guardar ni redirigir
         async function descargarPDF() {
             // Validar campos requeridos primero
             const form = document.getElementById('pdfForm');
@@ -1179,34 +1179,32 @@
             btn.textContent = 'Generando...';
 
             try {
-                const isStep2 = <?= isset($is_step_2) && $is_step_2 ? 'true' : 'false' ?>;
-                const submitUrl = isStep2
-                    ? '/gestion-sagrilaft/public/form/declaracion/store'
-                    : '/gestion-sagrilaft/public/form/store-pdf';
-
                 const formData = new FormData(document.getElementById('pdfForm'));
-                // Agregar archivos seleccionados
-                formData.append('file_count', selectedFiles.length);
-                selectedFiles.forEach((file, i) => formData.append('document_' + i, file));
+                formData.append('pdf_preview_only', '1'); // Indicar que es solo preview
 
-                const response = await fetch(submitUrl, { method: 'POST', body: formData });
-                const ct = response.headers.get('content-type') || '';
-                if (!ct.includes('application/json')) {
+                const response = await fetch('/gestion-sagrilaft/public/form/pdf-preview', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
                     const txt = await response.text();
                     throw new Error('Error del servidor: ' + txt.substring(0, 200));
                 }
-                const data = await response.json();
-                if (!data.success) throw new Error(data.error || 'Error al guardar');
 
-                const formId = data.form_id;
-                // Abrir PDF en nueva pestaña
-                window.open('/gestion-sagrilaft/public/form/' + formId + '/pdf', '_blank');
-
-                // Redirigir igual que al enviar
-                if (data.needs_declaracion && data.redirect_url) {
-                    setTimeout(() => { window.location.href = data.redirect_url; }, 1000);
+                const ct = response.headers.get('content-type') || '';
+                if (ct.includes('application/pdf')) {
+                    // Descargar el PDF directamente
+                    const blob = await response.blob();
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.target = '_blank';
+                    a.click();
+                    setTimeout(() => URL.revokeObjectURL(url), 5000);
                 } else {
-                    setTimeout(() => { window.location.href = '/gestion-sagrilaft/public/form/success'; }, 1000);
+                    const txt = await response.text();
+                    throw new Error('Respuesta inesperada: ' + txt.substring(0, 200));
                 }
             } catch (err) {
                 alert('No se pudo generar el PDF: ' + err.message);

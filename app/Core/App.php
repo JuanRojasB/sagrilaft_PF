@@ -52,6 +52,7 @@ class App
         $this->router->get('/form/create', 'FormController@createDirect');
         $this->router->post('/form/store', 'FormController@storeDirect');
         $this->router->post('/form/store-pdf', 'FormController@storePdf');
+        $this->router->post('/form/pdf-preview', 'FormController@pdfPreview');
         $this->router->get('/form/success', 'FormController@success');
         
         // Rutas de declaración de origen de fondos (Paso 2)

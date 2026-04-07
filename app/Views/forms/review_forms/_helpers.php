@@ -45,6 +45,23 @@ if (!function_exists('rv_date')) {
     }
 }
 
+// Formatear tipo de documento
+if (!function_exists('format_document_type')) {
+    function format_document_type(?string $type): string {
+        if (!$type) return '';
+        $map = [
+            'cedula' => 'Cédula de Ciudadanía',
+            'cc' => 'Cédula de Ciudadanía',
+            'ce' => 'Cédula de Extranjería',
+            'pasaporte' => 'Pasaporte',
+            'nit' => 'NIT',
+            'ti' => 'Tarjeta de Identidad',
+        ];
+        $lower = strtolower(trim($type));
+        return $map[$lower] ?? ucfirst($type);
+    }
+}
+
 // Renderizar sección de observaciones si tiene contenido
 if (!function_exists('rv_observaciones')) {
     function rv_observaciones(array $form): void {
