@@ -626,6 +626,17 @@ class ApprovalController extends Controller
                 $tempFiles[] = $attPath;
                 $attachmentIndex++;
             }
+            
+            // 4) Hoja del revisor al final (si el formulario ya fue revisado)
+            if (!empty($mainForm['reviewed_at']) || !empty($mainForm['status']) && in_array($mainForm['status'], ['approved', 'rejected', 'approved_pending'])) {
+                $reviewerPagePdf = $this->generateReviewerPage($mainForm);
+                if ($reviewerPagePdf !== null) {
+                    $reviewerPath = $tempDir . '/99_hoja_revisor.pdf';
+                    file_put_contents($reviewerPath, $reviewerPagePdf);
+                    $pdfPaths[] = $reviewerPath;
+                    $tempFiles[] = $reviewerPath;
+                }
+            }
 
             if (empty($pdfPaths)) {
                 @rmdir($tempDir);
@@ -780,3 +791,155 @@ class ApprovalController extends Controller
         }
     }
 }
+
+    /**
+     * Genera una página PDF con la información de revisión del formulario
+     */
+    private function generateReviewerPage(array $form): ?string
+    {
+        try {
+            require_once __DIR__ . '/../Libraries/fpdf.php';
+            
+            $pdf = new \FPDF('P', 'mm', 'Letter');
+            $pdf->AddPage();
+            $pdf->SetMargins(15, 15, 15);
+            
+            // Encabezado
+            $pdf->SetFillColor(59, 130, 246);
+            $pdf->SetTextColor(255, 255, 255);
+            $pdf->SetFont('Arial', 'B', 16);
+            $pdf->Cell(0, 12, 'HOJA DE REVISION', 0, 1, 'C', true);
+            $pdf->Ln(5);
+            
+            // Información del formulario
+            $pdf->SetFillColor(241, 245, 249);
+            $pdf->SetTextColor(15, 23, 42);
+            $pdf->SetFont('Arial', 'B', 12);
+            $pdf->Cell(0, 8, 'INFORMACION DEL FORMULARIO', 0, 1, 'L', true);
+            $pdf->Ln(2);
+            
+            $pdf->SetFont('Arial', '', 10);
+            $pdf->Cell(50, 6, 'ID Formulario:', 0, 0);
+            $pdf->SetFont('Arial', 'B', 10);
+            $pdf->Cell(0, 6, '#' . $form['id'], 0, 1);
+            
+            $pdf->SetFont('Arial', '', 10);
+            $pdf->Cell(50, 6, 'Titulo:', 0, 0);
+            $pdf->SetFont('Arial', 'B', 10);
+            $pdf->MultiCell(0, 6, $form['title'] ?? 'N/A');
+            
+            $pdf->SetFont('Arial', '', 10);
+            $pdf->Cell(50, 6, 'Empresa/Nombre:', 0, 0);
+            $pdf->SetFont('Arial', 'B', 10);
+            $pdf->Cell(0, 6, $form['company_name'] ?? 'N/A', 0, 1);
+            
+            $pdf->SetFont('Arial', '', 10);
+            $pdf->Cell(50, 6, 'NIT/Cedula:', 0, 0);
+            $pdf->SetFont('Arial', 'B', 10);
+            $pdf->Cell(0, 6, $form['nit'] ?? 'N/A', 0, 1);
+            
+            $pdf->SetFont('Arial', '', 10);
+            $pdf->Cell(50, 6, 'Fecha de Envio:', 0, 0);
+            $pdf->SetFont('Arial', 'B', 10);
+            $pdf->Cell(0, 6, date('d/m/Y H:i', strtotime($form['created_at'])), 0, 1);
+            
+            $pdf->Ln(5);
+            
+            // Estado de revisión
+            $pdf->SetFillColor(241, 245, 249);
+            $pdf->SetFont('Arial', 'B', 12);
+            $pdf->Cell(0, 8, 'RESULTADO DE LA REVISION', 0, 1, 'L', true);
+            $pdf->Ln(2);
+            
+            $status = $form['status'] ?? 'pending';
+            $statusText = [
+                'approved' => 'APROBADO',
+                'rejected' => 'RECHAZADO',
+                'approved_pending' => 'APROBADO CON OBSERVACIONES',
+                'pending' => 'PENDIENTE'
+            ][$status] ?? 'DESCONOCIDO';
+            
+            $statusColor = [
+                'approved' => [16, 185, 129],
+                'rejected' => [239, 68, 68],
+                'approved_pending' => [251, 191, 36],
+                'pending' => [148, 163, 184]
+            ][$status] ?? [148, 163, 184];
+            
+            $pdf->SetFont('Arial', '', 10);
+            $pdf->Cell(50, 6, 'Estado:', 0, 0);
+            $pdf->SetFont('Arial', 'B', 10);
+            $pdf->SetTextColor($statusColor[0], $statusColor[1], $statusColor[2]);
+            $pdf->Cell(0, 6, $statusText, 0, 1);
+            $pdf->SetTextColor(15, 23, 42);
+            
+            if (!empty($form['reviewed_at'])) {
+                $pdf->SetFont('Arial', '', 10);
+                $pdf->Cell(50, 6, 'Fecha de Revision:', 0, 0);
+                $pdf->SetFont('Arial', 'B', 10);
+                $pdf->Cell(0, 6, date('d/m/Y H:i', strtotime($form['reviewed_at'])), 0, 1);
+            }
+            
+            if (!empty($form['reviewed_by_name'])) {
+                $pdf->SetFont('Arial', '', 10);
+                $pdf->Cell(50, 6, 'Revisado por:', 0, 0);
+                $pdf->SetFont('Arial', 'B', 10);
+                $pdf->Cell(0, 6, $form['reviewed_by_name'], 0, 1);
+            }
+            
+            $pdf->Ln(5);
+            
+            // Consultas realizadas
+            $pdf->SetFillColor(241, 245, 249);
+            $pdf->SetFont('Arial', 'B', 12);
+            $pdf->Cell(0, 8, 'CONSULTAS REALIZADAS', 0, 1, 'L', true);
+            $pdf->Ln(2);
+            
+            $consultas = [
+                'OFAC' => $form['consulta_ofac'] ?? 'N/A',
+                'Listas Nacionales' => $form['consulta_listas_nacionales'] ?? 'N/A',
+                'ONU' => $form['consulta_onu'] ?? 'N/A',
+                'INTERPOL' => $form['consulta_interpol'] ?? 'N/A'
+            ];
+            
+            $pdf->SetFont('Arial', '', 10);
+            foreach ($consultas as $nombre => $resultado) {
+                $pdf->Cell(60, 6, $nombre . ':', 0, 0);
+                $color = strtolower($resultado) === 'negativa' ? [16, 185, 129] : [239, 68, 68];
+                $pdf->SetTextColor($color[0], $color[1], $color[2]);
+                $pdf->SetFont('Arial', 'B', 10);
+                $pdf->Cell(0, 6, strtoupper($resultado), 0, 1);
+                $pdf->SetTextColor(15, 23, 42);
+                $pdf->SetFont('Arial', '', 10);
+            }
+            
+            // Observaciones
+            if (!empty($form['observations'])) {
+                $pdf->Ln(5);
+                $pdf->SetFillColor(241, 245, 249);
+                $pdf->SetFont('Arial', 'B', 12);
+                $pdf->Cell(0, 8, 'OBSERVACIONES', 0, 1, 'L', true);
+                $pdf->Ln(2);
+                
+                $pdf->SetFont('Arial', '', 10);
+                $pdf->MultiCell(0, 5, $form['observations']);
+            }
+            
+            // Pie de página
+            $pdf->SetY(-30);
+            $pdf->SetFont('Arial', 'I', 8);
+            $pdf->SetTextColor(148, 163, 184);
+            $pdf->Cell(0, 5, 'Documento generado automaticamente por el Sistema SAGRILAFT', 0, 1, 'C');
+            $pdf->Cell(0, 5, 'Pollo Fiesta S.A. - NIT 860.032.450-9', 0, 1, 'C');
+            $pdf->Cell(0, 5, date('d/m/Y H:i:s'), 0, 1, 'C');
+            
+            return $pdf->Output('S');
+            
+        } catch (\Exception $e) {
+            $this->logger->error('Failed to generate reviewer page', [
+                'form_id' => $form['id'] ?? null,
+                'error' => $e->getMessage()
+            ]);
+            return null;
+        }
+    }
