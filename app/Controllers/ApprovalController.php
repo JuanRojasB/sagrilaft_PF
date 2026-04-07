@@ -455,12 +455,11 @@ class ApprovalController extends Controller
             // Lista de destinatarios
             $recipients = [];
             
-            // MODO PRUEBA: Solo enviar a juan.david.rojas.burbano0@gmail.com
-            // Cuando esté listo para producción, descomentar las otras secciones
+            // MODO PRODUCCIÓN: Enviar a pasantesistemas1@pollo-fiesta.com
             
             $recipients[] = [
-                'email' => 'juan.david.rojas.burbano0@gmail.com',
-                'name' => 'Admin Prueba',
+                'email' => 'pasantesistemas1@pollo-fiesta.com',
+                'name' => 'Sistemas Pollo Fiesta',
                 'type' => 'admin'
             ];
             

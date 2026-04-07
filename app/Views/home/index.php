@@ -169,7 +169,6 @@
         <div class="header">
             <img src="/gestion-sagrilaft/public/assets/img/orb-logo.png?v=4" alt="Logo" class="header-logo">
             <h1>Registro SAGRILAFT</h1>
-            <p>Complete el formulario para iniciar el proceso</p>
         </div>
 
         <form id="registroForm" method="POST" action="<?= $_ENV['APP_URL'] ?>/home/register">

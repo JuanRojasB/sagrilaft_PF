@@ -5,7 +5,7 @@
 ```env
 MAIL_FROM=auxiliarsistemas@pollo-fiesta.com
 MAIL_FROM_NAME=SAGRILAFT - Pollo Fiesta
-MAIL_ALERT_TO=juan.david.rojas.burbano0@gmail.com
+MAIL_ALERT_TO=pasantesistemas1@pollo-fiesta.com
 ```
 
 ---
@@ -42,6 +42,6 @@ MAIL_ALERT_TO=juan.david.rojas.burbano0@gmail.com
 
 ## Estado Actual
 
-Todos los correos se envían a: `juan.david.rojas.burbano0@gmail.com`
+Todos los correos se envían a: `pasantesistemas1@pollo-fiesta.com`
 
 Cuando tengas los correos reales, agregarlos al `.env` e implementar la lógica de envío diferenciado según las reglas documentadas en `REGLAS_NOTIFICACIONES_EMAIL.md`

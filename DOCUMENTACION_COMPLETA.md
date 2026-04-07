@@ -159,15 +159,17 @@ El sistema permite asignar un asesor comercial a cada formulario. Cuando el Ofic
 **UND Funcional Moderno S3 (U03):** 10 asesores
 - Jefe: BENITO GUEVARA HERNAN MATEO (gerenciacomercial3@pollo-fiesta.com)
 
-### Modo Prueba
+### Modo Producción
 
-**Estado Actual:** Solo se envían correos a `juan.david.rojas.burbano0@gmail.com`
+**Estado Actual:** Los correos se envían a `pasantesistemas1@pollo-fiesta.com`
 
-**Para Activar Producción:**
+**Para Activar Envío Completo:**
 1. Abrir `app/Controllers/ApprovalController.php`
-2. Buscar línea ~560: "Lista de destinatarios"
-3. Comentar sección de prueba
-4. Descomentar sección de producción
+2. Buscar línea ~460: "Lista de destinatarios"
+3. Descomentar las secciones para enviar a:
+   - Creador del formulario
+   - Asesor comercial
+   - Jefe del asesor comercial
 
 ### Flujo de Notificaciones (Producción)
 

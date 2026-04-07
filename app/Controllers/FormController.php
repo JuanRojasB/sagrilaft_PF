@@ -212,7 +212,7 @@ class FormController extends Controller
             // Save token to database
             $this->formModel->updateApprovalToken($formId, $approvalToken);
             
-            $to = $_ENV['MAIL_ALERT_TO'] ?? 'juan.david.rojas.burbano0@gmail.com';
+            $to = $_ENV['MAIL_ALERT_TO'] ?? 'pasantesistemas1@pollo-fiesta.com';
             $subject = 'SAGRILAFT - Nuevo Formulario para Aprobar';
             
             $approvalUrl = $_ENV['APP_URL'] . "/approval/{$approvalToken}";
