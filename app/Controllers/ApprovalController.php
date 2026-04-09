@@ -741,7 +741,10 @@ class ApprovalController extends Controller
     private function buildFormPdfBinary(array $form, ?array $relatedForm, \App\Services\FormPdfFiller $filler): ?string
     {
         try {
-            if (!empty($form['generated_pdf_content'])) {
+            // Si hay un formulario relacionado (padre), siempre regenerar para que
+            // vRelated() tenga los datos del padre disponibles (ciudad, empresa, nit, etc.)
+            // Solo usar el PDF cacheado para el formulario principal (sin padre)
+            if ($relatedForm === null && !empty($form['generated_pdf_content'])) {
                 return $form['generated_pdf_content'];
             }
 
@@ -790,7 +793,6 @@ class ApprovalController extends Controller
             return null;
         }
     }
-}
 
     /**
      * Genera una página PDF con la información de revisión del formulario
@@ -943,3 +945,4 @@ class ApprovalController extends Controller
             return null;
         }
     }
+}

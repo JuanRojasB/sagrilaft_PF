@@ -623,7 +623,8 @@ class FormController extends Controller
 
             // PDFs e imágenes sin ?raw: mostrar en visor HTML con favicon y título correcto
             if (($isPdf || $isImage) && !isset($_GET['raw'])) {
-                $rawUrl = '/reviewer/attachment/' . (int)$id . '?raw=1';
+                $appUrl = rtrim($_ENV['APP_URL'] ?? '', '/');
+                $rawUrl = $appUrl . '/reviewer/attachment/' . (int)$id . '?raw=1';
                 $title  = pathinfo($filename, PATHINFO_FILENAME);
                 $this->view('forms/pdf_viewer', [
                     'title'   => $title,
@@ -2034,7 +2035,213 @@ class FormController extends Controller
             echo 'Acceso denegado';
             return;
         }
-        // Reutilizar generatePdf — simular la misma lógica
-        $this->generatePdf($id);
+
+        $isRaw = isset($_GET['raw']) && (string)$_GET['raw'] === '1';
+
+        $form = $this->formModel->findById((int)$id);
+        if (!$form) {
+            http_response_code(404);
+            echo 'Formulario no encontrado';
+            return;
+        }
+
+        // Si ya está aprobado y existe un PDF consolidado guardado, servirlo directamente
+        $isApproved = in_array($form['approval_status'] ?? '', ['approved', 'approved_pending']);
+        if ($isApproved) {
+            $db = \App\Core\Database::getConnection();
+            $stmt = $db->prepare("SELECT id, file_data FROM form_consolidated_pdfs WHERE form_id = ? ORDER BY signed DESC, id DESC LIMIT 1");
+            $stmt->execute([(int)$id]);
+            $consolidated = $stmt->fetch();
+
+            if ($consolidated && !empty($consolidated['file_data'])) {
+                if (!$isRaw && !isset($_GET['download'])) {
+                    $appUrl = rtrim($_ENV['APP_URL'] ?? '', '/');
+                    $path   = strtok($_SERVER['REQUEST_URI'] ?? '', '?') ?: ($appUrl . '/reviewer/form/' . $id . '/pdf');
+                    $this->view('forms/pdf_viewer', [
+                        'title'   => 'Formulario Completo #' . $id,
+                        'pdf_url' => $path . '?raw=1',
+                    ]);
+                    return;
+                }
+                $codeMap2 = [
+                    'cliente_natural'         => 'FGF-08',
+                    'cliente_juridica'        => 'FGF-16',
+                    'declaracion_cliente'     => 'FGF-17',
+                    'proveedor_natural'       => 'FCO-05',
+                    'proveedor_juridica'      => 'FCO-02',
+                    'proveedor_internacional' => 'FCO-04',
+                    'declaracion_proveedor'   => 'FCO-03',
+                ];
+                $code2       = $codeMap2[$form['form_type'] ?? ''] ?? 'SAGRILAFT';
+                $rawName2    = $form['company_name'] ?? $form['title'] ?? 'Cliente';
+                $words2      = preg_split('/\s+/', trim($rawName2));
+                $shortName2  = implode('', array_slice($words2, 0, 2));
+                $shortName2  = preg_replace('/[^a-zA-Z0-9]/', '', $shortName2);
+                $date2       = date('Ymd', strtotime($form['approval_date'] ?? 'now'));
+                $consolidatedName = $code2 . '_' . $shortName2 . '_' . $date2 . '.pdf';
+                $disposition = isset($_GET['download']) ? 'attachment' : 'inline';
+                header('Content-Type: application/pdf');
+                header('Content-Disposition: ' . $disposition . '; filename="' . $consolidatedName . '"');
+                header('Content-Length: ' . strlen($consolidated['file_data']));
+                echo $consolidated['file_data'];
+                exit;
+            }
+        }
+
+        // Sin consolidado guardado: generar en tiempo real (pendientes o sin consolidado)
+        if (!$isRaw && !isset($_GET['download'])) {
+            $codeMap = [
+                'cliente_natural'         => 'FGF-08',
+                'cliente_juridica'        => 'FGF-16',
+                'declaracion_cliente'     => 'FGF-17',
+                'proveedor_natural'       => 'FCO-05',
+                'proveedor_juridica'      => 'FCO-02',
+                'proveedor_internacional' => 'FCO-04',
+                'declaracion_proveedor'   => 'FCO-03',
+            ];
+            $code  = $codeMap[$form['form_type'] ?? ''] ?? 'SAGRILAFT';
+            $title = $code . ' - ' . ($form['title'] ?? ('Formulario #' . $id));
+            $path  = strtok($_SERVER['REQUEST_URI'] ?? '', '?') ?: (rtrim($_ENV['APP_URL'] ?? '', '/') . '/reviewer/form/' . $id . '/pdf');
+            $this->view('forms/pdf_viewer', [
+                'title'   => $title,
+                'pdf_url' => $path . '?raw=1',
+            ]);
+            return;
+        }
+
+        try {
+            $db = \App\Core\Database::getConnection();
+
+            // Inyectar firma del oficial si el formulario está aprobado
+            if ($isApproved) {
+                $approvedBy = $form['approved_by'] ?? '';
+                if ($approvedBy) {
+                    $stmtF = $db->prepare("SELECT fd.firma_data, fd.mime_type FROM firmas_digitales fd INNER JOIN users u ON fd.user_id = u.id WHERE fd.activa = 1 AND u.name LIKE ? LIMIT 1");
+                    $stmtF->execute(['%' . $approvedBy . '%']);
+                    $firma = $stmtF->fetch();
+                    if (!$firma) {
+                        $stmtF = $db->prepare("SELECT firma_data, mime_type FROM firmas_digitales WHERE activa = 1 LIMIT 1");
+                        $stmtF->execute();
+                        $firma = $stmtF->fetch();
+                    }
+                } else {
+                    $stmtF = $db->prepare("SELECT firma_data, mime_type FROM firmas_digitales WHERE activa = 1 LIMIT 1");
+                    $stmtF->execute();
+                    $firma = $stmtF->fetch();
+                }
+                if ($firma && !empty($firma['firma_data'])) {
+                    $form['firma_oficial_data'] = 'data:' . $firma['mime_type'] . ';base64,' . base64_encode($firma['firma_data']);
+                    $form['firma_oficial_cumplimiento_data'] = $form['firma_oficial_data'];
+                }
+            }
+
+            // Deserializar accionistas
+            if (!empty($form['accionistas']) && is_string($form['accionistas'])) {
+                $accionistas = json_decode($form['accionistas'], true);
+                if (is_array($accionistas)) {
+                    $form['accionista_nombre']        = array_column($accionistas, 'nombre');
+                    $form['accionista_documento']     = array_column($accionistas, 'documento');
+                    $form['accionista_participacion'] = array_column($accionistas, 'participacion');
+                    $form['accionista_nacionalidad']  = array_column($accionistas, 'nacionalidad');
+                    $form['accionista_cc']            = array_column($accionistas, 'cc');
+                    $form['accionista_ce']            = array_column($accionistas, 'ce');
+                }
+            }
+
+            $tempData = [
+                'role'        => $form['form_type'] ?? 'cliente',
+                'user_type'   => $form['form_type'] ?? 'cliente',
+                'person_type' => $form['person_type'] ?? 'natural',
+            ];
+
+            if (strpos((string)($form['form_type'] ?? ''), 'declaracion_') === 0 && !empty($form['related_form_id'])) {
+                $stmtP = $db->prepare("SELECT * FROM forms WHERE id = ?");
+                $stmtP->execute([(int)$form['related_form_id']]);
+                $parentForm = $stmtP->fetch(\PDO::FETCH_ASSOC);
+                if ($parentForm) {
+                    $tempData['related_form'] = $parentForm;
+                }
+            }
+
+            $filler = new \App\Services\FormPdfFiller();
+            $pdfContent = $filler->generate($form, $tempData);
+
+            // Declaraciones relacionadas
+            $stmtRel = $db->prepare("SELECT * FROM forms WHERE related_form_id = ? AND form_type LIKE 'declaracion%' ORDER BY id ASC");
+            $stmtRel->execute([(int)$id]);
+            $relatedForms = $stmtRel->fetchAll(\PDO::FETCH_ASSOC);
+
+            foreach ($relatedForms as $related) {
+                try {
+                    if (!empty($form['firma_oficial_data'])) {
+                        $related['firma_oficial_data'] = $form['firma_oficial_data'];
+                        $related['firma_oficial_cumplimiento_data'] = $form['firma_oficial_data'];
+                    }
+                    $relTempData = [
+                        'role'         => $related['form_type'] ?? 'cliente',
+                        'user_type'    => $related['form_type'] ?? 'cliente',
+                        'person_type'  => $related['person_type'] ?? 'declaracion',
+                        'related_form' => $form,
+                    ];
+                    $relPdf = $filler->generate($related, $relTempData);
+                    $pdfContent = $this->mergePdfs($pdfContent, $relPdf);
+                } catch (\Exception $e) {
+                    $this->logger->warning('No se pudo incluir declaración en PDF del revisor', [
+                        'related_id' => $related['id'], 'error' => $e->getMessage(),
+                    ]);
+                }
+            }
+
+            // Adjuntos PDF del usuario
+            $stmtAtt = $db->prepare("SELECT id, filename, mime_type, file_data FROM form_attachments WHERE form_id = ? ORDER BY id ASC");
+            $stmtAtt->execute([(int)$id]);
+            $generatedFilename = $form['generated_pdf_filename'] ?? '';
+            foreach ($stmtAtt->fetchAll(\PDO::FETCH_ASSOC) as $att) {
+                if (empty($att['file_data'])) continue;
+                $mime = strtolower((string)($att['mime_type'] ?? ''));
+                $name = strtolower((string)($att['filename'] ?? ''));
+                if ($mime !== 'application/pdf' && !str_ends_with($name, '.pdf')) continue;
+                if (!empty($generatedFilename) && $att['filename'] === $generatedFilename) continue;
+                try {
+                    $pdfContent = $this->mergePdfs($pdfContent, $att['file_data']);
+                } catch (\Exception $e) {
+                    $this->logger->warning('No se pudo incluir adjunto en PDF del revisor', [
+                        'attachment_id' => $att['id'], 'error' => $e->getMessage(),
+                    ]);
+                }
+            }
+
+            $codeMap = [
+                'cliente_natural'         => 'FGF-08',
+                'cliente_juridica'        => 'FGF-16',
+                'declaracion_cliente'     => 'FGF-17',
+                'proveedor_natural'       => 'FCO-05',
+                'proveedor_juridica'      => 'FCO-02',
+                'proveedor_internacional' => 'FCO-04',
+                'declaracion_proveedor'   => 'FCO-03',
+            ];
+            $code       = $codeMap[$form['form_type'] ?? ''] ?? 'SAGRILAFT';
+            // Tomar solo las primeras 2 palabras del nombre (primer nombre + primer apellido)
+            $rawName    = $form['company_name'] ?? $form['title'] ?? 'Cliente';
+            $words      = preg_split('/\s+/', trim($rawName));
+            $shortName  = implode('', array_slice($words, 0, 2));
+            $shortName  = preg_replace('/[^a-zA-Z0-9]/', '', $shortName);
+            $date       = date('Ymd', strtotime($form['approval_date'] ?? 'now'));
+            $filename   = $code . '_' . $shortName . '_' . $date . '.pdf';
+
+            $disposition = isset($_GET['download']) ? 'attachment' : 'inline';
+            header('Content-Type: application/pdf');
+            header('Content-Disposition: ' . $disposition . '; filename="' . $filename . '"');
+            header('Content-Length: ' . strlen($pdfContent));
+            echo $pdfContent;
+            exit;
+
+        } catch (\Exception $e) {
+            $this->logger->error('generatePdfReviewer failed', [
+                'form_id' => $id, 'error' => $e->getMessage(),
+            ]);
+            http_response_code(500);
+            echo 'Error al generar PDF: ' . $e->getMessage();
+        }
     }
 }

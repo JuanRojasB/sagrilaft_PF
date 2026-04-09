@@ -772,7 +772,7 @@ class FormPdfFiller
         $p->Cell($contentW, 5, $this->e($nombreFirma), 0, 1, 'L');
 
         // Firma en imagen si existe en el formulario, si no línea de firma
-        $sigFields = ['firma_declarante_data', 'firma_representante_data', 'firma_data', 'signature_data'];
+        $sigFields = ['firma_declarante', 'firma_declarante_data', 'firma_representante_data', 'firma_data', 'signature_data'];
         $sigField = '';
         foreach ($sigFields as $field) {
             if (!empty($this->d[$field])) {
@@ -1013,7 +1013,10 @@ class FormPdfFiller
             'celular'            => ['phone'],
             'email'              => ['correo'],
             'origen_recursos'    => ['origen_fondos'],
+            'origen_fondos'      => ['origen_recursos'],
             'nombre_declarante'  => ['representante_nombre', 'company_name'],
+            'firma_declarante'   => ['firma_declarante_data', 'firma_data', 'descripcion_firma'],
+            'firma_declarante_data' => ['firma_declarante', 'firma_data', 'descripcion_firma'],
             'tipo_documento'     => ['representante_tipo_doc'],
             'numero_documento'   => ['representante_documento', 'nit'],
             'calidad'            => ['representante_profesion'],

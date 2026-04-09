@@ -39,23 +39,23 @@ class Database
     public static function getConnection(): PDO
     {
         if (!self::$connection) {
-            // Construir DSN (Data Source Name)
-            $dsn = sprintf(
-                "mysql:host=%s;dbname=%s;charset=utf8mb4",
-                $_ENV['DB_HOST'],
-                $_ENV['DB_NAME']
-            );
+            // Fallback: si $_ENV no tiene las variables, intentar getenv() o valores por defecto
+            $host = $_ENV['DB_HOST'] ?? getenv('DB_HOST') ?: 'localhost';
+            $name = $_ENV['DB_NAME'] ?? getenv('DB_NAME') ?: 'sagrilaft';
+            $user = $_ENV['DB_USER'] ?? getenv('DB_USER') ?: 'root';
+            $pass = $_ENV['DB_PASS'] ?? getenv('DB_PASS') ?: '';
+
+            $dsn = "mysql:host={$host};dbname={$name};charset=utf8mb4";
             
-            // Crear conexión PDO con opciones de seguridad
             self::$connection = new PDO(
                 $dsn,
-                $_ENV['DB_USER'],
-                $_ENV['DB_PASS'],
+                $user,
+                $pass,
                 [
-                    PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION, // Lanzar excepciones en errores
-                    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC, // Devolver arrays asociativos
-                    PDO::ATTR_EMULATE_PREPARES => false, // Usar prepared statements reales
-                    PDO::ATTR_PERSISTENT => false // No usar conexiones persistentes
+                    PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+                    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+                    PDO::ATTR_EMULATE_PREPARES => false,
+                    PDO::ATTR_PERSISTENT => false
                 ]
             );
         }

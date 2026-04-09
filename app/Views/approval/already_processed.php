@@ -86,15 +86,6 @@
 
                     <?php if ($isApproved): ?>
                         <span class="badge-status badge-approved">APROBADO</span>
-                        <?php
-                        $db = \App\Core\Database::getConnection();
-                        $stmt = $db->prepare("SELECT id FROM form_consolidated_pdfs WHERE form_id = ? AND signed = 1 LIMIT 1");
-                        $stmt->execute([$form['id']]);
-                        $signedPdf = $stmt->fetch();
-                        ?>
-                        <?php if ($signedPdf): ?>
-                        <br><a href="/gestion-sagrilaft/public/forms/consolidated/<?= $signedPdf['id'] ?>/download" class="btn-link btn-blue">Descargar PDF Firmado</a>
-                        <?php endif; ?>
 
                     <?php elseif ($isApprovedPending): ?>
                         <span class="badge-status badge-pending">APROBADO CON OBSERVACIONES</span>
@@ -118,13 +109,32 @@
                     <?php endif; ?>
                 </div>
 
-                <!-- Ver PDF completo -->
+                <!-- Ver / Descargar PDF completo -->
+                <?php
+                $db2   = \App\Core\Database::getConnection();
+                $stmtC = $db2->prepare("SELECT id, signed FROM form_consolidated_pdfs WHERE form_id = ? ORDER BY signed DESC, id DESC LIMIT 1");
+                $stmtC->execute([$form['id']]);
+                $consolidatedPdf = $stmtC->fetch();
+                ?>
                 <div class="pdf-card">
                     <div style="flex:1;">
                         <h3>Formulario Completo</h3>
-                        <p>Revisa el formulario completo en formato PDF con todos los datos y documentos adjuntos.</p>
+                        <p>
+                            <?php if ($isApproved && $consolidatedPdf): ?>
+                                PDF consolidado con firma del oficial de cumplimiento.
+                            <?php else: ?>
+                                Formulario completo con todos los datos y documentos adjuntos.
+                            <?php endif; ?>
+                        </p>
                     </div>
-                    <a href="/gestion-sagrilaft/public/forms/<?= $form['id'] ?>/pdf" target="_blank" class="btn-pdf">Ver PDF Completo</a>
+                    <div style="display:flex; gap:0.5rem; flex-wrap:wrap; justify-content:flex-end;">
+                        <a href="/gestion-sagrilaft/public/reviewer/form/<?= $form['id'] ?>/pdf" target="_blank" class="btn-pdf">👁 Ver PDF</a>
+                        <?php if ($isApproved && $consolidatedPdf): ?>
+                            <a href="/gestion-sagrilaft/public/forms/consolidated/<?= $consolidatedPdf['id'] ?>/download" class="btn-pdf" style="background:#15803d;">⬇ Descargar</a>
+                        <?php elseif ($isApproved): ?>
+                            <a href="/gestion-sagrilaft/public/reviewer/form/<?= $form['id'] ?>/pdf?download=1" target="_blank" class="btn-pdf" style="background:#15803d;">⬇ Descargar</a>
+                        <?php endif; ?>
+                    </div>
                 </div>
 
                 <!-- Info del formulario -->

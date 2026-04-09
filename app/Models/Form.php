@@ -121,6 +121,7 @@ class Form
             'verificado_por', 'fecha_verificacion',
             'fecha_declaracion', 'ciudad_declaracion',
             'nombre_firma_final', 'documento_firma',
+            'firma_declarante',
         ];
 
         $columns = [];
