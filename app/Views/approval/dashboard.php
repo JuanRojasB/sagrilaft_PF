@@ -251,19 +251,19 @@
                                 $corrected = count(array_filter($forms, fn($f) => $f['approval_status'] === 'corrected'));
                                 $otros = count($forms) - ($pending + $approved + $approvedPending + $rejected + $corrected);
                                 ?>
-                                <button onclick="filterByStatus('all')" id="status-all" class="filter-btn active" style="padding: 0.3rem 0.4rem; border-radius: 0.25rem; cursor: pointer; font-weight: 600; font-size: 0.7rem; transition: all 0.15s; display: flex; align-items: center; justify-content: center; gap: 0.25rem;">
+                                <button type="button" onclick="filterByStatus('all')" id="status-all" class="filter-btn active" style="padding: 0.3rem 0.4rem; border-radius: 0.25rem; cursor: pointer; font-weight: 600; font-size: 0.7rem; transition: all 0.15s; display: flex; align-items: center; justify-content: center; gap: 0.25rem;">
                                     <span>Todos</span>
                                     <span style="background: rgba(59, 130, 246, 0.4); padding: 0.05rem 0.25rem; border-radius: 0.15rem; font-size: 0.65rem;"><?= count($forms) ?></span>
                                 </button>
-                                <button onclick="filterByStatus('pending')" id="status-pending" class="filter-btn" style="padding: 0.3rem 0.4rem; border-radius: 0.25rem; cursor: pointer; font-weight: 600; font-size: 0.7rem; transition: all 0.15s; display: flex; align-items: center; justify-content: center; gap: 0.25rem;">
+                                <button type="button" onclick="filterByStatus('pending')" id="status-pending" class="filter-btn" style="padding: 0.3rem 0.4rem; border-radius: 0.25rem; cursor: pointer; font-weight: 600; font-size: 0.7rem; transition: all 0.15s; display: flex; align-items: center; justify-content: center; gap: 0.25rem;">
                                     <span>Pend.</span>
                                     <span style="background: rgba(71, 85, 105, 0.4); padding: 0.05rem 0.25rem; border-radius: 0.15rem; font-size: 0.65rem;"><?= $pending ?></span>
                                 </button>
-                                <button onclick="filterByStatus('approved')" id="status-approved" class="filter-btn" style="padding: 0.3rem 0.4rem; border-radius: 0.25rem; cursor: pointer; font-weight: 600; font-size: 0.7rem; transition: all 0.15s; display: flex; align-items: center; justify-content: center; gap: 0.25rem;">
+                                <button type="button" onclick="filterByStatus('approved')" id="status-approved" class="filter-btn" style="padding: 0.3rem 0.4rem; border-radius: 0.25rem; cursor: pointer; font-weight: 600; font-size: 0.7rem; transition: all 0.15s; display: flex; align-items: center; justify-content: center; gap: 0.25rem;">
                                     <span>Aprob.</span>
                                     <span style="background: rgba(71, 85, 105, 0.4); padding: 0.05rem 0.25rem; border-radius: 0.15rem; font-size: 0.65rem;"><?= $approved ?></span>
                                 </button>
-                                <button onclick="filterByStatus('rejected')" id="status-rejected" class="filter-btn" style="padding: 0.3rem 0.4rem; border-radius: 0.25rem; cursor: pointer; font-weight: 600; font-size: 0.7rem; transition: all 0.15s; display: flex; align-items: center; justify-content: center; gap: 0.25rem;">
+                                <button type="button" onclick="filterByStatus('rejected')" id="status-rejected" class="filter-btn" style="padding: 0.3rem 0.4rem; border-radius: 0.25rem; cursor: pointer; font-weight: 600; font-size: 0.7rem; transition: all 0.15s; display: flex; align-items: center; justify-content: center; gap: 0.25rem;">
                                     <span>Rech.</span>
                                     <span style="background: rgba(71, 85, 105, 0.4); padding: 0.05rem 0.25rem; border-radius: 0.15rem; font-size: 0.65rem;"><?= $rejected ?></span>
                                 </button>
@@ -281,27 +281,27 @@
                                 $empleados = count(array_filter($forms, fn($f) => ($f['form_type'] ?? '') === 'empleado'));
                                 $otros = count(array_filter($forms, fn($f) => !in_array($f['role'] ?? 'cliente', ['cliente', 'proveedor', 'transportista']) && ($f['form_type'] ?? '') !== 'empleado'));
                                 ?>
-                                <button onclick="filterByRole('all')" id="role-all" class="filter-btn active" style="padding: 0.4rem 0.5rem; border-radius: 0.25rem; cursor: pointer; font-weight: 600; font-size: 0.75rem; transition: all 0.15s; display: flex; align-items: center; justify-content: center; gap: 0.3rem; white-space: nowrap;">
+                                <button type="button" onclick="filterByRole('all')" id="role-all" class="filter-btn active" style="padding: 0.4rem 0.5rem; border-radius: 0.25rem; cursor: pointer; font-weight: 600; font-size: 0.75rem; transition: all 0.15s; display: flex; align-items: center; justify-content: center; gap: 0.3rem; white-space: nowrap;">
                                     <span>Todos</span>
                                 </button>
-                                <button onclick="filterByRole('cliente')" id="role-cliente" class="filter-btn" style="padding: 0.4rem 0.5rem; border-radius: 0.25rem; cursor: pointer; font-weight: 600; font-size: 0.75rem; transition: all 0.15s; display: flex; align-items: center; justify-content: center; gap: 0.3rem; white-space: nowrap;">
+                                <button type="button" onclick="filterByRole('cliente')" id="role-cliente" class="filter-btn" style="padding: 0.4rem 0.5rem; border-radius: 0.25rem; cursor: pointer; font-weight: 600; font-size: 0.75rem; transition: all 0.15s; display: flex; align-items: center; justify-content: center; gap: 0.3rem; white-space: nowrap;">
                                     <span>Cliente</span>
                                     <span style="background: rgba(71, 85, 105, 0.4); padding: 0.05rem 0.3rem; border-radius: 0.2rem; font-size: 0.7rem; font-weight: 700;"><?= $clientes ?></span>
                                 </button>
-                                <button onclick="filterByRole('proveedor')" id="role-proveedor" class="filter-btn" style="padding: 0.4rem 0.5rem; border-radius: 0.25rem; cursor: pointer; font-weight: 600; font-size: 0.75rem; transition: all 0.15s; display: flex; align-items: center; justify-content: center; gap: 0.3rem; white-space: nowrap;">
+                                <button type="button" onclick="filterByRole('proveedor')" id="role-proveedor" class="filter-btn" style="padding: 0.4rem 0.5rem; border-radius: 0.25rem; cursor: pointer; font-weight: 600; font-size: 0.75rem; transition: all 0.15s; display: flex; align-items: center; justify-content: center; gap: 0.3rem; white-space: nowrap;">
                                     <span>Proveedor</span>
                                     <span style="background: rgba(71, 85, 105, 0.4); padding: 0.05rem 0.3rem; border-radius: 0.2rem; font-size: 0.7rem; font-weight: 700;"><?= $proveedores ?></span>
                                 </button>
-                                <button onclick="filterByRole('transportista')" id="role-transportista" class="filter-btn" style="padding: 0.4rem 0.5rem; border-radius: 0.25rem; cursor: pointer; font-weight: 600; font-size: 0.75rem; transition: all 0.15s; display: flex; align-items: center; justify-content: center; gap: 0.3rem; white-space: nowrap;">
+                                <button type="button" onclick="filterByRole('transportista')" id="role-transportista" class="filter-btn" style="padding: 0.4rem 0.5rem; border-radius: 0.25rem; cursor: pointer; font-weight: 600; font-size: 0.75rem; transition: all 0.15s; display: flex; align-items: center; justify-content: center; gap: 0.3rem; white-space: nowrap;">
                                     <span>Transportista</span>
                                     <span style="background: rgba(71, 85, 105, 0.4); padding: 0.05rem 0.3rem; border-radius: 0.2rem; font-size: 0.7rem; font-weight: 700;"><?= $transportistas ?></span>
                                 </button>
-                                <button onclick="filterByRole('empleado')" id="role-empleado" class="filter-btn" style="padding: 0.4rem 0.5rem; border-radius: 0.25rem; cursor: pointer; font-weight: 600; font-size: 0.75rem; transition: all 0.15s; display: flex; align-items: center; justify-content: center; gap: 0.3rem; white-space: nowrap;">
+                                <button type="button" onclick="filterByRole('empleado')" id="role-empleado" class="filter-btn" style="padding: 0.4rem 0.5rem; border-radius: 0.25rem; cursor: pointer; font-weight: 600; font-size: 0.75rem; transition: all 0.15s; display: flex; align-items: center; justify-content: center; gap: 0.3rem; white-space: nowrap;">
                                     <span>Empleado</span>
                                     <span style="background: rgba(71, 85, 105, 0.4); padding: 0.05rem 0.3rem; border-radius: 0.2rem; font-size: 0.7rem; font-weight: 700;"><?= $empleados ?></span>
                                 </button>
                                 <?php if ($otros > 0): ?>
-                                <button onclick="filterByRole('otros')" id="role-otros" class="filter-btn" style="padding: 0.4rem 0.5rem; border-radius: 0.25rem; cursor: pointer; font-weight: 600; font-size: 0.75rem; transition: all 0.15s; display: flex; align-items: center; justify-content: center; gap: 0.3rem; white-space: nowrap;">
+                                <button type="button" onclick="filterByRole('otros')" id="role-otros" class="filter-btn" style="padding: 0.4rem 0.5rem; border-radius: 0.25rem; cursor: pointer; font-weight: 600; font-size: 0.75rem; transition: all 0.15s; display: flex; align-items: center; justify-content: center; gap: 0.3rem; white-space: nowrap;">
                                     <span>Otros</span>
                                     <span style="background: rgba(71, 85, 105, 0.4); padding: 0.05rem 0.3rem; border-radius: 0.2rem; font-size: 0.7rem; font-weight: 700;"><?= $otros ?></span>
                                 </button>

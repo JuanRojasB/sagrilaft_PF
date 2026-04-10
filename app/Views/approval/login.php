@@ -199,9 +199,9 @@
             <input type="hidden" name="csrf_token" value="<?= $csrf_token ?>">
             
             <div class="form-field">
-                <label for="email">Usuario</label>
-                <input type="text" id="email" name="email" required 
-                       placeholder="juan.david.rojas.burbano0@gmail.com" autocomplete="username">
+                <label for="username">Usuario</label>
+                <input type="text" id="username" name="username" required 
+                       placeholder="Juan" autocomplete="username">
             </div>
             
             <div class="form-field">

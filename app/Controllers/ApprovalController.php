@@ -61,33 +61,34 @@ class ApprovalController extends Controller
             $this->json(['error' => 'Token CSRF inválido'], 403);
         }
 
-        $email = $this->input('email') ?? $this->input('reviewer_email');
+        // Aceptar tanto 'username' como 'email' para compatibilidad
+        $username = $this->input('username') ?? $this->input('email') ?? $this->input('reviewer_email');
         $password = $this->input('password') ?? $this->input('reviewer_password');
 
-        if (!$email || !$password) {
-            $this->json(['error' => 'Email y contraseña son requeridos'], 400);
+        if (!$username || !$password) {
+            $this->json(['error' => 'Usuario y contraseña son requeridos'], 400);
         }
 
-        $this->logger->info('Reviewer login attempt', ['email' => $email]);
+        $this->logger->info('Reviewer login attempt', ['username' => $username]);
 
-        // Usar AuthService para autenticar
-        $authService = new \App\Services\AuthService();
-        $result = $authService->login($email, $password, null);
+        // Buscar usuario por username o email
+        $db = \App\Core\Database::getConnection();
+        $stmt = $db->prepare("SELECT * FROM users WHERE (username = ? OR email = ?) AND role = 'revisor' LIMIT 1");
+        $stmt->execute([$username, $username]);
+        $user = $stmt->fetch(\PDO::FETCH_ASSOC);
 
-        if (!$result) {
-            $this->logger->warning('Reviewer login failed - invalid credentials', ['email' => $email]);
+        if (!$user || !password_verify($password, $user['password'])) {
+            $this->logger->warning('Reviewer login failed - invalid credentials', ['username' => $username]);
             $this->json(['error' => 'Credenciales inválidas'], 401);
         }
 
-        if ($result['user']['role'] !== 'revisor') {
-            $this->logger->warning('Reviewer login failed - not a reviewer', [
-                'email' => $email,
-                'role' => $result['user']['role']
-            ]);
-            $this->json(['error' => 'No tienes permisos de revisor'], 403);
-        }
+        // Establecer sesión de revisor
+        $_SESSION['reviewer_id'] = $user['id'];
+        $_SESSION['reviewer_name'] = $user['name'];
+        $_SESSION['reviewer_email'] = $user['email'];
+        $_SESSION['reviewer_username'] = $user['username'];
 
-        $this->logger->info('Reviewer logged in', ['reviewer_id' => $result['user']['id']]);
+        $this->logger->info('Reviewer logged in', ['reviewer_id' => $user['id']]);
 
         $this->json([
             'success' => true,
