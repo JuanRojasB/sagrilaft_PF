@@ -331,12 +331,12 @@
                 <div class="form-row">
                     <div class="form-group">
                         <label>Número de Cédula <span class="required">*</span></label>
-                        <input type="text" name="empleado_cedula" id="empleadoCedula" placeholder="Ej: 1234567890" pattern="[0-9]{6,10}" title="La cédula debe tener entre 6 y 10 dígitos">
+                        <input type="text" name="empleado_cedula" id="empleadoCedula" placeholder="Número de cédula" pattern="[0-9]{6,10}" title="La cédula debe tener entre 6 y 10 dígitos">
                     </div>
 
                     <div class="form-group">
                         <label>Celular <span class="required">*</span></label>
-                        <input type="text" name="empleado_celular" id="empleadoCelular" placeholder="Ej: 3001234567" pattern="[0-9]{10}" title="El celular debe tener 10 dígitos">
+                        <input type="text" name="empleado_celular" id="empleadoCelular" placeholder="Número de celular" pattern="[0-9]{10}" title="El celular debe tener 10 dígitos">
                     </div>
                 </div>
 
@@ -348,14 +348,14 @@
 
                     <div class="form-group">
                         <label>Ciudad Vacante <span class="required">*</span></label>
-                        <input type="text" name="empleado_ciudad_vacante" id="empleadoCiudadVacante" placeholder="Ej: Bogotá">
+                        <input type="text" name="empleado_ciudad_vacante" id="empleadoCiudadVacante" placeholder="Ciudad">
                     </div>
                 </div>
 
                 <div class="form-row">
                     <div class="form-group">
                         <label>Ciudad de Nacimiento <span class="required">*</span></label>
-                        <input type="text" name="empleado_ciudad_nacimiento" id="empleadoCiudadNacimiento" placeholder="Ej: Barranquilla">
+                        <input type="text" name="empleado_ciudad_nacimiento" id="empleadoCiudadNacimiento" placeholder="Ciudad">
                     </div>
 
                     <div class="form-group">

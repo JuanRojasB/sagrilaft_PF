@@ -145,9 +145,25 @@ class FormController extends Controller
                 continue;
             }
 
-            // Validar tipo de archivo
-            if ($files['type'][$i] !== 'application/pdf') {
-                throw new \Exception('Solo se permiten archivos PDF');
+            // Validar tipo de archivo (PDF o imágenes)
+            $allowedTypes = [
+                'application/pdf',
+                'image/jpeg',
+                'image/jpg', 
+                'image/png',
+                'image/heic',
+                'image/heif'
+            ];
+            
+            $fileType = $files['type'][$i];
+            $fileExtension = strtolower(pathinfo($files['name'][$i], PATHINFO_EXTENSION));
+            
+            // Validar por MIME type o extensión
+            $isValidType = in_array($fileType, $allowedTypes) || 
+                          in_array($fileExtension, ['pdf', 'jpg', 'jpeg', 'png', 'heic', 'heif']);
+            
+            if (!$isValidType) {
+                throw new \Exception('Solo se permiten archivos PDF o imágenes (JPG, PNG, HEIC, HEIF)');
             }
 
             // Validar tamaño (10MB máximo)
@@ -170,13 +186,30 @@ class FormController extends Controller
                 INSERT INTO form_attachments (form_id, filename, filepath, filesize, file_data, mime_type)
                 VALUES (?, ?, ?, ?, ?, ?)
             ");
+            
+            // Determinar el MIME type correcto
+            $mimeType = $files['type'][$i];
+            if (empty($mimeType) || $mimeType === 'application/octet-stream') {
+                // Fallback basado en extensión
+                $ext = strtolower($fileExtension);
+                $mimeMap = [
+                    'pdf' => 'application/pdf',
+                    'jpg' => 'image/jpeg',
+                    'jpeg' => 'image/jpeg',
+                    'png' => 'image/png',
+                    'heic' => 'image/heic',
+                    'heif' => 'image/heif'
+                ];
+                $mimeType = $mimeMap[$ext] ?? 'application/octet-stream';
+            }
+            
             $stmt->execute([
                 $formId,
                 $originalName,
                 '', // filepath vacío (ya no se usa)
                 $files['size'][$i],
                 $fileData,
-                'application/pdf'
+                $mimeType
             ]);
             
             $attachmentId = $db->lastInsertId();

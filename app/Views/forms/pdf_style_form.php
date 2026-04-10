@@ -10,6 +10,13 @@
     <link rel="stylesheet" href="/gestion-sagrilaft/public/assets/css/signature-modal.css">
     <!-- Sistema de Firma Electrónica - cargado en <head> para que esté disponible antes del DOMContentLoaded -->
     <script src="/gestion-sagrilaft/public/assets/js/signature-pad.js"></script>
+    <!-- PDF.js para previsualización de PDFs -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script>
+        if (typeof pdfjsLib !== 'undefined') {
+            pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+        }
+    </script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
@@ -848,8 +855,8 @@
         @media screen {
             /* Variables de ancho de label — consistentes en todo el formulario */
             :root {
-                --lw: 250px;   /* label width base (aumentado de 220px a 250px) */
-                --lws: 190px;  /* label width small (aumentado de 170px a 190px) */
+                --lw: 280px;   /* label width base (aumentado de 250px a 280px) */
+                --lws: 210px;  /* label width small (aumentado de 190px a 210px) */
             }
 
             .fr {
@@ -943,20 +950,20 @@
             }
 
             /* ── Layouts de columnas ──
-               Patrón: label=250px fijo, valor=1fr, repetido
+               Patrón: label=280px fijo, valor=1fr, repetido
                Los labels siempre tienen ancho fijo para alinearse entre filas */
-            .c1   { grid-template-columns: 250px 1fr; }
-            .c22  { grid-template-columns: 250px 1fr 250px 1fr; }
-            .c33  { grid-template-columns: 190px 1fr 190px 1fr 190px 1fr; }
-            .c222 { grid-template-columns: 190px 1fr 190px 1fr 190px 1fr; }
+            .c1   { grid-template-columns: 280px 1fr; }
+            .c22  { grid-template-columns: 280px 1fr 280px 1fr; }
+            .c33  { grid-template-columns: 210px 1fr 210px 1fr 210px 1fr; }
+            .c222 { grid-template-columns: 210px 1fr 210px 1fr 210px 1fr; }
             /* 3 pares label+valor con anchos distintos: nombre(ancho), doc(medio), campo3(corto) */
-            .c322 { grid-template-columns: 190px 1fr 170px 1fr 140px 1fr; }
+            .c322 { grid-template-columns: 210px 1fr 190px 1fr 160px 1fr; }
             /* Fila mixta: label+valor-fijo + label+valor + label+valor */
-            .c3fx { grid-template-columns: 190px 240px 190px 1fr 190px 1fr; }
+            .c3fx { grid-template-columns: 210px 240px 210px 1fr 210px 1fr; }
             .cfull { grid-template-columns: 1fr; }
 
             /* Fila de dirección: ocupa todo el ancho, el widget se expande verticalmente */
-            .fr.dir-row { grid-template-columns: 250px 1fr; }
+            .fr.dir-row { grid-template-columns: 280px 1fr; }
             .fr.dir-row .fv {
                 flex-direction: column;
                 align-items: stretch;
@@ -966,9 +973,9 @@
 
         /* ── Responsive grid (fuera de @media screen para que funcionen) ── */
         @media screen and (max-width: 900px) {
-            .c22, .c3fx  { grid-template-columns: 250px 1fr !important; }
-            .c33, .c222  { grid-template-columns: 190px 1fr !important; }
-            .c322        { grid-template-columns: 190px 1fr !important; }
+            .c22, .c3fx  { grid-template-columns: 280px 1fr !important; }
+            .c33, .c222  { grid-template-columns: 210px 1fr !important; }
+            .c322        { grid-template-columns: 210px 1fr !important; }
         }
         @media screen and (max-width: 600px) {
             .c22, .c33, .c222, .c322, .c3fx, .c1, .fr.dir-row {
@@ -1080,11 +1087,11 @@
                         <tr>
                             <td class="field-label" style="width: 30%; vertical-align: top; padding-top: 15px;">ADJUNTAR DOCUMENTOS:</td>
                             <td class="field-input" colspan="3" id="fileInputCell">
-                                <input type="file" id="documents" name="documents[]" multiple accept=".pdf" style="display:none;">
+                                <input type="file" id="documents" name="documents[]" multiple accept=".pdf,.jpg,.jpeg,.png,.heic,.heif,image/*" capture="environment" style="display:none;">
                                 <button type="button" onclick="document.getElementById('documents').click()" style="background: var(--bg-tertiary); color: var(--text-secondary); border: 1px solid var(--border-primary); padding: 8px 16px; border-radius: var(--radius-sm); cursor: pointer; font-size: 14px; font-family: var(--font-primary); margin-bottom: 8px;">
-                                    + Adjuntar archivos PDF
+                                    + Adjuntar Archivos (PDF o Fotos)
                                 </button>
-                                <p style="color: #94a3b8; font-size: 12px; margin: 0;">Solo archivos PDF. Máximo 10MB por archivo.</p>
+                                <p style="color: #94a3b8; font-size: 12px; margin: 0;">PDF o imágenes (JPG, PNG). Máximo 10MB por archivo.</p>
                                 <div id="fileList" style="display: none; margin-top: 12px; background: rgba(241, 245, 249, 0.8); border: 1px solid rgba(71, 85, 105, 0.3); border-radius: 4px; padding: 10px;">
                                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
                                         <span style="color: #1e293b; font-size: 13px; font-weight: 600;">Archivos seleccionados (<span id="fileCount">0</span>)</span>
@@ -1111,7 +1118,7 @@
                     Descargar PDF
                 </button> -->
                 <button type="submit" class="btn btn-primary">
-                    ✓ Enviar Formulario
+                    Enviar Formulario
                 </button>
             </div>
         </form>
@@ -1128,7 +1135,25 @@
         if (documentsInput) {
             documentsInput.addEventListener('change', function(e) {
                 const newFiles = Array.from(this.files);
+                const allowedTypes = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png', 'image/heic', 'image/heif'];
+                const allowedExtensions = ['.pdf', '.jpg', '.jpeg', '.png', '.heic', '.heif'];
+                
                 newFiles.forEach(file => {
+                    // Validar tipo de archivo
+                    const fileExtension = '.' + file.name.split('.').pop().toLowerCase();
+                    const isValidType = allowedTypes.includes(file.type) || allowedExtensions.includes(fileExtension);
+                    
+                    if (!isValidType) {
+                        alert(`El archivo "${file.name}" no es válido. Solo se permiten archivos PDF o imágenes (JPG, PNG).`);
+                        return;
+                    }
+                    
+                    // Validar tamaño (máximo 10MB)
+                    if (file.size > 10 * 1024 * 1024) {
+                        alert(`El archivo "${file.name}" es demasiado grande. El tamaño máximo es 10MB.`);
+                        return;
+                    }
+                    
                     const exists = selectedFiles.some(f => f.name === file.name && f.size === file.size);
                     if (!exists) {
                         selectedFiles.push(file);
@@ -1155,12 +1180,45 @@
                     const li = document.createElement('li');
                     li.style.cssText = 'display: flex; justify-content: space-between; align-items: center; padding: 6px 8px; background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 4px; margin-bottom: 4px; color: #0f172a;';
                     const size = (file.size / 1024 / 1024).toFixed(2);
-                    li.innerHTML = `
-                        <span style="color: #334155; font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1;" title="${file.name}">${file.name} (${size} MB)</span>
-                        <button type="button" onclick="removeFile(${index})" style="background: #fee2e2; color: #dc2626; border: 1px solid #fca5a5; padding: 2px 8px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: 600; margin-left: 8px;">
-                            Quitar
-                        </button>
-                    `;
+                    
+                    // Determinar si es imagen o PDF para mostrar preview
+                    const isImage = file.type.startsWith('image/');
+                    const isPDF = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
+                    
+                    // Crear contenedor de preview
+                    const previewContainer = document.createElement('div');
+                    previewContainer.style.cssText = 'width: 40px; height: 40px; margin-right: 8px; flex-shrink: 0;';
+                    previewContainer.id = `preview-${index}`;
+                    
+                    if (isImage) {
+                        const objectURL = URL.createObjectURL(file);
+                        previewContainer.innerHTML = `<img src="${objectURL}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 4px; border: 1px solid #cbd5e1;" alt="Preview">`;
+                    } else if (isPDF) {
+                        previewContainer.innerHTML = `<div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: #dbeafe; border-radius: 4px; font-size: 20px; border: 1px solid #93c5fd;">📄</div>`;
+                        // Intentar generar preview del PDF
+                        generatePDFPreview(file, index);
+                    } else {
+                        previewContainer.innerHTML = `<span style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: #e5e7eb; border-radius: 4px; font-size: 20px;">📎</span>`;
+                    }
+                    
+                    const contentDiv = document.createElement('div');
+                    contentDiv.style.cssText = 'display: flex; align-items: center; flex: 1; min-width: 0;';
+                    contentDiv.appendChild(previewContainer);
+                    
+                    const nameSpan = document.createElement('span');
+                    nameSpan.style.cssText = 'color: #334155; font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1;';
+                    nameSpan.title = file.name;
+                    nameSpan.textContent = `${file.name} (${size} MB)`;
+                    contentDiv.appendChild(nameSpan);
+                    
+                    const removeBtn = document.createElement('button');
+                    removeBtn.type = 'button';
+                    removeBtn.onclick = () => removeFile(index);
+                    removeBtn.style.cssText = 'background: #fee2e2; color: #dc2626; border: 1px solid #fca5a5; padding: 2px 8px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: 600; margin-left: 8px; flex-shrink: 0;';
+                    removeBtn.textContent = 'Quitar';
+                    
+                    li.appendChild(contentDiv);
+                    li.appendChild(removeBtn);
                     fileListItems.appendChild(li);
                 });
             } else {
@@ -1168,8 +1226,51 @@
                 fileList.style.display = 'none';
             }
         }
+        
+        async function generatePDFPreview(file, index) {
+            try {
+                // Usar PDF.js si está disponible
+                if (typeof pdfjsLib === 'undefined') {
+                    console.log('PDF.js no disponible, usando icono por defecto');
+                    return;
+                }
+                
+                const arrayBuffer = await file.arrayBuffer();
+                const pdf = await pdfjsLib.getDocument({data: arrayBuffer}).promise;
+                const page = await pdf.getPage(1);
+                
+                const scale = 0.3;
+                const viewport = page.getViewport({scale: scale});
+                
+                const canvas = document.createElement('canvas');
+                const context = canvas.getContext('2d');
+                canvas.width = viewport.width;
+                canvas.height = viewport.height;
+                
+                await page.render({
+                    canvasContext: context,
+                    viewport: viewport
+                }).promise;
+                
+                // Reemplazar el icono con el canvas
+                const previewContainer = document.getElementById(`preview-${index}`);
+                if (previewContainer) {
+                    canvas.style.cssText = 'width: 100%; height: 100%; object-fit: cover; border-radius: 4px; border: 1px solid #cbd5e1;';
+                    previewContainer.innerHTML = '';
+                    previewContainer.appendChild(canvas);
+                }
+            } catch (error) {
+                console.log('Error generando preview de PDF:', error);
+                // Mantener el icono por defecto
+            }
+        }
 
         function removeFile(index) {
+            // Liberar URL del objeto si es una imagen
+            const file = selectedFiles[index];
+            if (file && file.type.startsWith('image/')) {
+                // Las URLs se limpiarán automáticamente al actualizar la lista
+            }
             selectedFiles.splice(index, 1);
             updateFileList();
         }

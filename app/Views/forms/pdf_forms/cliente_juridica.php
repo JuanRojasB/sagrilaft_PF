@@ -1,7 +1,8 @@
 ﻿<!-- FD-16: CREACIÓN DE CLIENTES - PERSONA JURÍDICA -->
 
+<?php if (false): ?>
 <!-- ESPACIO CARTERA -->
-<div class="form-section">
+<div class="form-section internal-section locked">
     <div class="section-title">ESPACIO PARA SER TRAMITADO POR EL DEPARTAMENTO DE CARTERA</div>
     <div class="section-content">
         <div class="fr c22">
@@ -16,6 +17,7 @@
         </div>
     </div>
 </div>
+<?php endif; ?>
 
 <!-- DATOS GENERALES -->
 <div class="form-section">

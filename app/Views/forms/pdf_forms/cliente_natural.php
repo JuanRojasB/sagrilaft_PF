@@ -1,7 +1,8 @@
 ﻿<!-- FD-08: CREACIÓN DE CLIENTES - PERSONA NATURAL -->
 
+<?php if (false): ?>
 <!-- ESPACIO CARTERA -->
-<div class="form-section">
+<div class="form-section internal-section locked">
     <div class="section-title">ESPACIO PARA SER TRAMITADO POR EL DEPARTAMENTO DE CARTERA</div>
     <div class="section-content">
         <div class="fr c22">
@@ -16,6 +17,7 @@
         </div>
     </div>
 </div>
+<?php endif; ?>
 
 <!-- DATOS GENERALES -->
 <div class="form-section">
@@ -98,7 +100,7 @@
             <div class="fl">FIRMA:</div>
             <div class="fv" style="flex-direction:column; align-items:flex-start; gap:8px; padding:12px;">
                 <input type="hidden" id="signature_cn" name="descripcion_firma" required oninvalid="this.setCustomValidity('Firma requerida')" oninput="this.setCustomValidity('')">
-                <img id="sig_cn_preview" src="" alt="Firma" style="display:none; max-width:300px; max-height:80px; border:1px solid var(--border-secondary); padding:5px; border-radius:4px; background:white;">
+                <img id="sig_cn_preview" alt="Firma" style="display:none; max-width:300px; max-height:80px; border:1px solid var(--border-secondary); padding:5px; border-radius:4px; background:white;">
                 <div style="display:flex; gap:8px; flex-wrap:wrap;">
                     <button type="button" id="sig_cn_add" class="btn btn-primary" onclick="sigCN('open')" style="display:inline-flex; align-items:center; gap:6px; font-size:12px; padding:8px 14px;">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 19l7-7 3 3-7 7-3-3z"></path><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"></path></svg>
@@ -201,6 +203,48 @@
 <div class="form-section"><div class="section-title">OBSERVACIONES</div><div class="section-content"><div class="fr cfull"><div class="fv" style="border-right:none; padding:12px; align-items:stretch;"><textarea name="observaciones" rows="3" style="width:100%;"></textarea></div></div></div></div>
 <?php endif; ?>
 
+<!-- DECLARACIÓN Y FIRMA -->
+<div class="form-section">
+    <div class="section-title">DECLARACIÓN Y FIRMA</div>
+    <div class="section-content">
+        <div class="fr cfull">
+            <div class="fv" style="border-right:none; padding:10px 14px; font-size:11px; color:var(--text-secondary); text-align:justify;">
+                Declaro que la información contenida en este documento es veraz y completa. Me comprometo a informar a POLLO FIESTA S.A. sobre cualquier cambio que se presente en la información aquí suministrada.
+            </div>
+        </div>
+        <div class="info-box" style="margin:0; border-radius:0;">
+            <strong>AVISO DE PRIVACIDAD:</strong> Autorizo a Pollo Fiesta S.A. (NIT 860.032.450-9) para tratamiento de datos según Ley 1581/2012, Decreto 1377/2013 y Ley 1266/2008. Política en <a href="http://www.pollo-fiesta.com/" target="_blank" style="color:var(--accent-primary);">www.pollo-fiesta.com</a>
+        </div>
+        <div class="fr c22">
+            <div class="fl">NOMBRE FIRMANTE:</div>
+            <div class="fv"><input type="text" name="nombre_firmante" required value="<?= htmlspecialchars($temp_data['company_name'] ?? '') ?>" placeholder="Nombre completo" oninvalid="this.setCustomValidity('Requerido')" oninput="this.setCustomValidity('')"></div>
+            <div class="fl">DOCUMENTO:</div>
+            <div class="fv"><input type="text" name="documento_firmante" required value="<?= htmlspecialchars($temp_data['document_number'] ?? '') ?>" placeholder="Número de documento" oninvalid="this.setCustomValidity('Requerido')" oninput="this.setCustomValidity('')"></div>
+        </div>
+        <div class="fr c22">
+            <div class="fl">FECHA:</div>
+            <div class="fv"><input type="date" name="fecha_firma" required oninvalid="this.setCustomValidity('Requerido')" oninput="this.setCustomValidity('')"></div>
+            <div class="fl">CIUDAD:</div>
+            <div class="fv"><input type="text" name="ciudad_firma" required placeholder="Ciudad donde se firma" oninvalid="this.setCustomValidity('Requerido')" oninput="this.setCustomValidity('')"></div>
+        </div>
+        <div class="fr c1">
+            <div class="fl">FIRMA DIGITAL:</div>
+            <div class="fv" style="flex-direction:column; align-items:flex-start; gap:8px; padding:12px;">
+                <input type="hidden" id="signature_final_cn" name="firma_digital" required oninvalid="this.setCustomValidity('Firma requerida')" oninput="this.setCustomValidity('')">
+                <img id="sig_final_cn_preview" alt="Firma" style="display:none; max-width:300px; max-height:80px; border:1px solid var(--border-secondary); padding:5px; border-radius:4px; background:white;">
+                <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                    <button type="button" id="sig_final_cn_add" class="btn btn-primary" onclick="sigFinalCN('open')" style="display:inline-flex; align-items:center; gap:6px; font-size:12px; padding:8px 14px;">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 19l7-7 3 3-7 7-3-3z"></path><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"></path></svg>
+                        Agregar Firma
+                    </button>
+                    <button type="button" id="sig_final_cn_change" class="btn btn-secondary" onclick="sigFinalCN('open')" style="display:none; font-size:12px; padding:8px 14px;">Cambiar</button>
+                    <button type="button" id="sig_final_cn_clear" class="btn btn-secondary" onclick="sigFinalCN('clear')" style="display:none; font-size:12px; padding:8px 14px;">Limpiar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
 let _sigModalCN = null;
 document.addEventListener('DOMContentLoaded', () => {
@@ -227,6 +271,15 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('sig_cn_change').style.display = 'inline-flex';
         document.getElementById('sig_cn_clear').style.display = 'inline-flex';
     }});
+    
+    // Inicializar modal de firma final (declaración)
+    window._sigModalFinalCN = new SignatureModal({ modalId: 'sigModalFinalCN', onSave: (d) => {
+        document.getElementById('signature_final_cn').value = d;
+        const p = document.getElementById('sig_final_cn_preview'); p.src = d; p.style.display = 'block';
+        document.getElementById('sig_final_cn_add').style.display = 'none';
+        document.getElementById('sig_final_cn_change').style.display = 'inline-flex';
+        document.getElementById('sig_final_cn_clear').style.display = 'inline-flex';
+    }});
 
     // Botón de auto-llenado para pruebas
     const autoFillBtn = document.createElement('button');
@@ -234,67 +287,74 @@ document.addEventListener('DOMContentLoaded', () => {
     autoFillBtn.textContent = '🧪 Auto-llenar para Prueba';
     autoFillBtn.style.cssText = 'position:fixed;top:10px;right:10px;z-index:9999;background:#10b981;color:white;border:none;padding:10px 20px;border-radius:6px;font-weight:700;cursor:pointer;box-shadow:0 4px 6px rgba(0,0,0,0.1);';
     autoFillBtn.onclick = function() {
-        // Espacio Cartera
-        document.querySelector('[name="vinculacion"]').value = 'Nueva';
-        document.querySelector('[name="actualizacion"]').value = 'Primera vez';
-        document.querySelector('[name="fecha_vinculacion"]').value = '2026-04-07';
-        
-        // Datos Generales
-        document.querySelector('[name="principal"]').value = 'Sede Principal';
-        document.querySelector('[name="sucursal"]').value = 'Sucursal Centro';
-        document.querySelector('[name="nombre_cliente"]').value = 'Carlos Alberto Rodríguez Pérez';
-        document.querySelector('[name="cc"]').value = '1234567890';
-        document.querySelector('[name="nombre_establecimiento"]').value = 'Restaurante El Buen Sabor';
-        document.querySelector('[name="direccion"]').value = 'Calle 45 # 23-67';
-        document.querySelector('[name="ciudad"]').value = 'Bogotá';
-        document.querySelector('[name="barrio"]').value = 'Chapinero';
-        document.querySelector('[name="localidad"]').value = 'Localidad 2';
-        document.querySelector('[name="lista_precios"]').value = 'Lista A';
-        document.querySelector('[name="codigo_vendedor"]').value = 'V001';
-        document.querySelector('[name="telefono_fijo"]').value = '6012345678';
-        document.querySelector('[name="celular"]').value = '3101234567';
-        document.querySelector('[name="email"]').value = 'carlos.rodriguez@ejemplo.com';
-        
-        // Actividad Económica
-        const ciiu = document.querySelector('[name="codigo_ciiu"]');
-        if (ciiu.options.length > 1) ciiu.selectedIndex = 1;
-        
-        // Forma de Pago
-        const contado = document.querySelector('[name="forma_pago"][value="contado"]');
-        if (contado) contado.checked = true;
-        
-        // Fecha de Nacimiento
-        const fechaNac = document.querySelector('[name="fecha_nacimiento"]');
-        fechaNac.value = '1985-03-15';
-        fechaNac.dispatchEvent(new Event('change'));
-        
-        document.querySelector('[name="nombre_vendedor"]').value = 'María González';
-        document.querySelector('[name="clase_cliente"]').value = 'Premium';
-        
-        // Información Financiera
-        document.querySelector('[name="activos"]').value = '150000000';
-        document.querySelector('[name="ingresos"]').value = '80000000';
-        document.querySelector('[name="pasivos"]').value = '50000000';
-        document.querySelector('[name="gastos"]').value = '60000000';
-        document.querySelector('[name="patrimonio"]').value = '100000000';
-        document.querySelector('[name="otros_ingresos"]').value = '5000000';
-        document.querySelector('[name="detalle_otros_ingresos"]').value = 'Ingresos por arrendamiento de local comercial';
-        
-        // Datos Tributarios
-        const tipoContrib = document.querySelector('[name="tipo_contribuyente"]');
-        if (tipoContrib) tipoContrib.value = 'persona_juridica';
-        
-        const regimen = document.querySelector('[name="regimen_tributario"]');
-        if (regimen) regimen.value = 'ordinario';
-        
-        // Autorizaciones
-        const autorizaListas = document.querySelector('[name="autoriza_centrales_riesgo"][value="si"]');
-        if (autorizaListas) autorizaListas.checked = true;
-        
-        const autorizaCentrales = document.querySelector('[name="autoriza_centrales"][value="si"]');
-        if (autorizaCentrales) autorizaCentrales.checked = true;
-        
-        alert('✅ Formulario auto-llenado con datos de prueba!\n\nAhora solo necesitas:\n1. Hacer clic en "Agregar Firma"\n2. Dibujar la firma en el modal\n3. Hacer clic en "Enviar Formulario"');
+        try {
+            // Datos Generales
+            const setVal = (name, val) => {
+                const el = document.querySelector(`[name="${name}"]`);
+                if (el) el.value = val;
+            };
+            
+            setVal('principal', 'Sede Principal');
+            setVal('sucursal', 'Sucursal Centro');
+            setVal('nombre_cliente', 'Carlos Alberto Rodríguez Pérez');
+            setVal('cc', '1234567890');
+            setVal('nombre_establecimiento', 'Restaurante El Buen Sabor');
+            setVal('direccion', 'Calle 45 # 23-67 Apto 301');
+            setVal('ciudad', 'Bogotá');
+            setVal('barrio', 'Chapinero');
+            setVal('localidad', 'Localidad 2');
+            setVal('lista_precios', 'Lista A');
+            setVal('codigo_vendedor', 'V001');
+            setVal('telefono_fijo', '6012345678');
+            setVal('celular', '3101234567');
+            setVal('email', 'carlos.rodriguez@ejemplo.com');
+            
+            // Actividad Económica
+            const ciiu = document.querySelector('[name="codigo_ciiu"]');
+            if (ciiu && ciiu.options.length > 1) ciiu.selectedIndex = 1;
+            
+            // Forma de Pago
+            const contado = document.querySelector('[name="forma_pago"][value="contado"]');
+            if (contado) contado.checked = true;
+            
+            // Fecha de Nacimiento
+            const fechaNac = document.querySelector('[name="fecha_nacimiento"]');
+            if (fechaNac) {
+                fechaNac.value = '1985-03-15';
+                fechaNac.dispatchEvent(new Event('change'));
+            }
+            
+            setVal('nombre_vendedor', 'María González');
+            setVal('clase_cliente', 'Premium');
+            
+            // Información Financiera
+            setVal('activos', '150000000');
+            setVal('ingresos', '80000000');
+            setVal('pasivos', '50000000');
+            setVal('gastos', '60000000');
+            setVal('patrimonio', '100000000');
+            setVal('otros_ingresos', '5000000');
+            setVal('detalle_otros_ingresos', 'Ingresos por arrendamiento de local comercial');
+            
+            // Datos Tributarios
+            const tipoContrib = document.querySelector('[name="tipo_contribuyente"]');
+            if (tipoContrib) tipoContrib.value = 'persona_juridica';
+            
+            const regimen = document.querySelector('[name="regimen_tributario"]');
+            if (regimen) regimen.value = 'ordinario';
+            
+            // Autorizaciones
+            const autorizaListas = document.querySelector('[name="autoriza_centrales_riesgo"][value="si"]');
+            if (autorizaListas) autorizaListas.checked = true;
+            
+            const autorizaCentrales = document.querySelector('[name="autoriza_centrales"][value="si"]');
+            if (autorizaCentrales) autorizaCentrales.checked = true;
+            
+            alert('✅ Formulario auto-llenado con datos de prueba!\n\nAhora solo necesitas:\n1. Hacer clic en "Agregar Firma"\n2. Dibujar la firma en el modal\n3. Hacer clic en "Enviar Formulario"');
+        } catch (error) {
+            console.error('Error en auto-llenado:', error);
+            alert('⚠️ Error al auto-llenar. Revisa la consola para más detalles.');
+        }
     };
     document.body.appendChild(autoFillBtn);
 });
@@ -306,5 +366,14 @@ function sigCN(action) {
     document.getElementById('sig_cn_add').style.display = 'inline-flex';
     document.getElementById('sig_cn_change').style.display = 'none';
     document.getElementById('sig_cn_clear').style.display = 'none';
+}
+
+function sigFinalCN(action) {
+    if (action === 'open' && window._sigModalFinalCN) { window._sigModalFinalCN.open(); return; }
+    document.getElementById('signature_final_cn').value = '';
+    document.getElementById('sig_final_cn_preview').style.display = 'none';
+    document.getElementById('sig_final_cn_add').style.display = 'inline-flex';
+    document.getElementById('sig_final_cn_change').style.display = 'none';
+    document.getElementById('sig_final_cn_clear').style.display = 'none';
 }
 </script>

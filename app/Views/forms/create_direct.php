@@ -7,6 +7,13 @@
     <link rel="icon" type="image/png" href="/gestion-sagrilaft/public/assets/img/orb-logo.png">
     <link rel="stylesheet" href="/gestion-sagrilaft/public/assets/css/global-theme.css">
     <link rel="stylesheet" href="/gestion-sagrilaft/public/assets/css/font-scale-enhanced.css">
+    <!-- PDF.js para previsualización de PDFs -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script>
+        if (typeof pdfjsLib !== 'undefined') {
+            pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+        }
+    </script>
     <style>
         body {
             padding: 20px;
@@ -424,8 +431,8 @@
                 <div class="form-group full-width">
                     <label>Adjuntar Documentos <span class="required">*</span></label>
                     <div class="file-upload-wrapper">
-                        <input type="file" id="documents" name="documents[]" multiple accept=".pdf" required>
-                        <p class="file-hint">Solo archivos PDF. Máximo 10MB por archivo.</p>
+                        <input type="file" id="documents" name="documents[]" multiple accept=".pdf,.jpg,.jpeg,.png,.heic,.heif,image/*" capture="environment" required>
+                        <p class="file-hint">PDF o imágenes (JPG, PNG). Máximo 10MB por archivo.</p>
                     </div>
                     <div id="fileList" class="file-list" style="display: none;">
                         <div class="file-list-header">
@@ -537,17 +544,91 @@
                 selectedFiles.forEach((file, index) => {
                     const li = document.createElement('li');
                     li.className = 'file-item';
+                    li.style.cssText = 'display: flex; justify-content: space-between; align-items: center; padding: 8px; background: rgba(241, 245, 249, 0.8); border: 1px solid rgba(226, 232, 240, 0.8); border-radius: 6px; margin-bottom: 6px;';
                     const size = (file.size / 1024 / 1024).toFixed(2);
-                    li.innerHTML = `
-                        <span class="file-name" title="${file.name}">${file.name} (${size} MB)</span>
-                        <button type="button" onclick="removeFile(${index})" class="btn btn-small btn-danger">
-                            Quitar
-                        </button>
-                    `;
+                    
+                    // Determinar si es imagen o PDF para mostrar preview
+                    const isImage = file.type.startsWith('image/');
+                    const isPDF = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
+                    
+                    // Crear contenedor de preview
+                    const previewContainer = document.createElement('div');
+                    previewContainer.style.cssText = 'width: 40px; height: 40px; margin-right: 10px; flex-shrink: 0;';
+                    previewContainer.id = `preview-${index}`;
+                    
+                    if (isImage) {
+                        const objectURL = URL.createObjectURL(file);
+                        previewContainer.innerHTML = `<img src="${objectURL}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 4px; border: 1px solid rgba(203, 213, 225, 0.8);" alt="Preview">`;
+                    } else if (isPDF) {
+                        previewContainer.innerHTML = `<div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: rgba(219, 234, 254, 0.8); border-radius: 4px; font-size: 20px; border: 1px solid rgba(147, 197, 253, 0.8);">📄</div>`;
+                        // Intentar generar preview del PDF
+                        generatePDFPreview(file, index);
+                    } else {
+                        previewContainer.innerHTML = `<span style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: rgba(229, 231, 235, 0.8); border-radius: 4px; font-size: 20px;">📎</span>`;
+                    }
+                    
+                    const contentDiv = document.createElement('div');
+                    contentDiv.style.cssText = 'display: flex; align-items: center; flex: 1; min-width: 0;';
+                    contentDiv.appendChild(previewContainer);
+                    
+                    const nameSpan = document.createElement('span');
+                    nameSpan.className = 'file-name';
+                    nameSpan.style.cssText = 'color: #334155; font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1;';
+                    nameSpan.title = file.name;
+                    nameSpan.textContent = `${file.name} (${size} MB)`;
+                    contentDiv.appendChild(nameSpan);
+                    
+                    const removeBtn = document.createElement('button');
+                    removeBtn.type = 'button';
+                    removeBtn.onclick = () => removeFile(index);
+                    removeBtn.className = 'btn btn-small btn-danger';
+                    removeBtn.style.cssText = 'margin-left: 10px; flex-shrink: 0;';
+                    removeBtn.textContent = 'Quitar';
+                    
+                    li.appendChild(contentDiv);
+                    li.appendChild(removeBtn);
                     fileListItems.appendChild(li);
                 });
             } else {
                 fileList.style.display = 'none';
+            }
+        }
+        
+        async function generatePDFPreview(file, index) {
+            try {
+                // Usar PDF.js si está disponible
+                if (typeof pdfjsLib === 'undefined') {
+                    console.log('PDF.js no disponible, usando icono por defecto');
+                    return;
+                }
+                
+                const arrayBuffer = await file.arrayBuffer();
+                const pdf = await pdfjsLib.getDocument({data: arrayBuffer}).promise;
+                const page = await pdf.getPage(1);
+                
+                const scale = 0.3;
+                const viewport = page.getViewport({scale: scale});
+                
+                const canvas = document.createElement('canvas');
+                const context = canvas.getContext('2d');
+                canvas.width = viewport.width;
+                canvas.height = viewport.height;
+                
+                await page.render({
+                    canvasContext: context,
+                    viewport: viewport
+                }).promise;
+                
+                // Reemplazar el icono con el canvas
+                const previewContainer = document.getElementById(`preview-${index}`);
+                if (previewContainer) {
+                    canvas.style.cssText = 'width: 100%; height: 100%; object-fit: cover; border-radius: 4px; border: 1px solid rgba(203, 213, 225, 0.8);';
+                    previewContainer.innerHTML = '';
+                    previewContainer.appendChild(canvas);
+                }
+            } catch (error) {
+                console.log('Error generando preview de PDF:', error);
+                // Mantener el icono por defecto
             }
         }
 
