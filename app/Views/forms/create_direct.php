@@ -413,6 +413,8 @@
                         <li><strong>RUT</strong></li>
                         <li id="doc-juridica" style="display: none;"><strong>Cámara de Comercio</strong> (Persona Jurídica)</li>
                         <li id="doc-juridica-2" style="display: none;"><strong>Composición Accionaria</strong> (Persona Jurídica)</li>
+                        <li id="doc-juridica-3" style="display: none;"><strong>Certificación Bancaria</strong> no mayor a 3 meses (Persona Jurídica)</li>
+                        <li id="doc-juridica-4" style="display: none;"><strong>Cédula del Representante Legal</strong> (Persona Jurídica)</li>
                         <li id="doc-natural" style="display: none;"><strong>Cédula</strong> (Persona Natural)</li>
                         <li id="doc-natural-2" style="display: none;"><strong>Certificación Bancaria</strong> no superior a 3 meses (Persona Natural)</li>
                     </ul>
@@ -464,6 +466,8 @@
             // Mostrar documentos para jurídica
             document.getElementById('doc-juridica').style.display = 'list-item';
             document.getElementById('doc-juridica-2').style.display = 'list-item';
+            document.getElementById('doc-juridica-3').style.display = 'list-item';
+            document.getElementById('doc-juridica-4').style.display = 'list-item';
         } else {
             // Mostrar documentos para natural
             document.getElementById('doc-natural').style.display = 'list-item';

@@ -132,7 +132,7 @@ CREATE TABLE IF NOT EXISTS forms_sagrilaft (
     nombre_firmante VARCHAR(255),
     clase_cliente VARCHAR(100),
     descripcion_firma TEXT,
-    
+                                                                                                                                                                                                                                                                                                                                                                                            
     -- CAMPOS INTERNOS
     director_cartera VARCHAR(255),
     gerencia_comercial VARCHAR(255),

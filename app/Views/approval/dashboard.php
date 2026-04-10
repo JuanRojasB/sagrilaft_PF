@@ -144,6 +144,17 @@
         /* Leyenda de estado bajo la dona */
         #chartStatusLegend span[style*="color:"],
         #chartStatusLegend [style*="color: #"] { color: #1e293b !important; }
+        
+        /* Selector de período en gráfico de tendencia */
+        #trendPeriod:hover {
+            background: #e2e8f0 !important;
+            border-color: #94a3b8 !important;
+        }
+        #trendPeriod:focus {
+            outline: none;
+            border-color: #3b82f6 !important;
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.15) !important;
+        }
 
         /* Modal firma */
         #modalFirma > div { background: #ffffff !important; border: 1px solid #e2e8f0 !important; box-shadow: 0 20px 40px rgba(0,0,0,0.15) !important; }
@@ -263,10 +274,11 @@
                             <span style="color: #94a3b8; font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 0.35rem;">Tipo de Usuario</span>
                             <div style="display: flex; gap: 0.35rem; flex-wrap: wrap;">
                                 <?php 
-                                $clientes = count(array_filter($forms, fn($f) => ($f['role'] ?? 'cliente') === 'cliente'));
+                                $clientes = count(array_filter($forms, fn($f) => ($f['role'] ?? 'cliente') === 'cliente' && ($f['form_type'] ?? '') !== 'empleado'));
                                 $proveedores = count(array_filter($forms, fn($f) => ($f['role'] ?? 'cliente') === 'proveedor'));
                                 $transportistas = count(array_filter($forms, fn($f) => ($f['role'] ?? 'cliente') === 'transportista'));
-                                $otros = count(array_filter($forms, fn($f) => !in_array($f['role'] ?? 'cliente', ['cliente', 'proveedor', 'transportista'])));
+                                $empleados = count(array_filter($forms, fn($f) => ($f['form_type'] ?? '') === 'empleado'));
+                                $otros = count(array_filter($forms, fn($f) => !in_array($f['role'] ?? 'cliente', ['cliente', 'proveedor', 'transportista']) && ($f['form_type'] ?? '') !== 'empleado'));
                                 ?>
                                 <button onclick="filterByRole('all')" id="role-all" class="filter-btn active" style="padding: 0.4rem 0.5rem; border-radius: 0.25rem; cursor: pointer; font-weight: 600; font-size: 0.75rem; transition: all 0.15s; display: flex; align-items: center; justify-content: center; gap: 0.3rem; white-space: nowrap;">
                                     <span>Todos</span>
@@ -282,6 +294,10 @@
                                 <button onclick="filterByRole('transportista')" id="role-transportista" class="filter-btn" style="padding: 0.4rem 0.5rem; border-radius: 0.25rem; cursor: pointer; font-weight: 600; font-size: 0.75rem; transition: all 0.15s; display: flex; align-items: center; justify-content: center; gap: 0.3rem; white-space: nowrap;">
                                     <span>Transportista</span>
                                     <span style="background: rgba(71, 85, 105, 0.4); padding: 0.05rem 0.3rem; border-radius: 0.2rem; font-size: 0.7rem; font-weight: 700;"><?= $transportistas ?></span>
+                                </button>
+                                <button onclick="filterByRole('empleado')" id="role-empleado" class="filter-btn" style="padding: 0.4rem 0.5rem; border-radius: 0.25rem; cursor: pointer; font-weight: 600; font-size: 0.75rem; transition: all 0.15s; display: flex; align-items: center; justify-content: center; gap: 0.3rem; white-space: nowrap;">
+                                    <span>Empleado</span>
+                                    <span style="background: rgba(71, 85, 105, 0.4); padding: 0.05rem 0.3rem; border-radius: 0.2rem; font-size: 0.7rem; font-weight: 700;"><?= $empleados ?></span>
                                 </button>
                                 <?php if ($otros > 0): ?>
                                 <button onclick="filterByRole('otros')" id="role-otros" class="filter-btn" style="padding: 0.4rem 0.5rem; border-radius: 0.25rem; cursor: pointer; font-weight: 600; font-size: 0.75rem; transition: all 0.15s; display: flex; align-items: center; justify-content: center; gap: 0.3rem; white-space: nowrap;">
@@ -352,7 +368,7 @@
                         cursor: pointer;
                     }
                 </style>
-                
+
                 <!-- Paginación y Ordenamiento compacto -->
                 <div class="pagination-bar" style="background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(71, 85, 105, 0.6); border-radius: 0.25rem; padding: 0.5rem 0.9rem; margin-bottom: 0.75rem; display: flex; justify-content: space-between; align-items: center; gap: 1rem;">
                     <!-- Izquierda: Ordenamiento + Resultados por página -->
@@ -364,10 +380,6 @@
                                 <button onclick="changeSortBy('date')" id="sort-date" class="sort-btn active" style="padding: 0.25rem 0.45rem; border-radius: 0.25rem; cursor: pointer; font-weight: 600; font-size: 0.7rem; transition: all 0.15s; display: flex; align-items: center; gap: 0.2rem;">
                                     <span>Fecha</span>
                                     <span class="sort-arrow" style="font-size: 0.65rem;">&#8595;</span>
-                                </button>
-                                <button onclick="changeSortBy('status')" id="sort-status" class="sort-btn" style="padding: 0.25rem 0.45rem; border-radius: 0.25rem; cursor: pointer; font-weight: 600; font-size: 0.7rem; transition: all 0.15s; display: flex; align-items: center; gap: 0.2rem;">
-                                    <span>Estado</span>
-                                    <span class="sort-arrow" style="font-size: 0.65rem;">&#8597;</span>
                                 </button>
                             </div>
                         </div>
@@ -421,15 +433,16 @@
                     <?php else: ?>
                     <?php
                     $formTypeLabels = [
-                        'cliente_natural' => 'FGF-08 - Cliente Persona Natural',
-                        'cliente_juridica' => 'FGF-16 - Cliente Persona Jurídica',
-                        'declaracion_fondos_clientes' => 'FGF-17 - Declaración Origen de Fondos (Cliente)',
-                        'declaracion_cliente' => 'FGF-17 - Declaración Origen de Fondos (Cliente)',
-                        'proveedor_natural' => 'FCO-05 - Proveedor Persona Natural',
-                        'proveedor_juridica' => 'FCO-02 - Proveedor Persona Jurídica',
-                        'proveedor_internacional' => 'FCO-04 - Proveedor Internacional',
-                        'declaracion_fondos_proveedores' => 'FCO-03 - Declaración Origen de Fondos (Proveedor)',
-                        'declaracion_proveedor' => 'FCO-03 - Declaración Origen de Fondos (Proveedor)',
+                        'cliente_natural' => 'FD-08 - Cliente Persona Natural',
+                        'cliente_juridica' => 'FD-16 - Cliente Persona Jurídica',
+                        'declaracion_fondos_clientes' => 'FD-17 - Declaración Origen de Fondos (Cliente)',
+                        'declaracion_cliente' => 'FD-17 - Declaración Origen de Fondos (Cliente)',
+                        'proveedor_natural' => 'FD-05 - Proveedor Persona Natural',
+                        'proveedor_juridica' => 'FD-02 - Proveedor Persona Jurídica',
+                        'proveedor_internacional' => 'FD-04 - Proveedor Internacional',
+                        'declaracion_fondos_proveedores' => 'FD-03 - Declaración Origen de Fondos (Proveedor)',
+                        'declaracion_proveedor' => 'FD-03 - Declaración Origen de Fondos (Proveedor)',
+                        'empleado' => 'FD-09 - Registro de Empleado',
                     ];
                     ?>
                     <?php foreach ($forms as $form): ?>
@@ -441,6 +454,7 @@
                        class="result-link" 
                        data-status="<?= $form['approval_status'] ?>"
                        data-role="<?= $form['role'] ?? 'cliente' ?>"
+                       data-form-type="<?= $form['form_type'] ?? '' ?>"
                        data-date="<?= date('Y-m-d', strtotime($form['created_at'])) ?>"
                        data-id="<?= $form['id'] ?>"
                        data-title="<?= strtolower(htmlspecialchars($form['title'])) ?>"
@@ -669,9 +683,20 @@
                     
                     <!-- Gráfica 3: Tendencia -->
                     <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 0.5rem; padding: 1rem;">
-                        <h3 style="color: #0f172a; font-size: 0.85rem; margin: 0 0 0.75rem; font-weight: 600; display: flex; align-items: center; gap: 0.5rem;">
-                            Últimos 30 Días
-                        </h3>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+                            <h3 style="color: #0f172a; font-size: 0.85rem; margin: 0; font-weight: 600;">
+                                Tendencia de Formularios
+                            </h3>
+                            <select id="trendPeriod" onchange="updateTrendPeriod()" style="padding: 0.4rem 0.6rem; background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 0.25rem; color: #334155; font-size: 0.75rem; font-weight: 600; cursor: pointer; transition: all 0.15s;">
+                                <option value="7">Últimos 7 días</option>
+                                <option value="15">Últimos 15 días</option>
+                                <option value="30" selected>Últimos 30 días</option>
+                                <option value="60">Últimos 60 días</option>
+                                <option value="90">Últimos 90 días</option>
+                                <option value="365">Último año (por mes)</option>
+                                <option value="730">Últimos 2 años (por mes)</option>
+                            </select>
+                        </div>
                         <div style="position: relative; height: 200px;">
                             <canvas id="chartTrend"></canvas>
                         </div>
@@ -816,14 +841,50 @@
         };
 
         window.exportarFiltrados = function() {
-            const visibleLinks = Array.from(document.querySelectorAll('.result-link'))
-                .filter(link => link.style.display !== 'none')
-                .map(link => link.getAttribute('data-id'));
+            // Obtener fechas de filtro
+            const dateFrom = document.getElementById('dateFrom').value;
+            const dateTo = document.getElementById('dateTo').value;
             
-            if (visibleLinks.length === 0) {
+            // Filtrar usando el mismo criterio que applyFilters
+            const filteredForms = allForms.filter(form => {
+                const formRole = form.role || 'cliente';
+                const formType = form.form_type || '';
+                const searchData = (form.id + ' ' + form.title + ' ' + form.creator_name + ' ' + (form.company_name || '') + ' ' + (form.nit || '')).toLowerCase();
+                const formDate = form.created_at.split(' ')[0];
+                
+                // Verificar filtro de estado
+                const statusMatch = currentStatusFilter === 'all' || form.approval_status === currentStatusFilter || (currentStatusFilter === 'approved' && form.approval_status === 'approved_pending');
+                
+                // Verificar filtro de rol
+                let roleMatch = false;
+                if (currentRoleFilter === 'all') {
+                    roleMatch = true;
+                } else if (currentRoleFilter === 'empleado') {
+                    roleMatch = formType === 'empleado';
+                } else if (currentRoleFilter === 'otros') {
+                    roleMatch = !['cliente', 'proveedor', 'transportista'].includes(formRole) && formType !== 'empleado';
+                } else {
+                    roleMatch = formRole === currentRoleFilter && formType !== 'empleado';
+                }
+                
+                // Verificar búsqueda
+                const searchMatch = currentSearchTerm === '' || searchData.includes(currentSearchTerm);
+                
+                // Verificar filtro de fechas
+                let dateMatch = true;
+                if (dateFrom && formDate < dateFrom) dateMatch = false;
+                if (dateTo && formDate > dateTo) dateMatch = false;
+                
+                return statusMatch && roleMatch && searchMatch && dateMatch;
+            });
+            
+            if (filteredForms.length === 0) {
                 alert('No hay formularios para exportar con los filtros actuales');
                 return;
             }
+            
+            // Extraer solo los IDs
+            const formIds = filteredForms.map(f => f.id);
             
             const form = document.createElement('form');
             form.method = 'POST';
@@ -833,7 +894,7 @@
             const input = document.createElement('input');
             input.type = 'hidden';
             input.name = 'form_ids';
-            input.value = visibleLinks.join(',');
+            input.value = formIds.join(',');
             form.appendChild(input);
             
             const filterInfo = document.createElement('input');
@@ -842,7 +903,8 @@
             filterInfo.value = JSON.stringify({
                 status: currentStatusFilter,
                 role: currentRoleFilter,
-                search: currentSearchTerm
+                search: currentSearchTerm,
+                total: filteredForms.length
             });
             form.appendChild(filterInfo);
             
@@ -1033,7 +1095,7 @@
             // Contadores por estado y rol (basados en búsqueda y fecha solamente)
             let counts = {
                 status: { all: 0, pending: 0, approved: 0, rejected: 0 },
-                role: { all: 0, cliente: 0, proveedor: 0, transportista: 0, otros: 0 }
+                role: { all: 0, cliente: 0, proveedor: 0, transportista: 0, empleado: 0, otros: 0 }
             };
             
             // Obtener fechas de filtro
@@ -1044,6 +1106,7 @@
             links.forEach(link => {
                 const formStatus = link.getAttribute('data-status');
                 const formRole = link.getAttribute('data-role') || 'cliente';
+                const formType = link.getAttribute('data-form-type') || '';
                 const searchData = link.getAttribute('data-search') || '';
                 const formDate = link.getAttribute('data-date') || '';
                 
@@ -1065,10 +1128,12 @@
                     let roleMatchForCount = false;
                     if (currentRoleFilter === 'all') {
                         roleMatchForCount = true;
+                    } else if (currentRoleFilter === 'empleado') {
+                        roleMatchForCount = formType === 'empleado';
                     } else if (currentRoleFilter === 'otros') {
-                        roleMatchForCount = !['cliente', 'proveedor', 'transportista'].includes(formRole);
+                        roleMatchForCount = !['cliente', 'proveedor', 'transportista'].includes(formRole) && formType !== 'empleado';
                     } else {
-                        roleMatchForCount = formRole === currentRoleFilter;
+                        roleMatchForCount = formRole === currentRoleFilter && formType !== 'empleado';
                     }
                     
                     if (roleMatchForCount) {
@@ -1086,10 +1151,17 @@
                     
                     if (statusMatchForCount) {
                         counts.role.all++;
-                        if (formRole === 'cliente') counts.role.cliente++;
-                        if (formRole === 'proveedor') counts.role.proveedor++;
-                        if (formRole === 'transportista') counts.role.transportista++;
-                        if (!['cliente', 'proveedor', 'transportista'].includes(formRole)) counts.role.otros++;
+                        if (formType === 'empleado') {
+                            counts.role.empleado++;
+                        } else if (formRole === 'cliente') {
+                            counts.role.cliente++;
+                        } else if (formRole === 'proveedor') {
+                            counts.role.proveedor++;
+                        } else if (formRole === 'transportista') {
+                            counts.role.transportista++;
+                        } else {
+                            counts.role.otros++;
+                        }
                     }
                 }
             });
@@ -1098,6 +1170,7 @@
             links.forEach(link => {
                 const formStatus = link.getAttribute('data-status');
                 const formRole = link.getAttribute('data-role') || 'cliente';
+                const formType = link.getAttribute('data-form-type') || '';
                 const searchData = link.getAttribute('data-search') || '';
                 const formDate = link.getAttribute('data-date') || '';
                 
@@ -1111,10 +1184,12 @@
                 let roleMatch = false;
                 if (currentRoleFilter === 'all') {
                     roleMatch = true;
+                } else if (currentRoleFilter === 'empleado') {
+                    roleMatch = formType === 'empleado';
                 } else if (currentRoleFilter === 'otros') {
-                    roleMatch = !['cliente', 'proveedor', 'transportista'].includes(formRole);
+                    roleMatch = !['cliente', 'proveedor', 'transportista'].includes(formRole) && formType !== 'empleado';
                 } else {
-                    roleMatch = formRole === currentRoleFilter;
+                    roleMatch = formRole === currentRoleFilter && formType !== 'empleado';
                 }
                 
                 // Verificar búsqueda
@@ -1305,6 +1380,7 @@
                 'title' => $form['title'] ?? '',
                 'approval_status' => $form['approval_status'] ?? 'pending',
                 'role' => $form['role'] ?? 'cliente',
+                'form_type' => $form['form_type'] ?? '',
                 'creator_name' => $form['creator_name'] ?? '',
                 'company_name' => $form['company_name'] ?? '',
                 'nit' => $form['nit'] ?? '',
@@ -1391,19 +1467,21 @@
             chartRole = new Chart(document.getElementById('chartRole'), {
                 type: 'bar',
                 data: {
-                    labels: ['Cliente', 'Proveedor', 'Transportista'],
+                    labels: ['Cliente', 'Proveedor', 'Transportista', 'Empleado'],
                     datasets: [{
                         label: 'Formularios',
-                        data: [0, 0, 0],
+                        data: [0, 0, 0, 0],
                         backgroundColor: [
                             'rgba(59, 130, 246, 0.8)',
                             'rgba(251, 191, 36, 0.8)',
-                            'rgba(168, 85, 247, 0.8)'
+                            'rgba(168, 85, 247, 0.8)',
+                            'rgba(16, 185, 129, 0.8)'
                         ],
                         borderColor: [
                             'rgba(59, 130, 246, 1)',
                             'rgba(251, 191, 36, 1)',
-                            'rgba(168, 85, 247, 1)'
+                            'rgba(168, 85, 247, 1)',
+                            'rgba(16, 185, 129, 1)'
                         ],
                         borderWidth: 2,
                         barThickness: 35
@@ -1445,29 +1523,23 @@
             });
             
             // Gráfica 3: Tendencia (Línea)
-            const today = new Date();
-            const last30Days = [];
-            for (let i = 29; i >= 0; i--) {
-                const date = new Date(today);
-                date.setDate(date.getDate() - i);
-                last30Days.push(date.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit' }));
-            }
-            
             chartTrend = new Chart(document.getElementById('chartTrend'), {
                 type: 'line',
                 data: {
-                    labels: last30Days,
+                    labels: [],
                     datasets: [{
                         label: 'Formularios',
-                        data: new Array(30).fill(0),
+                        data: [],
                         borderColor: 'rgba(59, 130, 246, 1)',
                         backgroundColor: 'rgba(59, 130, 246, 0.2)',
                         borderWidth: 2,
                         fill: true,
                         tension: 0.4,
-                        pointRadius: 2,
-                        pointHoverRadius: 5,
-                        pointBackgroundColor: 'rgba(59, 130, 246, 1)'
+                        pointRadius: 3,
+                        pointHoverRadius: 6,
+                        pointBackgroundColor: 'rgba(59, 130, 246, 1)',
+                        pointBorderColor: '#ffffff',
+                        pointBorderWidth: 1
                     }]
                 },
                 options: {
@@ -1476,13 +1548,17 @@
                         x: {
                             ticks: { 
                                 color: '#475569', 
-                                font: { size: 8 },
-                                maxRotation: 90,
-                                minRotation: 90,
+                                font: { size: 9 },
+                                maxRotation: 0,
+                                minRotation: 0,
                                 autoSkip: true,
-                                maxTicksLimit: 10
+                                maxTicksLimit: 15
                             },
-                            grid: { display: false }
+                            grid: { 
+                                display: true,
+                                color: 'rgba(203, 213, 225, 0.3)',
+                                drawBorder: false
+                            }
                         },
                         y: {
                             beginAtZero: true,
@@ -1520,6 +1596,7 @@
             // Filtrar formularios según los filtros actuales
             const filteredForms = allForms.filter(form => {
                 const formRole = form.role || 'cliente';
+                const formType = form.form_type || '';
                 const searchData = (form.id + ' ' + form.title + ' ' + form.creator_name + ' ' + (form.company_name || '') + ' ' + (form.nit || '')).toLowerCase();
                 const formDate = form.created_at.split(' ')[0];
                 
@@ -1530,10 +1607,12 @@
                 let roleMatch = false;
                 if (currentRoleFilter === 'all') {
                     roleMatch = true;
+                } else if (currentRoleFilter === 'empleado') {
+                    roleMatch = formType === 'empleado';
                 } else if (currentRoleFilter === 'otros') {
-                    roleMatch = !['cliente', 'proveedor', 'transportista'].includes(formRole);
+                    roleMatch = !['cliente', 'proveedor', 'transportista'].includes(formRole) && formType !== 'empleado';
                 } else {
-                    roleMatch = formRole === currentRoleFilter;
+                    roleMatch = formRole === currentRoleFilter && formType !== 'empleado';
                 }
                 
                 // Verificar búsqueda
@@ -1586,35 +1665,110 @@
             
             // Actualizar datos de rol
             const roleData = {
-                cliente: filteredForms.filter(f => (f.role || 'cliente') === 'cliente').length,
+                cliente: filteredForms.filter(f => (f.form_type || '') !== 'empleado' && (f.role || 'cliente') === 'cliente').length,
                 proveedor: filteredForms.filter(f => (f.role || 'cliente') === 'proveedor').length,
-                transportista: filteredForms.filter(f => (f.role || 'cliente') === 'transportista').length
+                transportista: filteredForms.filter(f => (f.role || 'cliente') === 'transportista').length,
+                empleado: filteredForms.filter(f => (f.form_type || '') === 'empleado').length
             };
             
             chartRole.data.datasets[0].data = [
                 roleData.cliente,
                 roleData.proveedor,
-                roleData.transportista
+                roleData.transportista,
+                roleData.empleado
             ];
             chartRole.update();
             
-            // Actualizar tendencia últimos 30 días
+            // Actualizar tendencia según período seleccionado
+            updateTrendChart(filteredForms);
+        }
+        
+        function updateTrendPeriod() {
+            updateCharts();
+        }
+        
+        function updateTrendChart(filteredForms) {
+            const period = parseInt(document.getElementById('trendPeriod').value);
             const today = new Date();
             const trendData = [];
+            const labels = [];
             
-            for (let i = 29; i >= 0; i--) {
-                const date = new Date(today);
-                date.setDate(date.getDate() - i);
-                const dateStr = date.toISOString().split('T')[0];
+            // Si es un año o más, agrupar por mes
+            if (period >= 365) {
+                const months = period === 365 ? 12 : 24;
                 
-                const count = filteredForms.filter(f => {
-                    const formDate = f.created_at.split(' ')[0];
-                    return formDate === dateStr;
-                }).length;
-                
-                trendData.push(count);
+                for (let i = months - 1; i >= 0; i--) {
+                    const date = new Date(today.getFullYear(), today.getMonth() - i, 1);
+                    const year = date.getFullYear();
+                    const month = date.getMonth();
+                    
+                    // Contar formularios de ese mes
+                    const count = filteredForms.filter(f => {
+                        const formDate = new Date(f.created_at);
+                        return formDate.getFullYear() === year && formDate.getMonth() === month;
+                    }).length;
+                    
+                    trendData.push(count);
+                    
+                    // Etiqueta: mes abreviado (+ año si es necesario)
+                    const monthName = date.toLocaleDateString('es-ES', { month: 'short' });
+                    // Solo mostrar año si es diferente al actual o si es enero
+                    if (year !== today.getFullYear() || month === 0) {
+                        labels.push(`${monthName.charAt(0).toUpperCase() + monthName.slice(1)} '${year.toString().slice(-2)}`);
+                    } else {
+                        labels.push(monthName.charAt(0).toUpperCase() + monthName.slice(1));
+                    }
+                }
+            } else {
+                // Vista por días
+                for (let i = period - 1; i >= 0; i--) {
+                    const date = new Date(today);
+                    date.setDate(date.getDate() - i);
+                    const dateStr = date.toISOString().split('T')[0];
+                    
+                    const count = filteredForms.filter(f => {
+                        const formDate = f.created_at.split(' ')[0];
+                        return formDate === dateStr;
+                    }).length;
+                    
+                    trendData.push(count);
+                    
+                    // Formato de etiqueta según el período
+                    if (period <= 7) {
+                        // Para 7 días: mostrar día de la semana + número
+                        const dayName = date.toLocaleDateString('es-ES', { weekday: 'short' });
+                        const dayNum = date.getDate();
+                        labels.push(`${dayName.charAt(0).toUpperCase() + dayName.slice(1)} ${dayNum}`);
+                    } else if (period <= 30) {
+                        // Para 15-30 días: mostrar cada 2 días
+                        if (i % 2 === 0 || i === period - 1) {
+                            labels.push(date.getDate().toString());
+                        } else {
+                            labels.push('');
+                        }
+                    } else if (period <= 60) {
+                        // Para 60 días: mostrar cada 4 días
+                        if (i % 4 === 0 || i === period - 1) {
+                            const monthName = date.toLocaleDateString('es-ES', { month: 'short' });
+                            labels.push(`${date.getDate()} ${monthName}`);
+                        } else {
+                            labels.push('');
+                        }
+                    } else {
+                        // Para 90 días: mostrar cada 6 días
+                        if (i % 6 === 0 || i === period - 1) {
+                            const monthName = date.toLocaleDateString('es-ES', { month: 'short' });
+                            labels.push(`${date.getDate()} ${monthName}`);
+                        } else {
+                            labels.push('');
+                        }
+                    }
+                }
+            }
             }
             
+            chartTrend.data.labels = labels;
+            chartTrend.data.datasets[0].data = trendData;
             chartTrend.data.datasets[0].data = trendData;
             chartTrend.update();
         }

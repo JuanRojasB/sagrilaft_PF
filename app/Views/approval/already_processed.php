@@ -67,6 +67,14 @@
                 $isApprovedPending= ($form['approval_status'] === 'approved_pending');
                 $isRejected       = ($form['approval_status'] === 'rejected');
                 $isCorrected      = ($form['approval_status'] === 'corrected');
+                $isEmpleado       = isset($form['form_type']) && $form['form_type'] === 'empleado';
+                
+                // Para empleados NO existe "approved_pending", solo "approved" o "rejected"
+                // Si por algún error quedó como "approved_pending", tratarlo como "approved"
+                if ($isEmpleado && $isApprovedPending) {
+                    $isApproved = true;
+                    $isApprovedPending = false;
+                }
                 ?>
 
                 <!-- Estado principal -->
@@ -109,48 +117,79 @@
                     <?php endif; ?>
                 </div>
 
-                <!-- Ver / Descargar PDF completo -->
-                <?php
-                $db2   = \App\Core\Database::getConnection();
-                $stmtC = $db2->prepare("SELECT id, signed FROM form_consolidated_pdfs WHERE form_id = ? ORDER BY signed DESC, id DESC LIMIT 1");
-                $stmtC->execute([$form['id']]);
-                $consolidatedPdf = $stmtC->fetch();
-                ?>
-                <div class="pdf-card">
-                    <div style="flex:1;">
-                        <h3>Formulario Completo</h3>
-                        <p>
+                <!-- Ver / Descargar PDF completo o adjuntos -->
+                <?php if (!$isEmpleado): ?>
+                    <?php
+                    // Para formularios SAGRILAFT: mostrar PDF consolidado
+                    $db2   = \App\Core\Database::getConnection();
+                    $stmtC = $db2->prepare("SELECT id, signed FROM form_consolidated_pdfs WHERE form_id = ? ORDER BY signed DESC, id DESC LIMIT 1");
+                    $stmtC->execute([$form['id']]);
+                    $consolidatedPdf = $stmtC->fetch();
+                    ?>
+                    <div class="pdf-card">
+                        <div style="flex:1;">
+                            <h3>Formulario Completo</h3>
+                            <p>
+                                <?php if ($isApproved && $consolidatedPdf): ?>
+                                    PDF consolidado con firma del oficial de cumplimiento.
+                                <?php else: ?>
+                                    Formulario completo con todos los datos y documentos adjuntos.
+                                <?php endif; ?>
+                            </p>
+                        </div>
+                        <div style="display:flex; gap:0.5rem; flex-wrap:wrap; justify-content:flex-end;">
+                            <a href="/gestion-sagrilaft/public/reviewer/form/<?= $form['id'] ?>/pdf" target="_blank" class="btn-pdf">👁 Ver PDF</a>
                             <?php if ($isApproved && $consolidatedPdf): ?>
-                                PDF consolidado con firma del oficial de cumplimiento.
-                            <?php else: ?>
-                                Formulario completo con todos los datos y documentos adjuntos.
+                                <a href="/gestion-sagrilaft/public/forms/consolidated/<?= $consolidatedPdf['id'] ?>/download" class="btn-pdf" style="background:#15803d;">⬇ Descargar</a>
+                            <?php elseif ($isApproved): ?>
+                                <a href="/gestion-sagrilaft/public/reviewer/form/<?= $form['id'] ?>/pdf?download=1" target="_blank" class="btn-pdf" style="background:#15803d;">⬇ Descargar</a>
                             <?php endif; ?>
-                        </p>
+                        </div>
                     </div>
-                    <div style="display:flex; gap:0.5rem; flex-wrap:wrap; justify-content:flex-end;">
-                        <a href="/gestion-sagrilaft/public/reviewer/form/<?= $form['id'] ?>/pdf" target="_blank" class="btn-pdf">👁 Ver PDF</a>
-                        <?php if ($isApproved && $consolidatedPdf): ?>
-                            <a href="/gestion-sagrilaft/public/forms/consolidated/<?= $consolidatedPdf['id'] ?>/download" class="btn-pdf" style="background:#15803d;">⬇ Descargar</a>
-                        <?php elseif ($isApproved): ?>
-                            <a href="/gestion-sagrilaft/public/reviewer/form/<?= $form['id'] ?>/pdf?download=1" target="_blank" class="btn-pdf" style="background:#15803d;">⬇ Descargar</a>
-                        <?php endif; ?>
-                    </div>
-                </div>
+                <?php else: ?>
+                    <?php
+                    // Para empleados: mostrar solo los adjuntos (PDF de cédula)
+                    $db2 = \App\Core\Database::getConnection();
+                    $stmtAttach = $db2->prepare("SELECT id, filename FROM form_attachments WHERE form_id = ? ORDER BY id");
+                    $stmtAttach->execute([$form['id']]);
+                    $attachments = $stmtAttach->fetchAll();
+                    ?>
+                    <?php if (!empty($attachments)): ?>
+                        <div class="pdf-card">
+                            <div style="flex:1;">
+                                <h3>Documentos Adjuntos</h3>
+                                <p>Cédula y documentos del empleado</p>
+                            </div>
+                            <div style="display:flex; flex-direction:column; gap:0.5rem;">
+                                <?php foreach ($attachments as $attachment): ?>
+                                    <a href="/gestion-sagrilaft/public/reviewer/attachment/<?= $attachment['id'] ?>" target="_blank" class="btn-pdf">
+                                        📄 <?= htmlspecialchars($attachment['filename']) ?>
+                                    </a>
+                                <?php endforeach; ?>
+                            </div>
+                        </div>
+                    <?php else: ?>
+                        <div class="card" style="text-align:center; padding:2rem; color:#64748b;">
+                            <p>Este registro de empleado no tiene documentos adjuntos.</p>
+                        </div>
+                    <?php endif; ?>
+                <?php endif; ?>
 
                 <!-- Info del formulario -->
                 <div class="card">
                     <p class="section-title">Información del Formulario</p>
                     <?php
                     $formTypeCodeMap = [
-                        'cliente_natural'              => 'FGF-08',
-                        'cliente_juridica'             => 'FGF-16',
-                        'declaracion_fondos_clientes'  => 'FGF-17',
-                        'declaracion_cliente'          => 'FGF-17',
-                        'proveedor_natural'            => 'FCO-05',
-                        'proveedor_juridica'           => 'FCO-02',
-                        'proveedor_internacional'      => 'FCO-04',
-                        'declaracion_fondos_proveedores'=> 'FCO-03',
-                        'declaracion_proveedor'        => 'FCO-03',
+                        'cliente_natural'              => 'FD-08',
+                        'cliente_juridica'             => 'FD-16',
+                        'declaracion_fondos_clientes'  => 'FD-17',
+                        'declaracion_cliente'          => 'FD-17',
+                        'proveedor_natural'            => 'FD-05',
+                        'proveedor_juridica'           => 'FD-02',
+                        'proveedor_internacional'      => 'FD-04',
+                        'declaracion_fondos_proveedores'=> 'FD-03',
+                        'declaracion_proveedor'        => 'FD-03',
+                        'empleado'                     => 'FD-09',
                     ];
                     $formCode = $formTypeCodeMap[$form['form_type'] ?? ''] ?? 'N/A';
                     ?>

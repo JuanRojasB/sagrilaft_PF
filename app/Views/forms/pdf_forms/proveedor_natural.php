@@ -1,4 +1,4 @@
-﻿<!-- FCO-05: CONOCIMIENTO DE PROVEEDOR NACIONAL - PERSONA NATURAL -->
+﻿<!-- FD-05: CONOCIMIENTO DE PROVEEDOR NACIONAL - PERSONA NATURAL -->
 
 <!-- ESPACIO COMPRAS -->
 <div class="form-section">
@@ -151,9 +151,9 @@
     </div>
 </div>
 
-<!-- FIRMA Y SELLO DEL PROVEEDOR -->
+<!-- FIRMA DEL PROVEEDOR -->
 <div class="form-section">
-    <div class="section-title">FIRMA Y SELLO DEL PROVEEDOR</div>
+    <div class="section-title">FIRMA DEL PROVEEDOR</div>
     <div class="section-content">
         <div class="fr c1">
             <div class="fl">NOMBRE:</div>

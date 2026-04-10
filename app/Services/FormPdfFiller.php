@@ -75,17 +75,7 @@ class FormPdfFiller
         $p->MultiCell($W, 3.8, $this->e('En mi calidad de funcionario de POLLO FIESTA S.A. declaro que la informacion aqui contenida corresponde con la realidad y que respondere personalmente por cualquier perjuicio que pueda sufrir POLLO FIESTA S.A. que se derive de la deliberada inexactitud de los datos ingresados en este formulario.'), 1, 'L');
 
         $this->row2('NOMBRE DEL VENDEDOR', $this->v('nombre_vendedor'), 40, 58, 'CLASE DE CLIENTE:', $this->v('clase_cliente'), 30, 72, $h);
-        
-        // Firma del cliente
-        $yFirma = $p->GetY();
-        $this->labelCell('FIRMA:', 14, 16);
-        $p->SetXY(5 + 14, $yFirma);
-        $p->Cell(84, 16, '', 1, 0, 'L');
-        $this->sigImage('descripcion_firma', 5 + 14 + 2, $yFirma + 1, 50, 14);
-        $this->labelCell('DESCRIPCION:', 24, 16);
-        $p->SetXY(5 + 14 + 84 + 24, $yFirma);
-        $p->SetFont('Arial', '', 6);
-        $p->Cell(78, 16, $this->e($this->v('descripcion_firma_texto')), 1, 1, 'L');
+        $this->row2('FIRMA', '', 14, 84, 'DESCRIPCION:', $this->v('descripcion_firma'), 24, 78, $h);
 
         $this->sectionTitle('INFORMACION FINANCIERA:', $W, $hs);
         $this->row2('ACTIVOS $', $this->money('activos'), 20, 58, 'INGRESOS $', $this->money('ingresos'), 20, 102, $h);
@@ -772,7 +762,7 @@ class FormPdfFiller
         $p->Cell($contentW, 5, $this->e($nombreFirma), 0, 1, 'L');
 
         // Firma en imagen si existe en el formulario, si no línea de firma
-        $sigFields = ['firma_declarante', 'firma_declarante_data', 'firma_representante_data', 'firma_data', 'signature_data'];
+        $sigFields = ['firma_declarante_data', 'firma_representante_data', 'firma_data', 'signature_data'];
         $sigField = '';
         foreach ($sigFields as $field) {
             if (!empty($this->d[$field])) {
@@ -791,7 +781,7 @@ class FormPdfFiller
         }
 
         $p->SetX($x);
-        $p->Cell($contentW, 5, $this->e('Nombre y Firma del Representante Legal y Sello'), 0, 1, 'L');
+        $p->Cell($contentW, 5, $this->e('Nombre y Firma del Representante Legal'), 0, 1, 'L');
     }
 
     // =========================================================================
@@ -856,7 +846,17 @@ class FormPdfFiller
         $this->row1('NOMBRE COMPLETO:', $this->v('nombre_firma_final') ?: $this->v('nombre_declarante'), 34, $W - 34, $h);
         $this->row1('DOCUMENTO:', $this->v('documento_firma') ?: $this->v('numero_documento'), 24, $W - 24, $h);
         $this->row2('FECHA:', $this->v('fecha_declaracion'), 16, 84, 'CIUDAD:', $this->v('ciudad_declaracion'), 16, 84, $h);
-        $this->row1('FIRMA DECLARANTE:', '', 34, $W - 34, 16);
+        
+        // FIRMA DECLARANTE con imagen
+        $firmaDeclaranteH = 16;
+        $yFirmaDeclarante = $p->GetY();
+        $p->SetXY(5 + 34, $yFirmaDeclarante);
+        $p->Cell($W - 34, $firmaDeclaranteH, '', 1, 1, 'L');
+        $this->sigImage('firma_declarante_data', 5 + 34 + 2, $yFirmaDeclarante + 1, 50, $firmaDeclaranteH - 2);
+        $p->SetXY(5, $yFirmaDeclarante);
+        $p->SetFont('Arial', 'B', 6);
+        $p->Cell(34, $firmaDeclaranteH, $this->e('FIRMA DECLARANTE:'), 1, 0, 'L');
+        $p->SetY($yFirmaDeclarante + $firmaDeclaranteH);
 
         $this->sectionTitle('ESPACIO EXCLUSIVO PARA POLLO FIESTA', $W, $hs);
         $this->row1('VERIFICADO POR:', $this->v('verificado_por'), 30, $W - 30, $h);
@@ -999,6 +999,10 @@ class FormPdfFiller
         if ($p === 'declaracion') {
             return $u === 'proveedor' ? 'declaracion_proveedor' : 'declaracion_cliente';
         }
+        // Transportistas usan los mismos formularios que proveedores
+        if ($u === 'transportista') {
+            $u = 'proveedor';
+        }
         return "{$u}_{$p}";
     }
 
@@ -1013,10 +1017,7 @@ class FormPdfFiller
             'celular'            => ['phone'],
             'email'              => ['correo'],
             'origen_recursos'    => ['origen_fondos'],
-            'origen_fondos'      => ['origen_recursos'],
             'nombre_declarante'  => ['representante_nombre', 'company_name'],
-            'firma_declarante'   => ['firma_declarante_data', 'firma_data', 'descripcion_firma'],
-            'firma_declarante_data' => ['firma_declarante', 'firma_data', 'descripcion_firma'],
             'tipo_documento'     => ['representante_tipo_doc'],
             'numero_documento'   => ['representante_documento', 'nit'],
             'calidad'            => ['representante_profesion'],

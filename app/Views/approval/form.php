@@ -88,25 +88,19 @@
             <div id="step2" style="<?= $is_logged_in ? '' : 'display:none;' ?>">
 
                 <?php
-                $formTypeCodeMap = [
-                    'cliente_natural'                => 'FGF-08',
-                    'cliente_juridica'               => 'FGF-16',
-                    'declaracion_fondos_clientes'    => 'FGF-17',
-                    'declaracion_cliente'            => 'FGF-17',
-                    'proveedor_natural'              => 'FCO-05',
-                    'proveedor_juridica'             => 'FCO-02',
-                    'proveedor_internacional'        => 'FCO-04',
-                    'declaracion_fondos_proveedores' => 'FCO-03',
-                    'declaracion_proveedor'          => 'FCO-03',
-                ];
                 $formCode = $formTypeCodeMap[$form['form_type'] ?? ''] ?? 'N/A';
+                $isEmpleado = ($form['form_type'] ?? '') === 'empleado';
                 ?>
 
                 <!-- Header info -->
                 <div style="background:#ffffff; border:1px solid #e2e8f0; border-radius:0.5rem; padding:1.5rem; margin-bottom:1rem; box-shadow:0 1px 3px rgba(0,0,0,0.06);">
                     <div style="display:flex; justify-content:space-between; align-items:start; gap:1rem; margin-bottom:0.5rem;">
                         <h2 style="margin:0; font-size:1.2rem; color:#0f172a; font-weight:600;">
-                            Formulario SAGRILAFT - <?= htmlspecialchars($form['company_name'] ?? 'Sin nombre') ?>
+                            <?php if ($isEmpleado): ?>
+                                Registro de Empleado - <?= htmlspecialchars($form['empleado_nombre'] ?? 'Sin nombre') ?>
+                            <?php else: ?>
+                                Formulario SAGRILAFT - <?= htmlspecialchars($form['company_name'] ?? 'Sin nombre') ?>
+                            <?php endif; ?>
                         </h2>
                         <span style="background:#fef9c3; color:#a16207; border:1px solid #fde047; padding:0.3rem 0.75rem; border-radius:0.25rem; font-size:0.8rem; font-weight:600; white-space:nowrap;">
                             Pendiente
@@ -155,7 +149,8 @@
                 </div>
                 <?php endif; ?>
 
-                <!-- PDF -->
+                <!-- PDF (solo para no-empleados) -->
+                <?php if (!$isEmpleado): ?>
                 <div style="background:#eff6ff; border:2px solid #93c5fd; border-radius:0.5rem; padding:1.25rem; margin-bottom:1rem;">
                     <div style="display:flex; align-items:center; justify-content:space-between; gap:1rem;">
                         <div style="flex:1; min-width:0;">
@@ -167,10 +162,14 @@
                         </a>
                     </div>
                 </div>
+                <?php endif; ?>
 
-                <!-- Adjuntos -->
+                <!-- Adjuntos (solo mostrar si no es empleado O si es empleado con adjuntos) -->
+                <?php if (!$isEmpleado || !empty($attachments)): ?>
                 <div style="background:#ffffff; border:1px solid #e2e8f0; border-radius:0.5rem; padding:1.25rem; margin-bottom:1rem; box-shadow:0 1px 3px rgba(0,0,0,0.06);">
-                    <h3 style="margin:0 0 0.75rem; font-size:0.9rem; color:#0f172a; font-weight:700; text-transform:uppercase; letter-spacing:0.08em;">Documentos Adjuntos del Usuario</h3>
+                    <h3 style="margin:0 0 0.75rem; font-size:0.9rem; color:#0f172a; font-weight:700; text-transform:uppercase; letter-spacing:0.08em;">
+                        <?= $isEmpleado ? 'Cédula Adjunta' : 'Documentos Adjuntos del Usuario' ?>
+                    </h3>
                     <?php if (!empty($attachments)): ?>
                         <div style="display:grid; gap:0.5rem;">
                             <?php foreach ($attachments as $attachment): ?>
@@ -189,6 +188,7 @@
                         </div>
                     <?php endif; ?>
                 </div>
+                <?php endif; ?>
 
                 <!-- Datos del formulario — vista tipo formulario -->
                 <?php
@@ -202,6 +202,7 @@
                     'declaracion_cliente'            => 'declaracion_fondos',
                     'declaracion_fondos_proveedores' => 'declaracion_fondos',
                     'declaracion_proveedor'          => 'declaracion_fondos',
+                    'empleado'                       => 'empleado',
                 ];
                 $reviewFile = $reviewFormMap[$form['form_type'] ?? ''] ?? null;
                 $reviewPath = $reviewFile ? __DIR__ . '/../forms/review_forms/' . $reviewFile . '.php' : null;
@@ -249,6 +250,10 @@
                         <input type="hidden" name="csrf_token" value="<?= $csrf_token ?>">
                         <input type="hidden" name="approved_by" value="<?= htmlspecialchars($reviewer_name) ?>">
 
+                        <?php 
+                        $isEmpleado = ($form['form_type'] ?? '') === 'empleado';
+                        if (!$isEmpleado): 
+                        ?>
                         <!-- Espacio exclusivo Pollo Fiesta -->
                         <div style="margin-bottom:1rem; padding:0.9rem; background:#eff6ff; border:1px solid #bfdbfe; border-radius:0.25rem;">
                             <div style="font-size:0.78rem; color:#1d4ed8; margin-bottom:0.6rem; text-transform:uppercase; letter-spacing:0.05em; font-weight:700;">
@@ -293,47 +298,65 @@
                             <div style="display:grid; grid-template-columns:repeat(2,1fr); gap:0.75rem;">
                                 <div>
                                     <label style="display:block; font-size:0.72rem; color:#475569; margin-bottom:0.3rem; text-transform:uppercase;">Recibe</label>
-                                    <input type="text" name="recibe" value="<?= htmlspecialchars((string)($form['recibe'] ?? '')) ?>" style="width:100%; padding:0.6rem; background:#ffffff; border:1px solid #cbd5e1; border-radius:0.25rem; color:#0f172a; font-size:0.82rem;">
+                                    <input type="text" name="recibe" value="<?= htmlspecialchars((string)($form['recibe'] ?? 'Angie Paola Martínez Paredes')) ?>" style="width:100%; padding:0.6rem; background:#ffffff; border:1px solid #cbd5e1; border-radius:0.25rem; color:#0f172a; font-size:0.82rem;">
                                 </div>
                                 <div>
                                     <label style="display:block; font-size:0.72rem; color:#475569; margin-bottom:0.3rem; text-transform:uppercase;">Verificado por</label>
-                                    <input type="text" name="verificado_por" value="<?= htmlspecialchars((string)($form['verificado_por'] ?? '')) ?>" style="width:100%; padding:0.6rem; background:#ffffff; border:1px solid #cbd5e1; border-radius:0.25rem; color:#0f172a; font-size:0.82rem;">
+                                    <input type="text" name="verificado_por" value="<?= htmlspecialchars((string)($form['verificado_por'] ?? 'Angie Paola Martínez Paredes')) ?>" style="width:100%; padding:0.6rem; background:#ffffff; border:1px solid #cbd5e1; border-radius:0.25rem; color:#0f172a; font-size:0.82rem;">
                                 </div>
                                 <div>
                                     <label style="display:block; font-size:0.72rem; color:#475569; margin-bottom:0.3rem; text-transform:uppercase;">Director de cartera</label>
-                                    <input type="text" name="director_cartera" value="<?= htmlspecialchars((string)($form['director_cartera'] ?? '')) ?>" style="width:100%; padding:0.6rem; background:#ffffff; border:1px solid #cbd5e1; border-radius:0.25rem; color:#0f172a; font-size:0.82rem;">
+                                    <input type="text" name="director_cartera" value="<?= htmlspecialchars((string)($form['director_cartera'] ?? 'Luz Mery Murillo')) ?>" style="width:100%; padding:0.6rem; background:#ffffff; border:1px solid #cbd5e1; border-radius:0.25rem; color:#0f172a; font-size:0.82rem;">
                                 </div>
                                 <div>
                                     <label style="display:block; font-size:0.72rem; color:#475569; margin-bottom:0.3rem; text-transform:uppercase;">Gerencia comercial</label>
-                                    <input type="text" name="gerencia_comercial" value="<?= htmlspecialchars((string)($form['gerencia_comercial'] ?? '')) ?>" style="width:100%; padding:0.6rem; background:#ffffff; border:1px solid #cbd5e1; border-radius:0.25rem; color:#0f172a; font-size:0.82rem;">
+                                    <select name="gerencia_comercial" style="width:100%; padding:0.6rem; background:#ffffff; border:1px solid #cbd5e1; border-radius:0.25rem; color:#0f172a; font-size:0.82rem;">
+                                        <?php 
+                                        $gerenciaValue = (string)($form['gerencia_comercial'] ?? '');
+                                        $gerenciaOptions = ['Hernan Mateo Benito', 'German Rodriguez'];
+                                        ?>
+                                        <option value="">Seleccionar...</option>
+                                        <?php foreach ($gerenciaOptions as $option): ?>
+                                            <option value="<?= htmlspecialchars($option) ?>" <?= $gerenciaValue === $option ? 'selected' : '' ?>><?= htmlspecialchars($option) ?></option>
+                                        <?php endforeach; ?>
+                                    </select>
                                 </div>
                                 <div>
                                     <label style="display:block; font-size:0.72rem; color:#475569; margin-bottom:0.3rem; text-transform:uppercase;">Preparó</label>
-                                    <input type="text" name="preparo" value="<?= htmlspecialchars((string)($form['preparo'] ?? '')) ?>" style="width:100%; padding:0.6rem; background:#ffffff; border:1px solid #cbd5e1; border-radius:0.25rem; color:#0f172a; font-size:0.82rem;">
+                                    <?php
+                                    // Obtener lista de asesores comerciales para el campo Preparó (misma lista que "Asesor Comercial que lo atendió")
+                                    $db = \App\Core\Database::getConnection();
+                                    $stmt = $db->query("SELECT id, nombre_completo FROM asesores_comerciales WHERE activo = 1 ORDER BY nombre_completo");
+                                    $asesores = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                                    $preparoValue = (string)($form['preparo'] ?? '');
+                                    ?>
+                                    <select name="preparo" style="width:100%; padding:0.6rem; background:#ffffff; border:1px solid #cbd5e1; border-radius:0.25rem; color:#0f172a; font-size:0.82rem;">
+                                        <option value="">Seleccionar...</option>
+                                        <?php foreach ($asesores as $asesor): 
+                                            // Convertir nombre a formato título (primera letra de cada palabra en mayúscula)
+                                            $nombreFormateado = mb_convert_case(mb_strtolower($asesor['nombre_completo'], 'UTF-8'), MB_CASE_TITLE, 'UTF-8');
+                                        ?>
+                                            <option value="<?= htmlspecialchars($nombreFormateado) ?>" <?= $preparoValue === $nombreFormateado || $preparoValue === $asesor['nombre_completo'] ? 'selected' : '' ?>><?= htmlspecialchars($nombreFormateado) ?></option>
+                                        <?php endforeach; ?>
+                                    </select>
                                 </div>
                                 <div>
                                     <label style="display:block; font-size:0.72rem; color:#475569; margin-bottom:0.3rem; text-transform:uppercase;">Revisó</label>
-                                    <input type="text" name="reviso" value="<?= htmlspecialchars((string)($form['reviso'] ?? '')) ?>" style="width:100%; padding:0.6rem; background:#ffffff; border:1px solid #cbd5e1; border-radius:0.25rem; color:#0f172a; font-size:0.82rem;">
+                                    <input type="text" name="reviso" value="<?= htmlspecialchars((string)($form['reviso'] ?? 'Angie Paola Martínez Paredes')) ?>" style="width:100%; padding:0.6rem; background:#ffffff; border:1px solid #cbd5e1; border-radius:0.25rem; color:#0f172a; font-size:0.82rem;">
                                 </div>
                                 <div style="grid-column:1/-1;">
                                     <?php
                                     $nombreOficialValue = trim((string)($form['nombre_oficial'] ?? ''));
                                     if ($nombreOficialValue === '') {
-                                        $nombreOficialValue = trim((string)($reviewer_name ?? ''));
-                                        $nombreOficialValue = str_replace('Martinez', 'Martínez', $nombreOficialValue);
-                                        if (mb_strtolower($nombreOficialValue, 'UTF-8') === 'angie') {
-                                            $nombreOficialValue = 'Angie Martínez';
-                                        }
-                                        if ($nombreOficialValue === '') {
-                                            $nombreOficialValue = 'Angie Martínez';
-                                        }
+                                        $nombreOficialValue = 'Angie Paola Martínez Paredes';
                                     }
                                     ?>
-                                    <label style="display:block; font-size:0.72rem; color:#475569; margin-bottom:0.3rem; text-transform:uppercase;">Nombre oficial</label>
+                                    <label style="display:block; font-size:0.72rem; color:#475569; margin-bottom:0.3rem; text-transform:uppercase;">Nombre Oficial de Cumplimiento</label>
                                     <input type="text" name="nombre_oficial" value="<?= htmlspecialchars($nombreOficialValue) ?>" style="width:100%; padding:0.6rem; background:#ffffff; border:1px solid #cbd5e1; border-radius:0.25rem; color:#0f172a; font-size:0.82rem;">
                                 </div>
                             </div>
                         </div>
+                        <?php endif; ?>
 
                         <?php if (!empty($related_forms)): ?>
                         <div style="margin-bottom:1rem; padding:0.8rem; background:#eff6ff; border:1px solid #93c5fd; border-radius:0.25rem;">

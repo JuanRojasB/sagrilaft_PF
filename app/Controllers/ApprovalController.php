@@ -142,6 +142,29 @@ class ApprovalController extends Controller
             return;
         }
 
+        // Si es empleado, obtener datos de la tabla form_empleados
+        if (($form['form_type'] ?? '') === 'empleado') {
+            $conn = \App\Core\Database::getConnection();
+            $stmt = $conn->prepare("SELECT * FROM form_empleados WHERE form_id = ?");
+            $stmt->execute([$form['id']]);  // Usar el ID del formulario, NO el ID de form_empleados
+            $empleadoData = $stmt->fetch(\PDO::FETCH_ASSOC);
+            
+            if ($empleadoData) {
+                // Guardar el ID original del formulario
+                $formId = $form['id'];
+                
+                // Agregar datos de empleado al array del formulario
+                $form = array_merge($form, $empleadoData);
+                
+                // Restaurar el ID correcto del formulario (no el de form_empleados)
+                $form['id'] = $formId;
+                
+                error_log("Empleado data obtenida para form_id: " . $formId);
+            } else {
+                error_log("NO se encontró empleado data para form_id: " . $form['id']);
+            }
+        }
+
         // Las declaraciones adjuntas no se revisan de forma independiente.
         // Se revisa siempre el formulario principal.
         $isDeclaration = str_starts_with((string)($form['form_type'] ?? ''), 'declaracion');
@@ -174,6 +197,11 @@ class ApprovalController extends Controller
         // Adjuntos del formulario principal (evidencias del usuario)
         $attachmentModel = new \App\Models\Attachment();
         $attachments = $attachmentModel->getByFormId((int)$form['id']);
+        
+        // Debug temporal
+        error_log("Form ID: " . $form['id']);
+        error_log("Attachments count: " . count($attachments));
+        error_log("Attachments: " . print_r($attachments, true));
 
         // Check if reviewer is logged in
         $isLoggedIn = isset($_SESSION['reviewer_id']);
@@ -228,13 +256,17 @@ class ApprovalController extends Controller
         }
 
         try {
-            // Guardar campos internos "ESPACIO EXCLUSIVO PARA POLLO FIESTA"
-            $this->saveExclusivePolloFiestaFields((int)$form['id']);
+            // Guardar campos internos "ESPACIO EXCLUSIVO PARA POLLO FIESTA" (solo si NO es empleado)
+            $isEmpleado = isset($form['form_type']) && $form['form_type'] === 'empleado';
+            if (!$isEmpleado) {
+                $this->saveExclusivePolloFiestaFields((int)$form['id']);
+            }
 
             // Determinar el estado final según si hay observaciones
+            // IMPORTANTE: Para empleados NO existe "approved_pending", solo "approved" o "rejected"
             $finalStatus = $decision;
-            if ($decision === 'approved' && !empty(trim($observations))) {
-                $finalStatus = 'approved_pending'; // Aprobado con observaciones
+            if (!$isEmpleado && $decision === 'approved' && !empty(trim($observations))) {
+                $finalStatus = 'approved_pending'; // Aprobado con observaciones (solo para formularios SAGRILAFT)
             }
             
             // Update form approval status
@@ -345,6 +377,32 @@ class ApprovalController extends Controller
     /**
      * Send approval notification to form creator and administrators
      */
+    /**
+     * Genera el mensaje de adjuntos según el tipo de formulario y decisión
+     */
+    private function getAttachmentMessage(array $form, string $decision, string $finalStatus): string
+    {
+        // No mostrar mensaje si fue rechazado
+        if ($decision !== 'approved') {
+            return '';
+        }
+        
+        $isEmpleado = isset($form['form_type']) && $form['form_type'] === 'empleado';
+        $hasPendingCorrections = $finalStatus === 'approved_pending';
+        
+        if ($isEmpleado) {
+            // Para empleados: mensaje simple sobre documentos adjuntos
+            return "<p style='font-size:12px;color:#475569;margin-top:12px;'>📎 Se adjuntan los documentos del registro de empleado.</p>";
+        } else {
+            // Para otros formularios: mencionar firma digital solo si está completamente aprobado
+            if ($hasPendingCorrections) {
+                return "<p style='font-size:12px;color:#475569;margin-top:12px;'>📎 Se adjunta el PDF del formulario aprobado con observaciones.</p>";
+            } else {
+                return "<p style='font-size:12px;color:#475569;margin-top:12px;'>📎 Se adjunta el PDF del formulario aprobado y firmado digitalmente.</p>";
+            }
+        }
+    }
+
     private function sendApprovalNotification(array $form, string $decision, string $approvedBy, string $observations, string $finalStatus): void
     {
         try {
@@ -397,7 +455,7 @@ class ApprovalController extends Controller
                     <strong>Observaciones</strong>
                     <p>" . nl2br(htmlspecialchars($observations)) . "</p>
                 </div>" : "") . "
-                " . ($isApproved ? "<p style='font-size:12px;color:#475569;margin-top:12px;'>📎 Se adjunta el PDF del formulario aprobado y firmado digitalmente.</p>" : "") . "
+                " . ($this->getAttachmentMessage($form, $decision, $finalStatus)) . "
             " . \App\Helpers\EmailHelper::emailFooter();
 
             $subject = 'SAGRILAFT - Formulario ' . ($decision === 'approved' ? 'Aprobado' : 'Rechazado');

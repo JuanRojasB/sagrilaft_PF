@@ -86,7 +86,7 @@
             
             .metadata-row {
                 display: grid;
-                grid-template-columns: repeat(5, 1fr);
+                grid-template-columns: repeat(6, 1fr);
                 font-size: 9px;
                 background: var(--bg-tertiary);
             }
@@ -568,7 +568,7 @@
                 background: white !important;
                 font-size: 5px !important;
                 display: grid !important;
-                grid-template-columns: repeat(5, 1fr) !important;
+                grid-template-columns: repeat(6, 1fr) !important;
             }
             
             .metadata-cell {
@@ -1034,6 +1034,9 @@
                         <strong>Fecha actualización:</strong><br><?= $fechaActualizacion ?>
                     </div>
                     <div class="metadata-cell">
+                        <strong>Fecha revisión:</strong><br><?= $fechaRevision ?>
+                    </div>
+                    <div class="metadata-cell">
                         <strong>Versión:</strong><br><?= $version ?>
                     </div>
                     <div class="metadata-cell">
@@ -1062,6 +1065,8 @@
                             <?php if (isset($temp_data['person_type']) && $temp_data['person_type'] === 'juridica'): ?>
                             <li><strong>Cámara de Comercio</strong></li>
                             <li><strong>Composición Accionaria</strong></li>
+                            <li><strong>Certificación Bancaria</strong> no mayor a 3 meses</li>
+                            <li><strong>Cédula del Representante Legal</strong></li>
                             <?php else: ?>
                             <li><strong>Cédula</strong></li>
                             <li><strong>Certificación Bancaria</strong> no superior a 3 meses</li>

@@ -1,4 +1,4 @@
-﻿<!-- FGF-16: CREACIÓN DE CLIENTES - PERSONA JURÍDICA -->
+﻿<!-- FD-16: CREACIÓN DE CLIENTES - PERSONA JURÍDICA -->
 
 <!-- ESPACIO CARTERA -->
 <div class="form-section">

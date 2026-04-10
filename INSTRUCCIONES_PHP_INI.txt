@@ -1,0 +1,34 @@
+AUMENTAR LÍMITE DE SUBIDA DE ARCHIVOS EN PHP Y MYSQL
+=======================================================
+
+PHP (php.ini):
+--------------
+1. Abre el archivo php.ini de XAMPP:
+   Ubicación: C:\xampp\php\php.ini
+
+2. Busca y modifica estas líneas:
+
+   upload_max_filesize = 20M
+   post_max_size = 25M
+   max_execution_time = 300
+   max_input_time = 300
+   memory_limit = 256M
+
+3. Guarda el archivo
+
+MYSQL (my.ini):
+---------------
+1. Abre el archivo my.ini de XAMPP:
+   Ubicación: C:\xampp\mysql\bin\my.ini
+
+2. Busca la sección [mysqld] y agrega o modifica:
+
+   max_allowed_packet = 64M
+
+3. Guarda el archivo
+
+4. Reinicia MySQL y Apache desde el panel de control de XAMPP
+
+5. Verifica los cambios:
+   - PHP: crea un archivo phpinfo.php con <?php phpinfo(); ?>
+   - MySQL: ejecuta en la base de datos: SHOW VARIABLES LIKE 'max_allowed_packet';

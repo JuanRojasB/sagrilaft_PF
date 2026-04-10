@@ -1,4 +1,4 @@
-<!-- FCO-03: DECLARACIÓN ORIGEN DE FONDOS - PROVEEDORES -->
+<!-- FD-03: DECLARACIÓN ORIGEN DE FONDOS - PROVEEDORES -->
 <?php
 // Incluir helpers
 require_once __DIR__ . '/../review_forms/_helpers.php';

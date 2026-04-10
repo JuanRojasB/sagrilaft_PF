@@ -212,7 +212,11 @@ class FormController extends Controller
             // Save token to database
             $this->formModel->updateApprovalToken($formId, $approvalToken);
             
-            $to = $_ENV['MAIL_ALERT_TO'] ?? 'pasantesistemas1@pollo-fiesta.com';
+            // Determinar el revisor según el tipo de formulario
+            $formType = $data['form_type'] ?? 'cliente';
+            $reviewer = \App\Config\NotificationConfig::getReviewerByFormType($formType);
+            
+            $to = $reviewer['email'];
             $subject = 'SAGRILAFT - Nuevo Formulario para Aprobar';
             
             $approvalUrl = $_ENV['APP_URL'] . "/approval/{$approvalToken}";
@@ -232,43 +236,74 @@ class FormController extends Controller
                 </div>";
             }
             
-            $body = \App\Helpers\EmailHelper::emailHeader('Nuevo Formulario SAGRILAFT #' . $formId) . "
-            <p class='msg'>Se ha recibido un nuevo formulario que requiere revisión y aprobación.</p>
-            <table role='presentation' cellspacing='0' cellpadding='0' border='0' width='100%'>
-                <tr>
-                    <td style='padding:0 6px 6px 0;width:33%;vertical-align:top;'>
-                        <div class='info-item'><span class='info-label'>Empresa/Persona</span><span class='info-value'>" . ($data['company_name'] ?? 'N/A') . "</span></div>
-                    </td>
-                    <td style='padding:0 6px 6px 0;width:33%;vertical-align:top;'>
-                        <div class='info-item'><span class='info-label'>NIT/Documento</span><span class='info-value'>" . ($data['nit'] ?? 'N/A') . "</span></div>
-                    </td>
-                    <td style='padding:0 0 6px 0;width:33%;vertical-align:top;'>
-                        <div class='info-item'><span class='info-label'>Teléfono</span><span class='info-value'>" . ($data['phone'] ?? 'N/A') . "</span></div>
-                    </td>
-                </tr>
-                <tr>
-                    <td colspan='3' style='padding:0 0 6px 0;'>
-                        <div class='info-item'>
-                            <span class='info-label'>Dirección</span>
-                            <span class='info-value'>" . ($data['address'] ?? 'N/A') . "</span>
-                            " . \App\Helpers\EmailHelper::getGoogleMapsLink($data['address'] ?? '') . "
-                        </div>
-                    </td>
-                </tr>
-                <tr>
-                    <td colspan='3' style='padding:0 0 6px 0;'>
-                        <div class='info-item'>
-                            <span class='info-label'>Actividad Económica</span>
-                            <span class='info-value'>" . ($data['activity'] ?? 'N/A') . "</span>
-                        </div>
-                    </td>
-                </tr>
-            </table>
-            {$attachmentsHtml}
-            <div style='text-align:center;margin-top:24px;'>
-                <a href='{$approvalUrl}' class='btn' style='display:inline-block;padding:10px 22px;background:#1d4ed8;color:#ffffff;text-decoration:none;border-radius:5px;font-weight:600;font-size:13px;'>Revisar Formulario</a>
-            </div>
-            " . \App\Helpers\EmailHelper::emailFooter();
+            // Generar contenido del email según el tipo de formulario
+            if ($formType === 'empleado') {
+                // Email específico para empleados
+                $body = \App\Helpers\EmailHelper::emailHeader('Nuevo Registro de Empleado #' . $formId) . "
+                <p class='msg'>Se ha recibido un nuevo registro de empleado que requiere revisión y aprobación.</p>
+                <table role='presentation' cellspacing='0' cellpadding='0' border='0' width='100%'>
+                    <tr>
+                        <td style='padding:0 6px 6px 0;width:50%;vertical-align:top;'>
+                            <div class='info-item'><span class='info-label'>Nombre Completo</span><span class='info-value'>" . ($data['empleado_nombre'] ?? 'N/A') . "</span></div>
+                        </td>
+                        <td style='padding:0 0 6px 0;width:50%;vertical-align:top;'>
+                            <div class='info-item'><span class='info-label'>Cédula</span><span class='info-value'>" . ($data['empleado_cedula'] ?? 'N/A') . "</span></div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style='padding:0 6px 6px 0;width:50%;vertical-align:top;'>
+                            <div class='info-item'><span class='info-label'>Cargo</span><span class='info-value'>" . ($data['empleado_cargo'] ?? 'N/A') . "</span></div>
+                        </td>
+                        <td style='padding:0 0 6px 0;width:50%;vertical-align:top;'>
+                            <div class='info-item'><span class='info-label'>Fecha de Nacimiento</span><span class='info-value'>" . ($data['empleado_fecha_nacimiento'] ?? 'N/A') . "</span></div>
+                        </td>
+                    </tr>
+                </table>
+                {$attachmentsHtml}
+                <div style='text-align:center;margin-top:24px;'>
+                    <a href='{$approvalUrl}' class='btn' style='display:inline-block;padding:10px 22px;background:#1d4ed8;color:#ffffff;text-decoration:none;border-radius:5px;font-weight:600;font-size:13px;'>Revisar Registro</a>
+                </div>
+                " . \App\Helpers\EmailHelper::emailFooter();
+            } else {
+                // Email para otros tipos de formularios
+                $body = \App\Helpers\EmailHelper::emailHeader('Nuevo Formulario SAGRILAFT #' . $formId) . "
+                <p class='msg'>Se ha recibido un nuevo formulario que requiere revisión y aprobación.</p>
+                <table role='presentation' cellspacing='0' cellpadding='0' border='0' width='100%'>
+                    <tr>
+                        <td style='padding:0 6px 6px 0;width:33%;vertical-align:top;'>
+                            <div class='info-item'><span class='info-label'>Empresa/Persona</span><span class='info-value'>" . ($data['company_name'] ?? 'N/A') . "</span></div>
+                        </td>
+                        <td style='padding:0 6px 6px 0;width:33%;vertical-align:top;'>
+                            <div class='info-item'><span class='info-label'>NIT/Documento</span><span class='info-value'>" . ($data['nit'] ?? 'N/A') . "</span></div>
+                        </td>
+                        <td style='padding:0 0 6px 0;width:33%;vertical-align:top;'>
+                            <div class='info-item'><span class='info-label'>Teléfono</span><span class='info-value'>" . ($data['phone'] ?? 'N/A') . "</span></div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan='3' style='padding:0 0 6px 0;'>
+                            <div class='info-item'>
+                                <span class='info-label'>Dirección</span>
+                                <span class='info-value'>" . ($data['address'] ?? 'N/A') . "</span>
+                                " . \App\Helpers\EmailHelper::getGoogleMapsLink($data['address'] ?? '') . "
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan='3' style='padding:0 0 6px 0;'>
+                            <div class='info-item'>
+                                <span class='info-label'>Actividad Económica</span>
+                                <span class='info-value'>" . ($data['activity'] ?? 'N/A') . "</span>
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+                {$attachmentsHtml}
+                <div style='text-align:center;margin-top:24px;'>
+                    <a href='{$approvalUrl}' class='btn' style='display:inline-block;padding:10px 22px;background:#1d4ed8;color:#ffffff;text-decoration:none;border-radius:5px;font-weight:600;font-size:13px;'>Revisar Formulario</a>
+                </div>
+                " . \App\Helpers\EmailHelper::emailFooter();
+            }
             
             // Enviar con logo y firma embebidos
             $embeddedImages = [];
@@ -606,11 +641,31 @@ class FormController extends Controller
             }
 
             $db = $this->getConnection();
-            $stmt = $db->prepare("SELECT filename, file_data, mime_type FROM form_attachments WHERE id = ?");
+            $stmt = $db->prepare("SELECT filename, filepath, file_data, mime_type FROM form_attachments WHERE id = ?");
             $stmt->execute([$id]);
             $attachment = $stmt->fetch();
 
-            if (!$attachment || empty($attachment['file_data'])) {
+            if (!$attachment) {
+                http_response_code(404);
+                echo 'Archivo no encontrado';
+                return;
+            }
+
+            // Si tiene file_data, usar ese (archivos antiguos)
+            if (!empty($attachment['file_data'])) {
+                $fileData = $attachment['file_data'];
+            } 
+            // Si no, buscar el archivo en disco
+            else if (!empty($attachment['filepath'])) {
+                $filePath = __DIR__ . '/../../public/uploads/' . $attachment['filepath'];
+                if (!file_exists($filePath)) {
+                    http_response_code(404);
+                    echo 'Archivo no encontrado en disco';
+                    return;
+                }
+                $fileData = file_get_contents($filePath);
+            } 
+            else {
                 http_response_code(404);
                 echo 'Archivo no encontrado';
                 return;
@@ -636,8 +691,8 @@ class FormController extends Controller
             // Servir binario directamente (?raw=1 o archivos no visualizables)
             header('Content-Type: ' . $mime);
             header('Content-Disposition: ' . ($isPdf || $isImage ? 'inline' : 'attachment') . '; filename="' . $filename . '"');
-            header('Content-Length: ' . strlen($attachment['file_data']));
-            echo $attachment['file_data'];
+            header('Content-Length: ' . strlen($fileData));
+            echo $fileData;
             exit;
         }
 
@@ -835,8 +890,9 @@ class FormController extends Controller
                 'headerSubtitle' => 'CREACION DE CLIENTES-PERSONA NATURAL',
                 'fechaEmision' => '29/04/16',
                 'fechaActualizacion' => '10/12/2025',
+                'fechaRevision' => '0',
                 'version' => '08',
-                'codigo' => 'FGF-08'
+                'codigo' => 'FD-08'
             ],
             'cliente_juridica' => [
                 'template' => 'cliente_juridica',
@@ -844,8 +900,9 @@ class FormController extends Controller
                 'headerSubtitle' => 'FORMATO CREACIÓN DE CLIENTES-PERSONA JURÍDICA',
                 'fechaEmision' => '29/04/16',
                 'fechaActualizacion' => '10/12/2025',
+                'fechaRevision' => '0',
                 'version' => '08',
-                'codigo' => 'FGF-16'
+                'codigo' => 'FD-16'
             ],
             'proveedor_natural' => [
                 'template' => 'proveedor_natural',
@@ -853,8 +910,9 @@ class FormController extends Controller
                 'headerSubtitle' => 'CONOCIMIENTO DE PROVEEDOR NACIONAL PERSONA NATURAL',
                 'fechaEmision' => '11/02/16',
                 'fechaActualizacion' => '14/11/19',
+                'fechaRevision' => '0',
                 'version' => '3',
-                'codigo' => 'FCO-05'
+                'codigo' => 'FD-05'
             ],
             'proveedor_juridica' => [
                 'template' => 'proveedor_juridica',
@@ -862,8 +920,9 @@ class FormController extends Controller
                 'headerSubtitle' => 'CONOCIMIENTO DE PROVEEDORES NACIONAL PERSONA JURIDICA',
                 'fechaEmision' => '09/02/16',
                 'fechaActualizacion' => '14/11/19',
+                'fechaRevision' => '0',
                 'version' => '3',
-                'codigo' => 'FCO-02'
+                'codigo' => 'FD-02'
             ],
             'proveedor_internacional' => [
                 'template' => 'proveedor_internacional',
@@ -871,8 +930,9 @@ class FormController extends Controller
                 'headerSubtitle' => 'CONOCIMIENTO DE PROVEEDOR INTERNACIONAL',
                 'fechaEmision' => '15/01/20',
                 'fechaActualizacion' => '10/12/2025',
+                'fechaRevision' => '0',
                 'version' => '2',
-                'codigo' => 'FCO-04'
+                'codigo' => 'FD-04'
             ],
             'declaracion_fondos_proveedores' => [
                 'template' => 'declaracion_fondos_proveedores',
@@ -880,8 +940,9 @@ class FormController extends Controller
                 'headerSubtitle' => 'DECLARACIÓN ORIGEN DE FONDOS - PROVEEDORES',
                 'fechaEmision' => '20/03/18',
                 'fechaActualizacion' => '10/12/2025',
+                'fechaRevision' => '0',
                 'version' => '2',
-                'codigo' => 'FCO-03'
+                'codigo' => 'FD-03'
             ],
             'declaracion_fondos_clientes' => [
                 'template' => 'declaracion_fondos_clientes',
@@ -889,16 +950,31 @@ class FormController extends Controller
                 'headerSubtitle' => 'DECLARACIÓN ORIGEN DE FONDOS - CLIENTES',
                 'fechaEmision' => '20/03/18',
                 'fechaActualizacion' => '10/12/2025',
+                'fechaRevision' => '0',
                 'version' => '2',
-                'codigo' => 'FGF-17'
+                'codigo' => 'FD-17'
+            ],
+            'empleado' => [
+                'template' => 'empleado',
+                'headerTitle' => 'RECURSOS HUMANOS',
+                'headerSubtitle' => 'REGISTRO DE EMPLEADO',
+                'fechaEmision' => '10/12/2025',
+                'fechaActualizacion' => '10/12/2025',
+                'fechaRevision' => '0',
+                'version' => '1',
+                'codigo' => 'FD-09'
             ]
         ];
         
         // Determinar formulario principal
         $formKey = $userType . '_' . $personType;
         
+        // Si es empleado, usar ese formulario directamente
+        if ($userType === 'empleado') {
+            $formKey = 'empleado';
+        }
         // Si es proveedor internacional, usar ese formulario
-        if ($userType === 'proveedor' && $ubicacion === 'internacional') {
+        elseif ($userType === 'proveedor' && $ubicacion === 'internacional') {
             $formKey = 'proveedor_internacional';
         }
         
@@ -913,6 +989,7 @@ class FormController extends Controller
             'headerSubtitle' => $formConfig['headerSubtitle'],
             'fechaEmision' => $formConfig['fechaEmision'],
             'fechaActualizacion' => $formConfig['fechaActualizacion'],
+            'fechaRevision' => $formConfig['fechaRevision'],
             'version' => $formConfig['version'],
             'codigo' => $formConfig['codigo'],
             'asesores_grouped' => $asesoresGrouped,
@@ -1554,6 +1631,21 @@ class FormController extends Controller
                 }
             }
 
+            // Convertir campos de firma para que FormPdfFiller los reconozca
+            // FormPdfFiller busca campos con sufijo "_data" para las firmas
+            if (!empty($formData['firma_declarante']) && empty($formData['firma_declarante_data'])) {
+                $formData['firma_declarante_data'] = $formData['firma_declarante'];
+            }
+            if (!empty($formData['firma_representante']) && empty($formData['firma_representante_data'])) {
+                $formData['firma_representante_data'] = $formData['firma_representante'];
+            }
+            if (!empty($formData['signature']) && empty($formData['signature_data'])) {
+                $formData['signature_data'] = $formData['signature'];
+            }
+            if (!empty($formData['firma']) && empty($formData['firma_data'])) {
+                $formData['firma_data'] = $formData['firma'];
+            }
+
             $filler = new \App\Services\FormPdfFiller();
             $pdfContent = $filler->generate($formData, $tempData);
             $pdfFilename = "form_{$formId}_" . date('Ymd_His') . ".pdf";
@@ -1850,8 +1942,9 @@ class FormController extends Controller
                 'headerSubtitle' => 'DECLARACIÓN ORIGEN DE FONDOS - CLIENTES',
                 'fechaEmision' => '20/03/18',
                 'fechaActualizacion' => '10/12/2025',
+                'fechaRevision' => '0',
                 'version' => '2',
-                'codigo' => 'FGF-17'
+                'codigo' => 'FD-17'
             ],
             'proveedor' => [
                 'template' => 'declaracion_fondos_proveedores',
@@ -1859,8 +1952,9 @@ class FormController extends Controller
                 'headerSubtitle' => 'DECLARACIÓN ORIGEN DE FONDOS - PROVEEDORES',
                 'fechaEmision' => '20/03/18',
                 'fechaActualizacion' => '10/12/2025',
+                'fechaRevision' => '0',
                 'version' => '2',
-                'codigo' => 'FCO-03'
+                'codigo' => 'FD-03'
             ]
         ];
 
@@ -1885,6 +1979,7 @@ class FormController extends Controller
             'headerSubtitle' => $formConfig['headerSubtitle'],
             'fechaEmision' => $formConfig['fechaEmision'],
             'fechaActualizacion' => $formConfig['fechaActualizacion'],
+            'fechaRevision' => $formConfig['fechaRevision'],
             'version' => $formConfig['version'],
             'codigo' => $formConfig['codigo'],
             'is_step_2' => true

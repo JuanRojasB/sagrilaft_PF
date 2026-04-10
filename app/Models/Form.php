@@ -122,6 +122,9 @@ class Form
             'fecha_declaracion', 'ciudad_declaracion',
             'nombre_firma_final', 'documento_firma',
             'firma_declarante',
+            // Empleado
+            'empleado_nombre', 'empleado_cedula', 'empleado_cargo', 'empleado_fecha_nacimiento',
+            'approval_status', 'approval_token',
         ];
 
         $columns = [];
@@ -145,8 +148,13 @@ class Form
         $sql  = "INSERT INTO forms ($colList) VALUES ($placeholders)";
         $stmt = $this->db->prepare($sql);
         $stmt->execute($values);
+        
+        $insertedId = (int)$this->db->lastInsertId();
+        error_log("Form INSERT - SQL: $sql");
+        error_log("Form INSERT - Last Insert ID: $insertedId");
+        error_log("Form INSERT - Columns: $colList");
 
-        return (int)$this->db->lastInsertId();
+        return $insertedId;
     }
 
 

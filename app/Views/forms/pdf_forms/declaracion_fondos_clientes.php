@@ -1,4 +1,4 @@
-<!-- FGF-17: DECLARACIÓN ORIGEN DE FONDOS - CLIENTES -->
+<!-- FD-17: DECLARACIÓN ORIGEN DE FONDOS - CLIENTES -->
 <?php
 // Incluir helpers
 require_once __DIR__ . '/../review_forms/_helpers.php';
