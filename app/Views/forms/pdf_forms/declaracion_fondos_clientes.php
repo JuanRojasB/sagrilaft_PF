@@ -143,26 +143,22 @@ $pre_patrimonio = htmlspecialchars($fd['patrimonio'] ?? '');
 <div class="form-section">
     <div class="section-title">OPERACIONES INTERNACIONALES</div>
     <div class="section-content">
-        <div class="fr c1">
+        <div class="fr c22">
             <div class="fl">¿OPERA EN MONEDA EXTRANJERA?</div>
             <div class="fv">
                 <label><input type="radio" name="opera_moneda_extranjera" value="si" required> SÍ</label>
                 <label><input type="radio" name="opera_moneda_extranjera" value="no" checked> NO</label>
             </div>
-        </div>
-        <div class="fr c1">
-            <div class="fl">SI SÍ, INDIQUE PAÍSES:</div>
+            <div class="fl">PAÍSES DE OPERACIÓN:</div>
             <div class="fv"><input type="text" name="paises_operacion" placeholder="Países con los que opera"></div>
         </div>
-        <div class="fr c1">
-            <div class="fl">¿CUENTAS BANCARIAS EN EL EXTERIOR?</div>
+        <div class="fr c22">
+            <div class="fl">¿CUENTAS EN EL EXTERIOR?</div>
             <div class="fv">
                 <label><input type="radio" name="cuentas_exterior" value="si" required> SÍ</label>
                 <label><input type="radio" name="cuentas_exterior" value="no" checked> NO</label>
             </div>
-        </div>
-        <div class="fr c1">
-            <div class="fl">SI SÍ, PAÍS Y BANCO:</div>
+            <div class="fl">DETALLE CUENTAS EXTERIOR:</div>
             <div class="fv"><input type="text" name="cuentas_exterior_detalle" placeholder="País y nombre del banco"></div>
         </div>
     </div>
