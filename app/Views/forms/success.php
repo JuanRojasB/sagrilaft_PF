@@ -6,6 +6,7 @@
     <title>Formulario Enviado - SAGRILAFT</title>
     <link rel="icon" type="image/png" href="/gestion-sagrilaft/public/assets/img/orb-logo.png">
     <link rel="stylesheet" href="/gestion-sagrilaft/public/assets/css/global-theme.css">
+    <link rel="stylesheet" href="/gestion-sagrilaft/public/assets/css/font-scale-enhanced.css">
     <style>
         body { display: flex; align-items: center; justify-content: center; padding: var(--spacing-lg); min-height: 100vh; }
         .container { background: var(--bg-card); border: 1px solid var(--border-accent); border-radius: var(--radius-lg); padding: 3rem 2.5rem; max-width: 520px; width: 100%; text-align: center; box-shadow: var(--shadow-lg); }

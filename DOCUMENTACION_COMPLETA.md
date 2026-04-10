@@ -209,7 +209,7 @@ Cuando se aprueba/rechaza un formulario:
 
 ---
 
-## 📄 Generación de PDFs
+## Generación de PDFs
 
 ### Sistema de PDFs
 

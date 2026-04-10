@@ -217,7 +217,7 @@
 <div class="form-section">
     <div class="section-content">
         <div class="fr cfull">
-            <div class="fv" style="border-right:none; padding:12px; font-size:10px; color:var(--text-muted); font-style:italic;">
+            <div class="fv" style="border-right:none; padding:12px; font-size:13px; color:var(--text-muted); font-style:italic;">
                 Declaro que la información corresponde con la realidad y responderé por cualquier perjuicio derivado de inexactitud de datos.
             </div>
         </div>

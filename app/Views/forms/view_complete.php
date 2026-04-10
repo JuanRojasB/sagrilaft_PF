@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Formulario SAGRILAFT - #<?= $form['id'] ?></title>
     <link rel="icon" type="image/png" href="/gestion-sagrilaft/public/assets/img/orb-logo.png">
+    <link rel="stylesheet" href="/gestion-sagrilaft/public/assets/css/global-theme.css">
+    <link rel="stylesheet" href="/gestion-sagrilaft/public/assets/css/font-scale-enhanced.css">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: Arial, sans-serif; background: #f5f5f5; padding: 20px; }

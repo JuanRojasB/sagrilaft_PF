@@ -6,6 +6,7 @@
     <title>Formulario SAGRILAFT</title>
     <link rel="icon" type="image/png" href="/gestion-sagrilaft/public/assets/img/orb-logo.png">
     <link rel="stylesheet" href="/gestion-sagrilaft/public/assets/css/global-theme.css">
+    <link rel="stylesheet" href="/gestion-sagrilaft/public/assets/css/font-scale-enhanced.css">
     <style>
         body {
             padding: 20px;
@@ -667,7 +668,7 @@
     </script>
     
     <!-- Sistema de búsqueda de direcciones -->
-    <script src="/gestion-sagrilaft/public/assets/js/map-location-picker.js"></script>
+    <script src="/gestion-sagrilaft/public/assets/js/map-location-picker.js?v=2"></script>
     <script>
         initMapLocationPicker('direccion-input', 'ciudad-input');
     </script>

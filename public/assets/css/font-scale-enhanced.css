@@ -1,0 +1,62 @@
+/**
+ * SAGRILAFT - Escalado Moderado de Fuentes
+ * Incremento sutil para mejor legibilidad en formularios PDF
+ * Sin romper el diseño ni causar problemas de layout
+ */
+
+/* ============================================
+   PREVENIR CORTE DE PALABRAS - CRÍTICO
+   ============================================ */
+
+/* Labels de formularios PDF (.fl) - NO CORTAR NUNCA */
+.fl {
+    white-space: nowrap !important;
+    word-break: keep-all !important;
+    overflow: visible !important;
+    hyphens: none !important;
+}
+
+/* Labels en general */
+label,
+th,
+td:first-child {
+    white-space: nowrap !important;
+    word-break: keep-all !important;
+    overflow: visible !important;
+    hyphens: none !important;
+}
+
+/* Permitir wrap solo en contenido de valores */
+.fv,
+input,
+textarea,
+td:not(:first-child) {
+    white-space: normal !important;
+}
+
+/* ============================================
+   IMÁGENES Y LOGOS - ESCALAR 70% MÁS
+   ============================================ */
+
+img {
+    max-width: 100%;
+    height: auto;
+}
+
+/* Logos en header del formulario PDF */
+.logo-cell img {
+    transform: scale(1.7) !important;
+    transform-origin: center !important;
+}
+
+/* Logos en general */
+.form-logo,
+[src*="logo"],
+.header-logo {
+    transform: scale(1.7) !important;
+    transform-origin: center !important;
+}
+
+/* ============================================
+   FIN DEL ARCHIVO
+   ============================================ */

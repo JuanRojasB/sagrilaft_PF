@@ -20,6 +20,7 @@
     <title>Admin - SAGRILAFT</title>
     <link rel="icon" type="image/png" href="/gestion-sagrilaft/public/assets/img/orb-logo.png">
     <link rel="stylesheet" href="/gestion-sagrilaft/public/assets/css/global-theme.css">
+    <link rel="stylesheet" href="/gestion-sagrilaft/public/assets/css/font-scale-enhanced.css">
 </head>
 <body>
     <div class="app">

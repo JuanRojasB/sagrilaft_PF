@@ -24,6 +24,7 @@
     <title>Dashboard Revisor - SAGRILAFT</title>
     <link rel="icon" type="image/png" href="/gestion-sagrilaft/public/assets/img/orb-logo.png">
     <link rel="stylesheet" href="/gestion-sagrilaft/public/assets/css/global-theme.css">
+    <link rel="stylesheet" href="/gestion-sagrilaft/public/assets/css/font-scale-enhanced.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <style>
         /* ===== TEMA CLARO - DASHBOARD ===== */

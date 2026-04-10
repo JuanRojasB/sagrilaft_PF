@@ -357,7 +357,7 @@ require_once __DIR__ . '/../app/Core/Database.php';
                     
                     <div class="actions">
                         <a href="<?= $appUrl ?>/forms/<?= $formId ?>/view" class="btn" target="_blank">
-                            📄 Ver Formulario Completo
+                            Ver Formulario Completo
                         </a>
                         <a href="<?= $appUrl ?>/approval/<?= $token ?>" class="btn" target="_blank">
                             ✓ Ir a Aprobación

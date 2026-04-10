@@ -6,6 +6,7 @@
     <title><?= htmlspecialchars(($codigo ?? 'SAGRILAFT') . ' - ' . ($headerSubtitle ?? 'Formulario SAGRILAFT')) ?></title>
     <link rel="icon" type="image/png" href="/gestion-sagrilaft/public/assets/img/orb-logo.png">
     <link rel="stylesheet" href="/gestion-sagrilaft/public/assets/css/global-theme.css">
+    <link rel="stylesheet" href="/gestion-sagrilaft/public/assets/css/font-scale-enhanced.css">
     <link rel="stylesheet" href="/gestion-sagrilaft/public/assets/css/signature-modal.css">
     <!-- Sistema de Firma Electrónica - cargado en <head> para que esté disponible antes del DOMContentLoaded -->
     <script src="/gestion-sagrilaft/public/assets/js/signature-pad.js"></script>
@@ -20,7 +21,7 @@
                 font-family: var(--font-primary);
                 background: var(--bg-primary);
                 padding: 1rem 1.5rem;
-                font-size: 12px;
+                font-size: 14px;
                 min-height: 100vh;
             }
             
@@ -87,13 +88,13 @@
             .metadata-row {
                 display: grid;
                 grid-template-columns: repeat(6, 1fr);
-                font-size: 9px;
+                font-size: 14px;
                 background: var(--bg-tertiary);
             }
             
             .metadata-cell {
                 border-right: 2px solid var(--border-primary);
-                padding: 0.5rem;
+                padding: 0.6rem;
                 text-align: center;
                 color: var(--text-primary);
             }
@@ -105,8 +106,9 @@
             .metadata-cell strong {
                 display: block;
                 font-weight: bold;
-                margin-bottom: 3px;
+                margin-bottom: 4px;
                 color: var(--text-primary);
+                font-size: 13px;
             }
             
             /* Secciones modernas */
@@ -139,7 +141,7 @@
                 justify-content: center;
                 background: rgba(241, 245, 249, 0.75);
                 color: #92400e;
-                font-size: 13px;
+                font-size: 14px;
                 font-weight: 600;
                 letter-spacing: 0.5px;
                 pointer-events: none;
@@ -150,7 +152,7 @@
                 background: var(--bg-tertiary);
                 padding: 12px 15px;
                 font-weight: bold;
-                font-size: 13px;
+                font-size: 15px;
                 text-align: center;
                 border-bottom: 2px solid var(--border-secondary);
                 text-transform: uppercase;
@@ -171,7 +173,7 @@
             .field-table td {
                 border: 1px solid var(--border-secondary);
                 padding: 10px 14px;
-                font-size: 12px;
+                font-size: 14px;
                 vertical-align: middle;
                 color: var(--text-primary);
             }
@@ -181,7 +183,7 @@
                 background: var(--bg-tertiary);
                 color: var(--text-secondary);
                 text-transform: uppercase;
-                font-size: 10px;
+                font-size: 13px;
                 letter-spacing: 0.3px;
             }
             
@@ -200,12 +202,12 @@
             }
             
             /* En pantallas anchas, los labels no necesitan ser tan angostos */
-            @media (min-width: 1200px) {
+                @media (min-width: 1200px) {
                 .field-table td {
                     padding: 11px 16px;
                 }
                 .field-label {
-                    font-size: 11px;
+                    font-size: 14px;
                     white-space: nowrap;
                 }
             }
@@ -223,7 +225,7 @@
                 width: 100%;
                 border: 1px solid var(--border-primary);
                 padding: 9px 13px;
-                font-size: 12px;
+                font-size: 14px;
                 font-family: var(--font-primary);
                 background: var(--bg-input);
                 color: var(--text-primary);
@@ -366,7 +368,7 @@
                 align-items: center;
                 gap: 4px;
                 margin-right: 12px;
-                font-size: 11px;
+                font-size: 13px;
                 color: var(--text-primary);
                 white-space: nowrap;
             }
@@ -383,7 +385,7 @@
                 background: #eff6ff;
                 border: 1px solid #bfdbfe;
                 border-left: 4px solid #3b82f6;
-                font-size: 10px;
+                font-size: 13px;
                 line-height: 1.6;
                 color: #1e3a5f;
                 border-radius: var(--radius-sm);
@@ -846,8 +848,8 @@
         @media screen {
             /* Variables de ancho de label — consistentes en todo el formulario */
             :root {
-                --lw: 160px;   /* label width base */
-                --lws: 120px;  /* label width small (columnas 3+) */
+                --lw: 250px;   /* label width base (aumentado de 220px a 250px) */
+                --lws: 190px;  /* label width small (aumentado de 170px a 190px) */
             }
 
             .fr {
@@ -864,14 +866,14 @@
                 background: var(--bg-tertiary);
                 color: var(--text-secondary);
                 text-transform: uppercase;
-                font-size: 10px;
+                font-size: 14px;
                 letter-spacing: 0.3px;
                 padding: 10px 14px;
                 display: flex;
                 align-items: center;
                 border-right: 1px solid var(--border-secondary);
-                white-space: normal;
-                word-break: break-word;
+                white-space: nowrap;
+                word-break: keep-all;
                 line-height: 1.3;
                 min-width: 0;
             }
@@ -902,7 +904,7 @@
                 min-width: 0;
                 border: 1px solid var(--border-primary);
                 padding: 8px 12px;
-                font-size: 12px;
+                font-size: 14px;
                 font-family: var(--font-primary);
                 background: var(--bg-input);
                 color: var(--text-primary);
@@ -929,32 +931,32 @@
                 display: inline-flex;
                 align-items: center;
                 gap: 6px;
-                font-size: 12px;
+                font-size: 14px;
                 color: var(--text-secondary);
                 cursor: pointer;
                 white-space: nowrap;
             }
             .fr label input[type="radio"],
             .fr label input[type="checkbox"] {
-                width: 15px; height: 15px; margin: 0;
+                width: 16px; height: 16px; margin: 0;
                 accent-color: var(--accent-primary);
             }
 
             /* ── Layouts de columnas ──
-               Patrón: label=160px fijo, valor=1fr, repetido
+               Patrón: label=250px fijo, valor=1fr, repetido
                Los labels siempre tienen ancho fijo para alinearse entre filas */
-            .c1   { grid-template-columns: 160px 1fr; }
-            .c22  { grid-template-columns: 160px 1fr 160px 1fr; }
-            .c33  { grid-template-columns: 130px 1fr 130px 1fr 130px 1fr; }
-            .c222 { grid-template-columns: 130px 1fr 130px 1fr 130px 1fr; }
+            .c1   { grid-template-columns: 250px 1fr; }
+            .c22  { grid-template-columns: 250px 1fr 250px 1fr; }
+            .c33  { grid-template-columns: 190px 1fr 190px 1fr 190px 1fr; }
+            .c222 { grid-template-columns: 190px 1fr 190px 1fr 190px 1fr; }
             /* 3 pares label+valor con anchos distintos: nombre(ancho), doc(medio), campo3(corto) */
-            .c322 { grid-template-columns: 120px 1fr 100px 1fr 80px 1fr; }
+            .c322 { grid-template-columns: 190px 1fr 170px 1fr 140px 1fr; }
             /* Fila mixta: label+valor-fijo + label+valor + label+valor */
-            .c3fx { grid-template-columns: 130px 240px 130px 1fr 130px 1fr; }
+            .c3fx { grid-template-columns: 190px 240px 190px 1fr 190px 1fr; }
             .cfull { grid-template-columns: 1fr; }
 
             /* Fila de dirección: ocupa todo el ancho, el widget se expande verticalmente */
-            .fr.dir-row { grid-template-columns: 160px 1fr; }
+            .fr.dir-row { grid-template-columns: 250px 1fr; }
             .fr.dir-row .fv {
                 flex-direction: column;
                 align-items: stretch;
@@ -964,9 +966,9 @@
 
         /* ── Responsive grid (fuera de @media screen para que funcionen) ── */
         @media screen and (max-width: 900px) {
-            .c22, .c3fx  { grid-template-columns: 160px 1fr !important; }
-            .c33, .c222  { grid-template-columns: 130px 1fr !important; }
-            .c322        { grid-template-columns: 120px 1fr !important; }
+            .c22, .c3fx  { grid-template-columns: 250px 1fr !important; }
+            .c33, .c222  { grid-template-columns: 190px 1fr !important; }
+            .c322        { grid-template-columns: 190px 1fr !important; }
         }
         @media screen and (max-width: 600px) {
             .c22, .c33, .c222, .c322, .c3fx, .c1, .fr.dir-row {
@@ -1028,22 +1030,22 @@
                 </div>
                 <div class="metadata-row">
                     <div class="metadata-cell">
-                        <strong>Fecha emisión:</strong><br><?= $fechaEmision ?>
+                        <strong>Fecha emisión:</strong><?= $fechaEmision ?>
                     </div>
                     <div class="metadata-cell">
-                        <strong>Fecha actualización:</strong><br><?= $fechaActualizacion ?>
+                        <strong>Fecha actualización:</strong><?= $fechaActualizacion ?>
                     </div>
                     <div class="metadata-cell">
-                        <strong>Fecha revisión:</strong><br><?= $fechaRevision ?>
+                        <strong>Fecha revisión:</strong><?= $fechaRevision ?>
                     </div>
                     <div class="metadata-cell">
-                        <strong>Versión:</strong><br><?= $version ?>
+                        <strong>Versión:</strong><?= $version ?>
                     </div>
                     <div class="metadata-cell">
-                        <strong>Código:</strong><br><?= $codigo ?>
+                        <strong>Código:</strong><?= $codigo ?>
                     </div>
                     <div class="metadata-cell">
-                        <strong>Página:</strong><br>1 de 1
+                        <strong>Página:</strong>1 de 1
                     </div>
                 </div>
             </div>
@@ -1057,10 +1059,10 @@
                 <div class="section-title">DOCUMENTOS ADJUNTOS REQUERIDOS</div>
                 <div class="section-content">
                     <div style="background: #eff6ff; border-left: 3px solid #3b82f6; padding: 12px 16px; margin: 15px; border-radius: 4px;">
-                        <p style="color: #1d4ed8; font-size: 12px; margin: 0 0 8px; font-weight: 600;">
+                        <p style="color: #1d4ed8; font-size: 14px; margin: 0 0 8px; font-weight: 600;">
                             <strong>Documentos requeridos:</strong>
                         </p>
-                        <ul style="color: #1e3a5f; font-size: 11px; margin: 0 0 0 20px; line-height: 1.8;">
+                        <ul style="color: #1e3a5f; font-size: 13px; margin: 0 0 0 20px; line-height: 1.8;">
                             <li><strong>RUT</strong></li>
                             <?php if (isset($temp_data['person_type']) && $temp_data['person_type'] === 'juridica'): ?>
                             <li><strong>Cámara de Comercio</strong></li>
@@ -1079,20 +1081,20 @@
                             <td class="field-label" style="width: 30%; vertical-align: top; padding-top: 15px;">ADJUNTAR DOCUMENTOS:</td>
                             <td class="field-input" colspan="3" id="fileInputCell">
                                 <input type="file" id="documents" name="documents[]" multiple accept=".pdf" style="display:none;">
-                                <button type="button" onclick="document.getElementById('documents').click()" style="background: var(--bg-tertiary); color: var(--text-secondary); border: 1px solid var(--border-primary); padding: 8px 16px; border-radius: var(--radius-sm); cursor: pointer; font-size: 12px; font-family: var(--font-primary); margin-bottom: 8px;">
+                                <button type="button" onclick="document.getElementById('documents').click()" style="background: var(--bg-tertiary); color: var(--text-secondary); border: 1px solid var(--border-primary); padding: 8px 16px; border-radius: var(--radius-sm); cursor: pointer; font-size: 14px; font-family: var(--font-primary); margin-bottom: 8px;">
                                     + Adjuntar archivos PDF
                                 </button>
-                                <p style="color: #94a3b8; font-size: 10px; margin: 0;">Solo archivos PDF. Máximo 10MB por archivo.</p>
+                                <p style="color: #94a3b8; font-size: 12px; margin: 0;">Solo archivos PDF. Máximo 10MB por archivo.</p>
                                 <div id="fileList" style="display: none; margin-top: 12px; background: rgba(241, 245, 249, 0.8); border: 1px solid rgba(71, 85, 105, 0.3); border-radius: 4px; padding: 10px;">
                                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                                        <span style="color: #1e293b; font-size: 11px; font-weight: 600;">Archivos seleccionados (<span id="fileCount">0</span>)</span>
-                                        <button type="button" onclick="clearAllFiles()" style="background: #fee2e2; color: #dc2626; border: 1px solid #fca5a5; padding: 4px 10px; border-radius: 4px; cursor: pointer; font-size: 10px; font-weight: 600;">
+                                        <span style="color: #1e293b; font-size: 13px; font-weight: 600;">Archivos seleccionados (<span id="fileCount">0</span>)</span>
+                                        <button type="button" onclick="clearAllFiles()" style="background: #fee2e2; color: #dc2626; border: 1px solid #fca5a5; padding: 4px 10px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: 600;">
                                             Limpiar todos
                                         </button>
                                     </div>
                                     <ul id="fileListItems" style="list-style: none; margin: 0; padding: 0;"></ul>
                                 </div>
-                                <p id="fileError" style="color: #dc2626; font-size: 11px; margin: 8px 0 0; display: none;">Debe adjuntar al menos un documento</p>
+                                <p id="fileError" style="color: #dc2626; font-size: 13px; margin: 8px 0 0; display: none;">Debe adjuntar al menos un documento</p>
                             </td>
                         </tr>
                     </table>
@@ -1105,9 +1107,9 @@
                 <button type="button" class="btn btn-secondary" onclick="window.history.back()" style="background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1;">
                     ← Volver
                 </button>
-                <button type="button" class="btn btn-secondary" onclick="descargarPDF()">
-                    📄 Descargar PDF
-                </button>
+                <!-- <button type="button" class="btn btn-secondary" onclick="descargarPDF()">
+                    Descargar PDF
+                </button> -->
                 <button type="submit" class="btn btn-primary">
                     ✓ Enviar Formulario
                 </button>
@@ -1154,8 +1156,8 @@
                     li.style.cssText = 'display: flex; justify-content: space-between; align-items: center; padding: 6px 8px; background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 4px; margin-bottom: 4px; color: #0f172a;';
                     const size = (file.size / 1024 / 1024).toFixed(2);
                     li.innerHTML = `
-                        <span style="color: #334155; font-size: 11px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1;" title="${file.name}">${file.name} (${size} MB)</span>
-                        <button type="button" onclick="removeFile(${index})" style="background: #fee2e2; color: #dc2626; border: 1px solid #fca5a5; padding: 2px 8px; border-radius: 4px; cursor: pointer; font-size: 10px; font-weight: 600; margin-left: 8px;">
+                        <span style="color: #334155; font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1;" title="${file.name}">${file.name} (${size} MB)</span>
+                        <button type="button" onclick="removeFile(${index})" style="background: #fee2e2; color: #dc2626; border: 1px solid #fca5a5; padding: 2px 8px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: 600; margin-left: 8px;">
                             Quitar
                         </button>
                     `;
@@ -1435,7 +1437,7 @@
     </script>
     
     <!-- Sistema de búsqueda de direcciones -->
-    <script src="/gestion-sagrilaft/public/assets/js/map-location-picker.js"></script>
+    <script src="/gestion-sagrilaft/public/assets/js/map-location-picker.js?v=2"></script>
     <script>
         // Inicializar búsqueda para todos los formularios PDF
         document.addEventListener('DOMContentLoaded', function() {

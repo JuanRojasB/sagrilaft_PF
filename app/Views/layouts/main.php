@@ -6,6 +6,7 @@
     <title><?= $title ?? 'SAGRILAFT' ?></title>
     <link rel="icon" type="image/png" href="/gestion-sagrilaft/public/assets/img/orb-logo.png">
     <link rel="stylesheet" href="/gestion-sagrilaft/public/assets/css/global-theme.css">
+    <link rel="stylesheet" href="/gestion-sagrilaft/public/assets/css/font-scale-enhanced.css">
     <style>
         .app { min-height: 100vh; display: flex; flex-direction: column; }
         .app-header { padding: 1.5rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-secondary); }

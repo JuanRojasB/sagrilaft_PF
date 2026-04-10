@@ -122,7 +122,7 @@ $pre_pasivos    = htmlspecialchars($fd['pasivos'] ?? '');
     <div class="section-title">DECLARACIÓN Y FIRMA</div>
     <div class="section-content">
         <div class="fr cfull">
-            <div class="fv" style="border-right:none; padding:10px 14px; font-size:11px; color:var(--text-secondary); text-align:justify;">
+            <div class="fv" style="border-right:none; padding:10px 14px; font-size:13px; color:var(--text-secondary); text-align:justify;">
                 Declaro que la información contenida en este documento es veraz y completa. Me comprometo a informar a POLLO FIESTA S.A. sobre cualquier cambio que se presente en la información aquí suministrada.
             </div>
         </div>

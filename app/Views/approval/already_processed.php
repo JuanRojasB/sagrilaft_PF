@@ -6,6 +6,7 @@
     <title>Formulario Procesado - SAGRILAFT</title>
     <link rel="icon" type="image/png" href="/gestion-sagrilaft/public/assets/img/orb-logo.png">
     <link rel="stylesheet" href="/gestion-sagrilaft/public/assets/css/global-theme.css">
+    <link rel="stylesheet" href="/gestion-sagrilaft/public/assets/css/font-scale-enhanced.css">
     <style>
         body { background: #f8fafc; color: #0f172a; }
         .app-header { background: #ffffff; border-bottom: 1px solid #e2e8f0; padding: 0.75rem 1.25rem; display: flex; justify-content: space-between; align-items: center; }
@@ -163,7 +164,7 @@
                             <div style="display:flex; flex-direction:column; gap:0.5rem;">
                                 <?php foreach ($attachments as $attachment): ?>
                                     <a href="/gestion-sagrilaft/public/reviewer/attachment/<?= $attachment['id'] ?>" target="_blank" class="btn-pdf">
-                                        📄 <?= htmlspecialchars($attachment['filename']) ?>
+                                        <?= htmlspecialchars($attachment['filename']) ?>
                                     </a>
                                 <?php endforeach; ?>
                             </div>

@@ -6,6 +6,7 @@
     <title>Aprobar Formulario - SAGRILAFT</title>
     <link rel="icon" type="image/png" href="/gestion-sagrilaft/public/assets/img/orb-logo.png">
     <link rel="stylesheet" href="/gestion-sagrilaft/public/assets/css/global-theme.css">
+    <link rel="stylesheet" href="/gestion-sagrilaft/public/assets/css/font-scale-enhanced.css">
     <style>
         body { background: #f8fafc; color: #0f172a; }
         /* Header */
@@ -175,7 +176,7 @@
                             <?php foreach ($attachments as $attachment): ?>
                             <a href="/gestion-sagrilaft/public/reviewer/attachment/<?= (int)$attachment['id'] ?>" target="_blank"
                                style="display:flex; justify-content:space-between; align-items:center; gap:1rem; background:#f8fafc; border:1px solid #e2e8f0; border-radius:0.25rem; padding:0.6rem 0.75rem; color:#0f172a; text-decoration:none; transition:background 0.15s;">
-                                <span style="font-size:0.82rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">📄 <?= htmlspecialchars($attachment['filename'] ?? $attachment['original_filename'] ?? ('Adjunto #' . $attachment['id'])) ?></span>
+                                <span style="font-size:0.82rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"><?= htmlspecialchars($attachment['filename'] ?? $attachment['original_filename'] ?? ('Adjunto #' . $attachment['id'])) ?></span>
                                 <span style="font-size:0.75rem; color:#64748b; white-space:nowrap;">
                                     <?= (isset($attachment['filesize']) || isset($attachment['file_size'])) ? number_format(((float)($attachment['filesize'] ?? $attachment['file_size'] ?? 0)) / 1024, 2) . ' KB' : 'Descargar' ?>
                                 </span>
