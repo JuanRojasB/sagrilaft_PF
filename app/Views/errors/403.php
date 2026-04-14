@@ -54,7 +54,7 @@
         <h1>Acceso Denegado</h1>
         <div class="error-code">Error 403</div>
         <p>No tienes permisos para acceder a esta página. Si crees que esto es un error, por favor contacta al administrador del sistema.</p>
-        <a href="/gestion-sagrilaft/public/" class="btn btn-primary">← Volver al Inicio</a>
+        <a href="index.php" class="btn btn-primary">← Volver al Inicio</a>
     </div>
 </body>
 </html>

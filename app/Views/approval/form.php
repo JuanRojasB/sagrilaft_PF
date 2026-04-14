@@ -17,20 +17,20 @@
         .section-content { padding:0; }
         .fr { display:grid; border-bottom:1px solid #f1f5f9; min-height:38px; }
         .fr:last-child { border-bottom:none; }
-        .fl { font-weight:600; background:#f8fafc; color:#475569; font-size:10px; text-transform:uppercase; letter-spacing:0.4px; padding:8px 10px; display:flex; align-items:center; border-right:1px solid #f1f5f9; }
-        .fv { padding:8px 12px; display:flex; align-items:center; flex-wrap:wrap; gap:8px; font-size:13px; color:#0f172a; border-right:1px solid #f1f5f9; min-width:0; }
+        .fl { font-weight:600; background:#f8fafc; color:#475569; font-size:10px; text-transform:uppercase; letter-spacing:0.4px; padding:8px 10px; display:flex; align-items:center; border-right:1px solid #f1f5f9; word-wrap:break-word; overflow-wrap:break-word; hyphens:auto; }
+        .fv { padding:8px 12px; display:flex; align-items:center; flex-wrap:wrap; gap:8px; font-size:13px; color:#0f172a; border-right:1px solid #f1f5f9; min-width:0; word-wrap:break-word; overflow-wrap:break-word; }
         .fv:last-child, .fl:last-child { border-right:none; }
-        .c1   { grid-template-columns:160px 1fr; }
-        .c22  { grid-template-columns:160px 1fr 160px 1fr; }
-        .c33  { grid-template-columns:130px 1fr 130px 1fr 130px 1fr; }
-        .c222 { grid-template-columns:130px 1fr 130px 1fr 130px 1fr; }
-        .c322 { grid-template-columns:120px 1fr 100px 1fr 80px 1fr; }
+        .c1   { grid-template-columns:220px 1fr; }
+        .c22  { grid-template-columns:220px 1fr 220px 1fr; }
+        .c33  { grid-template-columns:180px 1fr 180px 1fr 180px 1fr; }
+        .c222 { grid-template-columns:180px 1fr 180px 1fr 180px 1fr; }
+        .c322 { grid-template-columns:160px 1fr 140px 1fr 120px 1fr; }
         .cfull { grid-template-columns:1fr; }
         .fr.dir-row { grid-template-columns:160px 1fr; }
         .field-table { width:100%; border-collapse:collapse; }
         .field-table td { border:1px solid #e2e8f0; padding:8px 12px; font-size:12px; color:#0f172a; }
         .field-label { font-weight:600; background:#f8fafc; color:#475569; text-transform:uppercase; font-size:10px; }
-        @media (max-width:900px) { .c22 { grid-template-columns:140px 1fr !important; } .c33 { grid-template-columns:120px 1fr !important; } .c322 { grid-template-columns:110px 1fr !important; } }
+        @media (max-width:900px) { .c22 { grid-template-columns:200px 1fr !important; } .c33 { grid-template-columns:160px 1fr !important; } .c322 { grid-template-columns:140px 1fr !important; } }
         @media (max-width:600px) { .c22,.c33,.c222,.c322,.c1,.fr.dir-row { grid-template-columns:1fr !important; } .fl { border-right:none !important; border-bottom:1px solid #f1f5f9; } }
         /* Inputs en panel de aprobación */
         input, textarea { width:100%; padding:0.75rem; background:#ffffff; border:1px solid #cbd5e1; border-radius:0.25rem; color:#0f172a; font-size:0.85rem; }
@@ -54,7 +54,7 @@
         </div>
         <?php if ($is_logged_in): ?>
         <div class="header-actions" style="display:flex; gap:0.5rem;">
-            <a href="/gestion-sagrilaft/public/reviewer/dashboard" class="btn-header">
+            <a href="index.php?route=/reviewer/dashboard" class="btn-header">
                 <span>← Volver</span>
             </a>
         </div>
@@ -71,8 +71,8 @@
                 <form id="reviewerLoginForm">
                     <input type="hidden" name="csrf_token" value="<?= $csrf_token ?>">
                     <div style="margin-bottom:1rem;">
-                        <label style="display:block; margin-bottom:0.5rem; font-size:0.85rem; color:#334155; font-weight:600;">Email</label>
-                        <input type="email" id="reviewer_email" name="reviewer_email" required placeholder="tu-email@ejemplo.com" autocomplete="email">
+                        <label style="display:block; margin-bottom:0.5rem; font-size:0.85rem; color:#334155; font-weight:600;">Usuario</label>
+                        <input type="text" id="reviewer_email" name="reviewer_email" required placeholder="" autocomplete="username">
                     </div>
                     <div style="margin-bottom:1.5rem;">
                         <label style="display:block; margin-bottom:0.5rem; font-size:0.85rem; color:#334155; font-weight:600;">Contraseña</label>
@@ -138,7 +138,7 @@
                                         </div>
                                         <?php endif; ?>
                                     </div>
-                                    <a href="/gestion-sagrilaft/public/approval/<?= $relatedForm['approval_token'] ?>" target="_blank"
+                                    <a href="/gestion-sagrilaft/public/index.php?route=/approval/<?= $relatedForm['approval_token'] ?>" target="_blank"
                                        style="background:#dbeafe; color:#1d4ed8; border:1px solid #93c5fd; padding:0.4rem 0.75rem; border-radius:0.25rem; text-decoration:none; font-size:0.75rem; font-weight:600; white-space:nowrap;">
                                         Ver
                                     </a>
@@ -158,7 +158,7 @@
                             <h3 style="margin:0 0 0.5rem; font-size:0.95rem; color:#1d4ed8; font-weight:700;">Formulario Completo</h3>
                             <p style="margin:0; font-size:0.85rem; color:#3b82f6; line-height:1.5;">Revisa el formulario completo en formato PDF con todos los datos y documentos adjuntos.</p>
                         </div>
-                        <a href="/gestion-sagrilaft/public/reviewer/form/<?= $form['id'] ?>/pdf" target="_blank" class="btn-pdf">
+                        <a href="<?= rtrim($_ENV['APP_URL'] ?? '', '/') ?>/view-pdf.php?id=<?= $form['id'] ?>" target="_blank" class="btn-pdf" rel="noopener noreferrer">
                             Ver PDF
                         </a>
                     </div>
@@ -174,7 +174,7 @@
                     <?php if (!empty($attachments)): ?>
                         <div style="display:grid; gap:0.5rem;">
                             <?php foreach ($attachments as $attachment): ?>
-                            <a href="/gestion-sagrilaft/public/reviewer/attachment/<?= (int)$attachment['id'] ?>" target="_blank"
+                            <a href="<?= rtrim($_ENV['APP_URL'] ?? '', '/') ?>/view-attachment.php?id=<?= (int)$attachment['id'] ?>" target="_blank"
                                style="display:flex; justify-content:space-between; align-items:center; gap:1rem; background:#f8fafc; border:1px solid #e2e8f0; border-radius:0.25rem; padding:0.6rem 0.75rem; color:#0f172a; text-decoration:none; transition:background 0.15s;">
                                 <span style="font-size:0.82rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"><?= htmlspecialchars($attachment['filename'] ?? $attachment['original_filename'] ?? ('Adjunto #' . $attachment['id'])) ?></span>
                                 <span style="font-size:0.75rem; color:#64748b; white-space:nowrap;">
@@ -247,7 +247,7 @@
                 <div style="background:#ffffff; border:1px solid #e2e8f0; border-radius:0.5rem; padding:1.5rem; margin-bottom:1rem; box-shadow:0 1px 3px rgba(0,0,0,0.06);">
                     <h3 style="margin:0 0 1rem; font-size:0.9rem; color:#0f172a; font-weight:700; text-transform:uppercase; letter-spacing:0.08em;">Decisión del Revisor</h3>
 
-                    <form id="approvalForm" method="POST" action="<?= $_ENV['APP_URL'] ?>/approval/<?= htmlspecialchars($token) ?>" data-return-url="<?= $_ENV['APP_URL'] ?>/approval/<?= htmlspecialchars($token) ?>">
+                    <form id="approvalForm" method="POST" action="index.php?route=/approval/<?= htmlspecialchars($token) ?>" data-return-url="index.php?route=/approval/<?= htmlspecialchars($token) ?>">
                         <input type="hidden" name="csrf_token" value="<?= $csrf_token ?>">
                         <input type="hidden" name="approved_by" value="<?= htmlspecialchars($reviewer_name) ?>">
 
@@ -255,6 +255,39 @@
                         $isEmpleado = ($form['form_type'] ?? '') === 'empleado';
                         if (!$isEmpleado): 
                         ?>
+                        
+                        <!-- Espacio para ser tramitado por el departamento de Cartera/Compras -->
+                        <div style="margin-bottom:1rem; padding:0.9rem; background:#fef3c7; border:1px solid #fcd34d; border-radius:0.25rem;">
+                            <div style="font-size:0.78rem; color:#92400e; margin-bottom:0.6rem; text-transform:uppercase; letter-spacing:0.05em; font-weight:700;">
+                                <?php
+                                // Determinar si es Cliente o Proveedor para el título
+                                $formType = $form['form_type'] ?? 'cliente';
+                                $departamento = (strpos($formType, 'proveedor') !== false || strpos($formType, 'transportista') !== false) 
+                                    ? 'DEPARTAMENTO DE COMPRAS' 
+                                    : 'DEPARTAMENTO DE CARTERA';
+                                echo "Espacio para ser tramitado por el {$departamento}";
+                                ?>
+                            </div>
+                            <div style="display:grid; grid-template-columns:repeat(2,1fr); gap:0.75rem;">
+                                <div>
+                                    <label style="display:block; font-size:0.72rem; color:#475569; margin-bottom:0.3rem; text-transform:uppercase;">Vinculación</label>
+                                    <select name="vinculacion" style="width:100%; padding:0.6rem; background:#ffffff; border:1px solid #cbd5e1; border-radius:0.25rem; color:#0f172a; font-size:0.82rem;">
+                                        <option value="">Seleccione</option>
+                                        <option value="nueva" <?= (($form['vinculacion'] ?? '') === 'nueva') ? 'selected' : '' ?>>Nueva</option>
+                                        <option value="actualizacion" <?= (($form['vinculacion'] ?? '') === 'actualizacion') ? 'selected' : '' ?>>Actualización</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label style="display:block; font-size:0.72rem; color:#475569; margin-bottom:0.3rem; text-transform:uppercase;">Fecha de Vinculación</label>
+                                    <input type="date" name="fecha_vinculacion" value="<?= htmlspecialchars((string)($form['fecha_vinculacion'] ?? date('Y-m-d'))) ?>" style="width:100%; padding:0.6rem; background:#ffffff; border:1px solid #cbd5e1; border-radius:0.25rem; color:#0f172a; font-size:0.82rem;">
+                                </div>
+                                <div style="grid-column:1/-1;">
+                                    <label style="display:block; font-size:0.72rem; color:#475569; margin-bottom:0.3rem; text-transform:uppercase;">Actualización</label>
+                                    <input type="text" name="actualizacion" value="<?= htmlspecialchars((string)($form['actualizacion'] ?? '')) ?>" placeholder="Ej: Primera actualización, Segunda actualización..." style="width:100%; padding:0.6rem; background:#ffffff; border:1px solid #cbd5e1; border-radius:0.25rem; color:#0f172a; font-size:0.82rem;">
+                                </div>
+                            </div>
+                        </div>
+
                         <!-- Espacio exclusivo Pollo Fiesta -->
                         <div style="margin-bottom:1rem; padding:0.9rem; background:#eff6ff; border:1px solid #bfdbfe; border-radius:0.25rem;">
                             <div style="font-size:0.78rem; color:#1d4ed8; margin-bottom:0.6rem; text-transform:uppercase; letter-spacing:0.05em; font-weight:700;">
@@ -407,7 +440,7 @@
             submitBtn.disabled = true;
             submitBtn.textContent = 'Validando...';
             try {
-                const resp = await fetch('/gestion-sagrilaft/public/reviewer/login', {
+                const resp = await fetch('index.php?route=/reviewer/login', {
                     method: 'POST',
                     body: formData,
                     headers: { 'X-Requested-With': 'XMLHttpRequest' }
@@ -453,7 +486,7 @@
             message.textContent = data.message || 'Formulario procesado correctamente';
 
             setTimeout(() => {
-                const returnUrl = approvalForm.getAttribute('data-return-url') || '/gestion-sagrilaft/public/reviewer/dashboard';
+                const returnUrl = approvalForm.getAttribute('data-return-url') || 'index.php?route=/reviewer/dashboard';
                 window.location.href = returnUrl;
             }, 900);
         } catch (err) {

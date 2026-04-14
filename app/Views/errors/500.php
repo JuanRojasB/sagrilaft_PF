@@ -61,7 +61,7 @@
         <p>Ocurrió un error inesperado en el servidor. Por favor intenta de nuevo más tarde o contacta al administrador si el problema persiste.</p>
         <div class="buttons">
             <button onclick="location.reload()" class="btn btn-secondary">Reintentar</button>
-            <a href="/gestion-sagrilaft/public/" class="btn btn-primary">← Volver al Inicio</a>
+            <a href="index.php" class="btn btn-primary">← Volver al Inicio</a>
         </div>
     </div>
 </body>

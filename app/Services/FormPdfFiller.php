@@ -104,7 +104,18 @@ class FormPdfFiller
         $no2 = $this->v('autoriza_centrales') === 'no' ? '[X]' : '[ ]';
         $p->Cell($W, $h, $this->e("Autorizo consulta en listas restrictivas Nacionales e Internacionales:  Si: $si1   No: $no1"), 1, 1, 'L');
         $p->Cell($W, $h, $this->e("Autorizo consulta en Centrales de Riesgo:  Si: $si2   No: $no2"), 1, 1, 'L');
-        $this->row1('FIRMA REPRESENTANTE LEGAL:', '', 50, $W - 50, 16);
+        
+        // FIRMA REPRESENTANTE LEGAL (firma del usuario que llenó el formulario)
+        $firmaRepH = 16;
+        $yFirmaRep = $p->GetY();
+        $p->SetXY(5 + 50, $yFirmaRep);
+        $p->Cell($W - 50, $firmaRepH, '', 1, 1, 'L');
+        $this->sigImage('signature_data', 5 + 50 + 2, $yFirmaRep + 1, 50, $firmaRepH - 2);
+        $p->SetXY(5, $yFirmaRep);
+        $p->SetFont('Arial', 'B', 6);
+        $p->Cell(50, $firmaRepH, $this->e('FIRMA REPRESENTANTE LEGAL:'), 1, 0, 'L');
+        $p->SetY($yFirmaRep + $firmaRepH);
+        
         $this->row1('NOMBRE:', $this->v('representante_nombre') ?: $this->v('company_name'), 20, $W - 20, $h);
 
         $p->SetFont('Arial', '', 5.2);
@@ -244,6 +255,18 @@ class FormPdfFiller
         $p->SetFont('Arial', '', 5.2);
         $p->MultiCell($W, 3.8, $this->e('AVISO DE PRIVACIDAD: Autorizo a Pollo Fiesta S.A. (NIT 860.032.450-9) para tratamiento de datos segun Ley 1581/2012. Politica en www.pollo-fiesta.com'), 1, 'L');
 
+        // FIRMA REPRESENTANTE LEGAL (firma del usuario que llenó el formulario)
+        $firmaRepH = 16;
+        $yFirmaRep = $p->GetY();
+        $p->SetXY(5 + 50, $yFirmaRep);
+        $p->Cell($W - 50, $firmaRepH, '', 1, 1, 'L');
+        $this->sigImage('signature_data', 5 + 50 + 2, $yFirmaRep + 1, 50, $firmaRepH - 2);
+        $p->SetXY(5, $yFirmaRep);
+        $p->SetFont('Arial', 'B', 6);
+        $p->Cell(50, $firmaRepH, $this->e('FIRMA REPRESENTANTE LEGAL:'), 1, 0, 'L');
+        $p->SetY($yFirmaRep + $firmaRepH);
+        $this->row1('NOMBRE:', $this->v('representante_nombre'), 20, $W - 20, $h);
+
         $this->sectionTitle('ESPACIO EXCLUSIVO PARA POLLO FIESTA', $W, $hs);
         $this->labelCell('CONSULTA EN LISTAS RESTRICTIVAS OFAC:', 64, $h);
         $p->SetFont('Arial', '', 6);
@@ -325,6 +348,18 @@ class FormPdfFiller
 
         $p->SetFont('Arial', '', 5.2);
         $p->MultiCell($W, 3.5, $this->e('AVISO DE PRIVACIDAD Y AUTORIZACION DE TRATAMIENTO DE DATOS PERSONALES: Autorizo a Pollo Fiesta S.A., identificada con Nit 860.032.450-9 para que utilice la informacion que he suministrado con los siguientes fines: Para recaudar, almacenar, utilizar, consultar y en general dar tratamiento para los fines que este documento contempla y ademas para desarrollar todas aquellas que se definen como finalidades del tratamiento de la informacion trazadas en la POLITICA DE TRATAMIENTO Y PRIVACIDAD DE LA INFORMACION DE POLLO FIESTA S.A. DE CONFORMIDAD CON LA LEY DE HABEAS DATA, disponible en la pagina web http://www.pollo-fiesta.com/, todo conforme a la Ley 1581 de 2012 y el Decreto 1377 de 2013, la Ley 1266 de 2006. Esta autorizacion incluye ademas la autorizacion de consulta y reporte en centrales de Riesgo.'), 1, 'L');
+
+        // FIRMA REPRESENTANTE LEGAL (firma del usuario que llenó el formulario)
+        $firmaRepH = 16;
+        $yFirmaRep = $p->GetY();
+        $p->SetXY(5 + 50, $yFirmaRep);
+        $p->Cell($W - 50, $firmaRepH, '', 1, 1, 'L');
+        $this->sigImage('signature_data', 5 + 50 + 2, $yFirmaRep + 1, 50, $firmaRepH - 2);
+        $p->SetXY(5, $yFirmaRep);
+        $p->SetFont('Arial', 'B', 6);
+        $p->Cell(50, $firmaRepH, $this->e('FIRMA REPRESENTANTE LEGAL:'), 1, 0, 'L');
+        $p->SetY($yFirmaRep + $firmaRepH);
+        $this->row1('NOMBRE:', $this->v('representante_nombre') ?: $this->v('company_name'), 20, $W - 20, $h);
 
         $this->sectionTitle('ESPACIO EXCLUSIVO PARA POLLO FIESTA', $W, $hs);
         $this->labelCell('CONSULTA OFAC:', 30, $h);
@@ -453,6 +488,18 @@ class FormPdfFiller
         $p->SetFont('Arial', '', 5.2);
         $p->MultiCell($W, 3.8, $this->e('AVISO DE PRIVACIDAD: Autorizo a Pollo Fiesta S.A. (NIT 860.032.450-9) para tratamiento de datos segun Ley 1581/2012. Politica en www.pollo-fiesta.com'), 1, 'L');
 
+        // FIRMA REPRESENTANTE LEGAL (firma del usuario que llenó el formulario)
+        $firmaRepH = 16;
+        $yFirmaRep = $p->GetY();
+        $p->SetXY(5 + 50, $yFirmaRep);
+        $p->Cell($W - 50, $firmaRepH, '', 1, 1, 'L');
+        $this->sigImage('signature_data', 5 + 50 + 2, $yFirmaRep + 1, 50, $firmaRepH - 2);
+        $p->SetXY(5, $yFirmaRep);
+        $p->SetFont('Arial', 'B', 6);
+        $p->Cell(50, $firmaRepH, $this->e('FIRMA REPRESENTANTE LEGAL:'), 1, 0, 'L');
+        $p->SetY($yFirmaRep + $firmaRepH);
+        $this->row1('NOMBRE:', $this->v('representante_nombre'), 20, $W - 20, $h);
+
         $this->sectionTitle('ESPACIO EXCLUSIVO PARA POLLO FIESTA', $W, $hs);
         $this->labelCell('CONSULTA OFAC:', 30, $h);
         $p->SetFont('Arial', '', 6);
@@ -565,6 +612,18 @@ class FormPdfFiller
         $p->Cell(20, $h, 'SI', 0, 0, 'L');
         $p->Cell(8, $h, $this->v('certificado_origen') === 'no' ? 'X' : '', 1, 0, 'C');
         $p->Cell(0, $h, 'NO', 0, 1, 'L');
+
+        // FIRMA REPRESENTANTE LEGAL (firma del usuario que llenó el formulario)
+        $firmaRepH = 16;
+        $yFirmaRep = $p->GetY();
+        $p->SetXY(5 + 50, $yFirmaRep);
+        $p->Cell($W - 50, $firmaRepH, '', 1, 1, 'L');
+        $this->sigImage('signature_data', 5 + 50 + 2, $yFirmaRep + 1, 50, $firmaRepH - 2);
+        $p->SetXY(5, $yFirmaRep);
+        $p->SetFont('Arial', 'B', 6);
+        $p->Cell(50, $firmaRepH, $this->e('FIRMA REPRESENTANTE LEGAL:'), 1, 0, 'L');
+        $p->SetY($yFirmaRep + $firmaRepH);
+        $this->row1('NOMBRE:', $this->v('representante_nombre'), 20, $W - 20, $h);
 
         $this->sectionTitle('ESPACIO EXCLUSIVO PARA POLLO FIESTA', $W, $hs);
         $this->labelCell('CONSULTA OFAC:', 30, $h);

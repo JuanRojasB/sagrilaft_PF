@@ -57,44 +57,51 @@ class ApprovalController extends Controller
      */
     public function processLogin(): void
     {
-        if (!$this->validateCsrf()) {
-            $this->json(['error' => 'Token CSRF inválido'], 403);
+        try {
+            if (!$this->validateCsrf()) {
+                $this->json(['error' => 'Token CSRF inválido'], 403);
+            }
+
+            // Aceptar username (que es el campo 'name' en la tabla)
+            $username = $this->input('username') ?? $this->input('email') ?? $this->input('reviewer_email');
+            $password = $this->input('password') ?? $this->input('reviewer_password');
+
+            if (!$username || !$password) {
+                $this->json(['error' => 'Usuario y contraseña son requeridos'], 400);
+            }
+
+            $this->logger->info('Reviewer login attempt', ['username' => $username]);
+
+            // Buscar usuario por name Y que sea revisor (esto filtra los duplicados)
+            $db = \App\Core\Database::getConnection();
+            $stmt = $db->prepare("SELECT * FROM users WHERE name = ? AND role = 'revisor' LIMIT 1");
+            $stmt->execute([$username]);
+            $user = $stmt->fetch(\PDO::FETCH_ASSOC);
+
+            if (!$user || !password_verify($password, $user['password'])) {
+                $this->logger->warning('Reviewer login failed - invalid credentials', ['username' => $username]);
+                $this->json(['error' => 'Credenciales inválidas o no tiene permisos de revisor'], 401);
+            }
+
+            // Establecer sesión de revisor
+            $_SESSION['reviewer_id'] = $user['id'];
+            $_SESSION['reviewer_name'] = $user['name'];
+            $_SESSION['reviewer_email'] = $user['email'];
+
+            $this->logger->info('Reviewer logged in', ['reviewer_id' => $user['id']]);
+
+            $this->json([
+                'success' => true,
+                'message' => 'Inicio de sesión exitoso',
+                'redirect' => 'index.php?route=/reviewer/dashboard'
+            ]);
+        } catch (\Exception $e) {
+            $this->logger->error('Reviewer login error', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            $this->json(['error' => 'Error interno del servidor: ' . $e->getMessage()], 500);
         }
-
-        // Aceptar tanto 'username' como 'email' para compatibilidad
-        $username = $this->input('username') ?? $this->input('email') ?? $this->input('reviewer_email');
-        $password = $this->input('password') ?? $this->input('reviewer_password');
-
-        if (!$username || !$password) {
-            $this->json(['error' => 'Usuario y contraseña son requeridos'], 400);
-        }
-
-        $this->logger->info('Reviewer login attempt', ['username' => $username]);
-
-        // Buscar usuario por username o email
-        $db = \App\Core\Database::getConnection();
-        $stmt = $db->prepare("SELECT * FROM users WHERE (username = ? OR email = ?) AND role = 'revisor' LIMIT 1");
-        $stmt->execute([$username, $username]);
-        $user = $stmt->fetch(\PDO::FETCH_ASSOC);
-
-        if (!$user || !password_verify($password, $user['password'])) {
-            $this->logger->warning('Reviewer login failed - invalid credentials', ['username' => $username]);
-            $this->json(['error' => 'Credenciales inválidas'], 401);
-        }
-
-        // Establecer sesión de revisor
-        $_SESSION['reviewer_id'] = $user['id'];
-        $_SESSION['reviewer_name'] = $user['name'];
-        $_SESSION['reviewer_email'] = $user['email'];
-        $_SESSION['reviewer_username'] = $user['username'];
-
-        $this->logger->info('Reviewer logged in', ['reviewer_id' => $user['id']]);
-
-        $this->json([
-            'success' => true,
-            'message' => 'Inicio de sesión exitoso',
-            'redirect' => ($_ENV['APP_URL'] ?? '') . '/reviewer/dashboard'
-        ]);
     }
 
     /**
@@ -129,6 +136,61 @@ class ApprovalController extends Controller
 
         $this->redirect('/reviewer/login');
     }
+
+    /**
+     * Subir firma digital del revisor
+     */
+    public function uploadFirma(): void
+    {
+        header('Content-Type: application/json');
+
+        if (empty($_SESSION['reviewer_id'])) {
+            echo json_encode(['success' => false, 'message' => 'Sesión expirada']);
+            exit;
+        }
+
+        if (!isset($_FILES['firma']) || $_FILES['firma']['error'] !== UPLOAD_ERR_OK) {
+            echo json_encode(['success' => false, 'message' => 'No se recibió el archivo']);
+            exit;
+        }
+
+        $file = $_FILES['firma'];
+        $allowedTypes = ['image/png', 'image/jpeg', 'image/jpg'];
+        $maxSize = 2 * 1024 * 1024; // 2MB
+
+        if (!in_array($file['type'], $allowedTypes)) {
+            echo json_encode(['success' => false, 'message' => 'Solo se permiten archivos PNG o JPG']);
+            exit;
+        }
+
+        if ($file['size'] > $maxSize) {
+            echo json_encode(['success' => false, 'message' => 'El archivo no debe superar 2MB']);
+            exit;
+        }
+
+        try {
+            $imageData = file_get_contents($file['tmp_name']);
+            $base64 = base64_encode($imageData);
+            $mimeType = $file['type'];
+
+            $db = \App\Core\Database::getConnection();
+            $stmt = $db->prepare("UPDATE users SET firma_digital = ?, firma_mime_type = ? WHERE id = ?");
+            $stmt->execute([$base64, $mimeType, $_SESSION['reviewer_id']]);
+
+            if ($this->logger) {
+                $this->logger->info('Firma digital actualizada', ['reviewer_id' => $_SESSION['reviewer_id']]);
+            }
+
+            echo json_encode(['success' => true, 'message' => 'Firma guardada correctamente']);
+        } catch (\Exception $e) {
+            if ($this->logger) {
+                $this->logger->error('Error al guardar firma', ['error' => $e->getMessage()]);
+            }
+            echo json_encode(['success' => false, 'message' => 'Error al guardar la firma: ' . $e->getMessage()]);
+        }
+        exit;
+    }
+
 
     /**
      * Show approval form
@@ -344,7 +406,10 @@ class ApprovalController extends Controller
         $db = $this->formModel->getConnection();
         $stmt = $db->prepare("
             UPDATE forms
-            SET consulta_ofac = ?,
+            SET vinculacion = ?,
+                fecha_vinculacion = ?,
+                actualizacion = ?,
+                consulta_ofac = ?,
                 consulta_listas_nacionales = ?,
                 consulta_onu = ?,
                 consulta_interpol = ?,
@@ -360,6 +425,9 @@ class ApprovalController extends Controller
         ");
 
         $stmt->execute([
+            $this->input('vinculacion') ?: null,
+            $this->input('fecha_vinculacion') ?: null,
+            $this->input('actualizacion') ?: null,
             $this->input('consulta_ofac') ?: null,
             $this->input('consulta_listas_nacionales') ?: null,
             $this->input('consulta_onu') ?: null,
@@ -511,50 +579,32 @@ class ApprovalController extends Controller
                 }
             }
 
-            // Lista de destinatarios
-            $recipients = [];
-            
-            // MODO PRODUCCIÓN: Enviar a pasantesistemas1@pollo-fiesta.com
-            
-            $recipients[] = [
-                'email' => 'pasantesistemas1@pollo-fiesta.com',
-                'name' => 'Sistemas Pollo Fiesta',
-                'type' => 'admin'
+            // Preparar datos del formulario para destinatarios
+            $formData = [
+                'creator_email' => $creator['email'] ?? null,
+                'creator_name' => $creator['name'] ?? 'Usuario',
             ];
             
-            /* DESACTIVADO TEMPORALMENTE - Descomentar cuando esté listo
-            
-            // 1. Creador del formulario
-            $recipients[] = [
-                'email' => $creator['email'],
-                'name' => $creator['name'] ?? 'Usuario',
-                'type' => 'creator'
-            ];
-            
-            // 2. Asesor comercial y su jefe (si existe)
+            // Obtener datos del asesor comercial si existe
             if (!empty($form['asesor_comercial_id'])) {
                 $asesorModel = new \App\Models\AsesorComercial();
                 $asesor = $asesorModel->findById((int)$form['asesor_comercial_id']);
                 
-                if ($asesor && !empty($asesor['email'])) {
-                    $recipients[] = [
-                        'email' => $asesor['email'],
-                        'name' => $asesor['nombre_completo'],
-                        'type' => 'asesor'
-                    ];
-                    
-                    // Agregar jefe si existe
-                    if (!empty($asesor['jefe_email'])) {
-                        $recipients[] = [
-                            'email' => $asesor['jefe_email'],
-                            'name' => $asesor['jefe_nombre'] ?? 'Jefe',
-                            'type' => 'jefe'
-                        ];
-                    }
+                if ($asesor) {
+                    $formData['asesor_email'] = $asesor['email'] ?? null;
+                    $formData['asesor_nombre'] = $asesor['nombre_completo'] ?? null;
+                    $formData['jefe_email'] = $asesor['jefe_email'] ?? null;
+                    $formData['jefe_nombre'] = $asesor['jefe_nombre'] ?? null;
                 }
             }
             
-            */
+            // Obtener destinatarios según el tipo de formulario y decisión
+            $formType = $form['form_type'] ?? 'cliente';
+            if ($decision === 'approved') {
+                $recipients = \App\Config\EmailRecipientsConfig::getApprovedRecipients($formType, $formData);
+            } else {
+                $recipients = \App\Config\EmailRecipientsConfig::getRejectedRecipients($formType, $formData);
+            }
 
             // Enviar correos a todos los destinatarios
             foreach ($recipients as $recipient) {
@@ -607,12 +657,29 @@ class ApprovalController extends Controller
     {
         try {
             $db = \App\Core\Database::getConnection();
+            
+            // IMPORTANTE: Recargar el formulario desde la BD para obtener los campos actualizados
+            // (consulta_ofac, consulta_listas_nacionales, recibe, director_cartera, etc.)
             $stmt = $db->prepare("SELECT * FROM forms WHERE id = ? LIMIT 1");
             $stmt->execute([$formId]);
             $mainForm = $stmt->fetch(\PDO::FETCH_ASSOC);
             if (!$mainForm) {
                 $this->logger->warning('Main form not found for consolidation', ['form_id' => $formId]);
                 return null;
+            }
+            
+            // Obtener la firma del revisor ACTUAL (el que está en sesión)
+            $reviewerId = $_SESSION['reviewer_id'] ?? null;
+            if ($reviewerId) {
+                $stmtRevisor = $db->prepare("SELECT firma_digital, firma_mime_type FROM users WHERE id = ? AND role = 'revisor' LIMIT 1");
+                $stmtRevisor->execute([$reviewerId]);
+                $firmaRevisor = $stmtRevisor->fetch(PDO::FETCH_ASSOC);
+                
+                // Si el revisor actual tiene firma, agregarla al formulario
+                if ($firmaRevisor && !empty($firmaRevisor['firma_digital'])) {
+                    $mainForm['firma_oficial_data'] = 'data:' . ($firmaRevisor['firma_mime_type'] ?? 'image/png') . ';base64,' . $firmaRevisor['firma_digital'];
+                    $mainForm['firma_oficial_cumplimiento_data'] = $mainForm['firma_oficial_data'];
+                }
             }
 
             // Formularios: principal + relacionados (declaraciones u otros vinculados)
@@ -646,6 +713,18 @@ class ApprovalController extends Controller
             // 2) PDFs de formularios relacionados (declaraciones)
             $relatedIndex = 2;
             foreach ($relatedForms as $rf) {
+                // Agregar firmas del revisor y usuario a las declaraciones
+                if (!empty($mainForm['firma_oficial_data'])) {
+                    $rf['firma_oficial_data'] = $mainForm['firma_oficial_data'];
+                    $rf['firma_oficial_cumplimiento_data'] = $mainForm['firma_oficial_data'];
+                }
+                if (!empty($mainForm['signature_data'])) {
+                    $rf['signature_data'] = $mainForm['signature_data'];
+                    $rf['firma_declarante_data'] = $mainForm['signature_data'];
+                    $rf['firma_representante_data'] = $mainForm['signature_data'];
+                    $rf['firma_data'] = $mainForm['signature_data'];
+                }
+                
                 $rfPdf = $this->buildFormPdfBinary($rf, $mainForm, $filler);
                 if ($rfPdf === null) {
                     continue;
@@ -800,10 +879,12 @@ class ApprovalController extends Controller
     private function buildFormPdfBinary(array $form, ?array $relatedForm, \App\Services\FormPdfFiller $filler): ?string
     {
         try {
-            // Si hay un formulario relacionado (padre), siempre regenerar para que
-            // vRelated() tenga los datos del padre disponibles (ciudad, empresa, nit, etc.)
-            // Solo usar el PDF cacheado para el formulario principal (sin padre)
-            if ($relatedForm === null && !empty($form['generated_pdf_content'])) {
+            // IMPORTANTE: NO usar el PDF cacheado cuando se está consolidando después de aprobación
+            // porque necesitamos los campos actualizados (consulta_ofac, recibe, director_cartera, etc.)
+            // Solo usar cache si el formulario NO ha sido aprobado aún
+            $isApproved = !empty($form['approval_status']) && in_array($form['approval_status'], ['approved', 'rejected', 'approved_pending']);
+            
+            if (!$isApproved && $relatedForm === null && !empty($form['generated_pdf_content'])) {
                 return $form['generated_pdf_content'];
             }
 

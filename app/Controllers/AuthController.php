@@ -90,9 +90,9 @@ class AuthController extends Controller
         ]);
 
         // Redirigir según el rol
-        $redirect = ($_ENV['APP_URL'] ?? '') . '/admin';
+        $redirect = 'index.php?route=/admin';
         if ($result['user']['role'] === 'revisor') {
-            $redirect = ($_ENV['APP_URL'] ?? '') . '/reviewer/dashboard';
+            $redirect = 'index.php?route=/reviewer/dashboard';
         }
 
         $this->json([
@@ -122,7 +122,7 @@ class AuthController extends Controller
             'samesite' => 'Strict'
         ]);
         
-        header('Location: ' . $_ENV['APP_URL'] . '/login');
+        header('Location: index.php?route=/login');
         exit;
     }
 

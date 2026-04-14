@@ -197,7 +197,7 @@
             <?php unset($_SESSION['error']); ?>
         <?php endif; ?>
 
-        <form id="registroForm" method="POST" action="<?= $_ENV['APP_URL'] ?>/home/register" enctype="multipart/form-data">
+        <form id="registroForm" method="POST" action="index.php?route=/home/register" enctype="multipart/form-data">
             <input type="hidden" name="csrf_token" value="<?= $csrf_token ?>">
             
             <div class="form-row">

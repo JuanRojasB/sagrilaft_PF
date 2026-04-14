@@ -69,16 +69,16 @@
     <div class="navbar-container">
         <div class="navbar-content">
             <div class="navbar-left">
-                <a href="/dashboard" class="navbar-brand">SAGRILAFT</a>
-                <a href="/forms" class="navbar-link">Formularios</a>
+                <a href="index.php?route=/dashboard" class="navbar-brand">SAGRILAFT</a>
+                <a href="index.php?route=/forms" class="navbar-link">Formularios</a>
                 <?php if (isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'admin'): ?>
-                <a href="/admin" class="navbar-link">Admin</a>
+                <a href="index.php?route=/admin" class="navbar-link">Admin</a>
                 <?php endif; ?>
             </div>
             
             <div class="navbar-right">
                 <span class="navbar-user"><?= htmlspecialchars($_SESSION['user_email'] ?? '') ?></span>
-                <form method="POST" action="/logout">
+                <form method="POST" action="index.php?route=/logout">
                     <button type="submit" class="navbar-logout-btn">
                         Cerrar Sesión
                     </button>

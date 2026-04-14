@@ -3,7 +3,7 @@
 namespace App\Services;
 
 use App\Models\User;
-
+ttvvrrttvvrrbloodhoneyandbloodpsychosocial
 /**
  * Servicio de Autenticación
  * 
@@ -117,11 +117,11 @@ class AuthService
     /**
      * Verificar si el usuario está autenticado
      * 
-     * @return bool true si hay sesión activa
+     * @return bool true si hay sesión activa (usuario normal o revisor)
      */
     public function check(): bool
     {
-        return isset($_SESSION['user_id']);
+        return isset($_SESSION['user_id']) || isset($_SESSION['reviewer_id']);
     }
 
     /**

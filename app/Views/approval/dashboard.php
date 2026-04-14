@@ -180,7 +180,7 @@
                 <button onclick="mostrarModalFirma()" class="btn-firma" style="background: #f1f5f9; color: #334155; border: 1px solid #cbd5e1; padding: 0.4rem 0.75rem; border-radius: 0.25rem; cursor: pointer; font-weight: 600; font-size: 0.8rem; transition: all 0.15s; display: flex; align-items: center; gap: 0.3rem; white-space: nowrap;">
                     <span>Firma Digital</span>
                 </button>
-                <form method="POST" action="<?= $_ENV['APP_URL'] ?>/reviewer/logout" style="margin: 0;">
+                <form method="POST" action="index.php?route=/reviewer/logout" style="margin: 0;">
                     <button type="submit" class="btn-logout" style="background: #fee2e2; color: #dc2626; border: 1px solid #fca5a5; padding: 0.4rem 0.75rem; border-radius: 0.25rem; cursor: pointer; font-weight: 600; font-size: 0.8rem; transition: all 0.15s; white-space: nowrap;">Salir</button>
                 </form>
             </div>
@@ -451,7 +451,7 @@
                         $formType = (string)($form['form_type'] ?? '');
                         $formTypeLabel = $formTypeLabels[$formType] ?? ucfirst(str_replace('_', ' ', $formType ?: 'formulario'));
                     ?>
-                    <a href="/gestion-sagrilaft/public/approval/<?= $form['approval_token'] ?>" 
+                    <a href="/gestion-sagrilaft/public/index.php?route=/approval/<?= $form['approval_token'] ?>" 
                        class="result-link" 
                        data-status="<?= $form['approval_status'] ?>"
                        data-role="<?= $form['role'] ?? 'cliente' ?>"
@@ -742,7 +742,7 @@
         let sortBy = 'date'; // id, date, status, title
         let sortOrder = 'desc'; // asc, desc
 
-        // Definir funciones globalmente para que estén disponibles en onclick
+        // Definir funciones globalmente INMEDIATAMENTE para que estén disponibles en onclick
         window.filterByStatus = function(status) {
             currentStatusFilter = status;
             currentPage = 1;
@@ -889,7 +889,7 @@
             
             const form = document.createElement('form');
             form.method = 'POST';
-            form.action = '/gestion-sagrilaft/public/excel/download-filtered';
+            form.action = 'index.php?route=/excel/download-filtered';
             form.style.display = 'none';
             
             const input = document.createElement('input');
@@ -1039,7 +1039,6 @@
                 sortOrder = field === 'date' ? 'desc' : 'asc';
             }
             
-            console.log('Ordenando por:', sortBy, 'Orden:', sortOrder);
             saveFilters();
             updateSortButtons();
             applyFilters();
@@ -1212,8 +1211,6 @@
             });
             
             // Ordenar resultados
-            console.log('Aplicando ordenamiento:', sortBy, sortOrder, 'Total items:', filteredResults.length);
-            
             filteredResults.sort((a, b) => {
                 let valA, valB;
                 
@@ -1248,14 +1245,6 @@
                     return 0;
                 }
             });
-
-            console.log('Primeros 5 después de ordenar:', 
-                filteredResults.slice(0, 5).map(el => ({
-                    id: el.getAttribute('data-id'),
-                    date: el.getAttribute('data-date'),
-                    status: el.getAttribute('data-status')
-                }))
-            );
             
             // Guardar total de resultados filtrados
             totalFilteredResults = filteredResults.length;
@@ -1586,7 +1575,6 @@
         function updateCharts() {
             // Verificar que las gráficas están inicializadas
             if (!chartStatus || !chartRole || !chartTrend) {
-                console.log('Gráficas no inicializadas aún');
                 return;
             }
             
@@ -1766,10 +1754,8 @@
                     }
                 }
             }
-            }
             
             chartTrend.data.labels = labels;
-            chartTrend.data.datasets[0].data = trendData;
             chartTrend.data.datasets[0].data = trendData;
             chartTrend.update();
         }
@@ -1792,7 +1778,7 @@
             <?php if ($firmaActual): ?>
             <div style="margin-bottom: 1.5rem; padding: 1rem; background: rgba(34, 197, 94, 0.1); border: 1px solid rgba(34, 197, 94, 0.3); border-radius: 0.5rem;">
                 <p style="color: #86efac; margin: 0 0 0.5rem; font-weight: 600;">Firma actual:</p>
-                <img src="/gestion-sagrilaft/public/ver_firma.php?user_id=<?= $_SESSION['user_id'] ?>&t=<?= time() ?>" 
+                <img src="ver_firma.php?user_id=<?= $_SESSION['user_id'] ?>&t=<?= time() ?>" 
                      alt="Firma actual" 
                      style="max-width: 200px; max-height: 100px; background: white; padding: 0.5rem; border-radius: 0.25rem;"
                      onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
@@ -1807,7 +1793,7 @@
             </div>
             <?php endif; ?>
             
-            <form id="formFirma" method="POST" action="/gestion-sagrilaft/public/upload_firma_ajax.php" enctype="multipart/form-data">
+            <form id="formFirma" method="POST" action="index.php?route=/upload_firma_ajax" enctype="multipart/form-data">
                 <input type="hidden" name="csrf_token" value="<?= $csrf_token ?>">
                 
                 <div class="form-field">
@@ -1841,7 +1827,7 @@
             submitBtn.disabled = true;
             submitBtn.textContent = 'Subiendo...';
             
-            fetch('/gestion-sagrilaft/public/upload_firma_ajax.php', {
+            fetch('<?= $_ENV['APP_URL'] ?? '' ?>/reviewer/upload-firma', {
                 method: 'POST',
                 body: formData
             })

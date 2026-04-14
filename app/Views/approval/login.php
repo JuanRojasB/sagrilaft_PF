@@ -193,7 +193,8 @@
             <img src="/gestion-sagrilaft/public/assets/img/orb-logo.png?v=5" alt="SAGRILAFT" class="auth-illustration-img">
         </div>
         
-        <h2 class="auth-title">Revisor SAGRILAFT</h2>
+        <h2 class="auth-title">Revisión de Formulario</h2>
+        <p class="auth-subtitle">Por favor identifíquese para continuar</p>
         
         <form id="loginForm" class="auth-form" method="POST">
             <input type="hidden" name="csrf_token" value="<?= $csrf_token ?>">
@@ -201,7 +202,7 @@
             <div class="form-field">
                 <label for="username">Usuario</label>
                 <input type="text" id="username" name="username" required 
-                       placeholder="Juan" autocomplete="username">
+                       placeholder="" autocomplete="username">
             </div>
             
             <div class="form-field">
@@ -230,7 +231,7 @@
             button.textContent = 'Iniciando...';
             
             try {
-                const response = await fetch('/gestion-sagrilaft/public/reviewer/login', {
+                const response = await fetch('index.php?route=/reviewer/login', {
                     method: 'POST',
                     body: formData,
                     headers: {

@@ -1,54 +1,12 @@
-RewriteEngine On
+DirectoryIndex index.php
 
-# Set base path for subdirectory
-RewriteBase /gestion-sagrilaft/public/
-
-# Disable ModSecurity for file upload endpoints
-<IfModule mod_security.c>
-    SecFilterEngine Off
-    SecFilterScanPOST Off
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /gestion-sagrilaft/public/
+    
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^(.*)$ index.php?route=/$1 [L,QSA]
 </IfModule>
 
-<IfModule mod_security2.c>
-    SecRuleEngine Off
-</IfModule>
-
-# Increase upload limits
-php_value upload_max_filesize 20M
-php_value post_max_size 25M
-php_value max_execution_time 300
-php_value max_input_time 300
-php_value memory_limit 512M
-
-# Allow large POST requests
-LimitRequestBody 26214400
-
-# Allow direct access to assets (CSS, JS, images)
-RewriteCond %{REQUEST_URI} ^/gestion-sagrilaft/public/assets/
-RewriteRule ^ - [L]
-
-# Redirect to HTTPS (production only - uncomment when needed)
-# RewriteCond %{HTTPS} off
-# RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
-
-# Redirect all other requests to index.php
-RewriteCond %{REQUEST_FILENAME} !-f
-RewriteCond %{REQUEST_FILENAME} !-d
-RewriteRule ^(.*)$ index.php [QSA,L]
-
-# Security headers
-<IfModule mod_headers.c>
-    Header set X-Content-Type-Options "nosniff"
-    Header set X-Frame-Options "SAMEORIGIN"
-    Header set X-XSS-Protection "1; mode=block"
-    Header set Referrer-Policy "strict-origin-when-cross-origin"
-</IfModule>
-
-# Disable directory listing
 Options -Indexes
-
-# Protect sensitive files
-<FilesMatch "^\.">
-    Order allow,deny
-    Deny from all
-</FilesMatch>

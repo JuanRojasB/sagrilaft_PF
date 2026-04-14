@@ -247,12 +247,13 @@ class FormController extends Controller
             
             // Determinar el revisor según el tipo de formulario
             $formType = $data['form_type'] ?? 'cliente';
-            $reviewer = \App\Config\NotificationConfig::getReviewerByFormType($formType);
             
-            $to = $reviewer['email'];
+            // Obtener destinatarios para nuevo formulario (siempre va a Angie para aprobación)
+            $recipients = \App\Config\EmailRecipientsConfig::getNewFormRecipients($formType);
+            $to = $recipients[0]['email']; // Primer destinatario (Angie o test)
             $subject = 'SAGRILAFT - Nuevo Formulario para Aprobar';
             
-            $approvalUrl = $_ENV['APP_URL'] . "/approval/{$approvalToken}";
+            $approvalUrl = $_ENV['APP_URL'] . "/index.php?route=/approval/{$approvalToken}";
             
             // Generar lista de archivos adjuntos
             $attachmentsHtml = '';
@@ -667,66 +668,77 @@ class FormController extends Controller
      */
     public function downloadAttachmentReviewer(string $id): void
         {
-            if (empty($_SESSION['reviewer_id'])) {
-                http_response_code(403);
-                echo 'Acceso denegado';
-                return;
-            }
-
-            $db = $this->getConnection();
-            $stmt = $db->prepare("SELECT filename, filepath, file_data, mime_type FROM form_attachments WHERE id = ?");
-            $stmt->execute([$id]);
-            $attachment = $stmt->fetch();
-
-            if (!$attachment) {
-                http_response_code(404);
-                echo 'Archivo no encontrado';
-                return;
-            }
-
-            // Si tiene file_data, usar ese (archivos antiguos)
-            if (!empty($attachment['file_data'])) {
-                $fileData = $attachment['file_data'];
-            } 
-            // Si no, buscar el archivo en disco
-            else if (!empty($attachment['filepath'])) {
-                $filePath = __DIR__ . '/../../public/uploads/' . $attachment['filepath'];
-                if (!file_exists($filePath)) {
-                    http_response_code(404);
-                    echo 'Archivo no encontrado en disco';
+            try {
+                if (empty($_SESSION['reviewer_id'])) {
+                    http_response_code(403);
+                    echo 'Acceso denegado - No hay sesión de revisor';
                     return;
                 }
-                $fileData = file_get_contents($filePath);
-            } 
-            else {
-                http_response_code(404);
-                echo 'Archivo no encontrado';
-                return;
+
+                $db = $this->getConnection();
+                $stmt = $db->prepare("SELECT filename, filepath, file_data, mime_type FROM form_attachments WHERE id = ?");
+                $stmt->execute([$id]);
+                $attachment = $stmt->fetch();
+
+                if (!$attachment) {
+                    http_response_code(404);
+                    echo 'Archivo no encontrado en la base de datos (ID: ' . htmlspecialchars($id) . ')';
+                    return;
+                }
+
+                // Si tiene file_data, usar ese (archivos antiguos)
+                if (!empty($attachment['file_data'])) {
+                    $fileData = $attachment['file_data'];
+                } 
+                // Si no, buscar el archivo en disco
+                else if (!empty($attachment['filepath'])) {
+                    $filePath = __DIR__ . '/../../public/uploads/' . $attachment['filepath'];
+                    if (!file_exists($filePath)) {
+                        http_response_code(404);
+                        echo 'Archivo no encontrado en disco: ' . htmlspecialchars($filePath);
+                        return;
+                    }
+                    $fileData = file_get_contents($filePath);
+                } 
+                else {
+                    http_response_code(404);
+                    echo 'Archivo sin datos ni ruta';
+                    return;
+                }
+
+                $mime     = $attachment['mime_type'] ?? 'application/octet-stream';
+                $filename = $attachment['filename'] ?? 'archivo';
+                $isPdf    = str_contains($mime, 'pdf');
+                $isImage  = str_starts_with($mime, 'image/');
+
+                // PDFs e imágenes sin ?raw: mostrar en visor HTML con favicon y título correcto
+                if (($isPdf || $isImage) && !isset($_GET['raw'])) {
+                    $appUrl = rtrim($_ENV['APP_URL'] ?? '', '/');
+                    $rawUrl = $appUrl . '/reviewer/attachment/' . (int)$id . '?raw=1';
+                    $title  = pathinfo($filename, PATHINFO_FILENAME);
+                    $this->view('forms/pdf_viewer', [
+                        'title'   => $title,
+                        'pdf_url' => $rawUrl,
+                    ]);
+                    return;
+                }
+
+                // Servir binario directamente (?raw=1 o archivos no visualizables)
+                header('Content-Type: ' . $mime);
+                header('Content-Disposition: ' . ($isPdf || $isImage ? 'inline' : 'attachment') . '; filename="' . $filename . '"');
+                header('Content-Length: ' . strlen($fileData));
+                echo $fileData;
+                exit;
+                
+            } catch (\Exception $e) {
+                http_response_code(500);
+                echo '<h1>Error al descargar archivo</h1>';
+                echo '<pre>';
+                echo 'Mensaje: ' . htmlspecialchars($e->getMessage()) . "\n";
+                echo 'Archivo: ' . htmlspecialchars($e->getFile()) . "\n";
+                echo 'Línea: ' . $e->getLine();
+                echo '</pre>';
             }
-
-            $mime     = $attachment['mime_type'] ?? 'application/octet-stream';
-            $filename = $attachment['filename'] ?? 'archivo';
-            $isPdf    = str_contains($mime, 'pdf');
-            $isImage  = str_starts_with($mime, 'image/');
-
-            // PDFs e imágenes sin ?raw: mostrar en visor HTML con favicon y título correcto
-            if (($isPdf || $isImage) && !isset($_GET['raw'])) {
-                $appUrl = rtrim($_ENV['APP_URL'] ?? '', '/');
-                $rawUrl = $appUrl . '/reviewer/attachment/' . (int)$id . '?raw=1';
-                $title  = pathinfo($filename, PATHINFO_FILENAME);
-                $this->view('forms/pdf_viewer', [
-                    'title'   => $title,
-                    'pdf_url' => $rawUrl,
-                ]);
-                return;
-            }
-
-            // Servir binario directamente (?raw=1 o archivos no visualizables)
-            header('Content-Type: ' . $mime);
-            header('Content-Disposition: ' . ($isPdf || $isImage ? 'inline' : 'attachment') . '; filename="' . $filename . '"');
-            header('Content-Length: ' . strlen($fileData));
-            echo $fileData;
-            exit;
         }
 
 
@@ -890,7 +902,7 @@ class FormController extends Controller
     {
         // Verificar que existan datos temporales
         if (!isset($_SESSION['temp_user_data'])) {
-            header('Location: ' . $_ENV['APP_URL']);
+            header('Location: index.php');
             exit;
         }
 
@@ -1536,7 +1548,7 @@ class FormController extends Controller
                     'message' => 'Formulario principal enviado. Ahora completa la Declaración de Origen de Fondos.',
                     'form_id' => $formId,
                     'needs_declaracion' => true,
-                    'redirect_url' => $_ENV['APP_URL'] . '/form/declaracion'
+                    'redirect_url' => 'index.php?route=/form/declaracion'
                 ]);
                 exit;
             } else {
@@ -1959,7 +1971,7 @@ class FormController extends Controller
     {
         // Verificar que haya una declaración pendiente
         if (!isset($_SESSION['pending_declaracion'])) {
-            header('Location: ' . $_ENV['APP_URL']);
+            header('Location: index.php');
             exit;
         }
 

@@ -66,7 +66,7 @@ class HomeController extends Controller
                 $otrosCategory = $_POST['otros_category'] ?? '';
                 if (empty($otrosCategory)) {
                     $_SESSION['error'] = 'Debe seleccionar una categoría para "Otros"';
-                    header('Location: ' . $_ENV['APP_URL']);
+                    header('Location: index.php');
                     exit;
                 }
                 // Usar la categoría como tipo efectivo para el formulario
@@ -85,14 +85,14 @@ class HomeController extends Controller
             if (empty($userType) || empty($personType) || empty($companyName) || 
                 empty($documentType) || empty($documentNumber) || empty($email) || empty($phone)) {
                 $_SESSION['error'] = 'Todos los campos son obligatorios';
-                header('Location: ' . $_ENV['APP_URL']);
+                header('Location: index.php');
                 exit;
             }
 
             // Validar email
             if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
                 $_SESSION['error'] = 'Email inválido';
-                header('Location: ' . $_ENV['APP_URL']);
+                header('Location: index.php');
                 exit;
             }
 
@@ -189,7 +189,7 @@ class HomeController extends Controller
             ]);
 
             // Redirigir al formulario
-            header('Location: ' . $_ENV['APP_URL'] . '/form/create');
+            header('Location: index.php?route=/form/create');
             exit;
 
         } catch (\Exception $e) {
@@ -224,7 +224,7 @@ class HomeController extends Controller
                 empty($empleadoCiudadVacante) || empty($empleadoCiudadNacimiento) || 
                 empty($empleadoFechaNacimiento) || empty($empleadoCelular)) {
                 $_SESSION['error'] = 'Todos los campos del empleado son obligatorios';
-                header('Location: ' . $_ENV['APP_URL']);
+                header('Location: index.php');
                 exit;
             }
             
@@ -344,7 +344,7 @@ class HomeController extends Controller
             
             // Redirigir inmediatamente con mensaje de éxito
             $_SESSION['success'] = 'Registro de empleado enviado correctamente.';
-            header('Location: ' . $_ENV['APP_URL']);
+            header('Location: index.php');
             
             // Enviar notificación después de la redirección (en segundo plano)
             if (function_exists('fastcgi_finish_request')) {
@@ -364,15 +364,15 @@ class HomeController extends Controller
             }
             
             exit;
-            
+
         } catch (\Exception $e) {
             error_log('Error en registerEmpleado: ' . $e->getMessage());
             $_SESSION['error'] = 'Error al registrar empleado: ' . $e->getMessage();
-            header('Location: ' . $_ENV['APP_URL']);
+            header('Location: index.php');
             exit;
         }
     }
-    
+
     /**
      * Enviar notificación de empleado a Angie
      */
@@ -394,7 +394,7 @@ class HomeController extends Controller
             $to = $reviewer['email'];
             $subject = 'SAGRILAFT - Nuevo Registro de Empleado para Aprobar';
             
-            $approvalUrl = $_ENV['APP_URL'] . "/approval/{$approvalToken}";
+            $approvalUrl = $_ENV['APP_URL'] . "/index.php?route=/approval/{$approvalToken}";
             
             // Generar lista de archivos adjuntos
             $attachmentsHtml = '';

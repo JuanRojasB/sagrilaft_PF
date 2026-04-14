@@ -56,7 +56,7 @@
             </div>
             <?php if (isset($_SESSION['reviewer_id'])): ?>
             <div class="header-actions">
-                <a href="/gestion-sagrilaft/public/reviewer/dashboard" class="btn-header">← Volver</a>
+                <a href="index.php?route=/reviewer/dashboard" class="btn-header">← Volver</a>
             </div>
             <?php endif; ?>
         </header>
@@ -110,7 +110,7 @@
                         $stmt->execute([$form['corrected_by_form_id']]);
                         $correctedByToken = $stmt->fetchColumn();
                         ?>
-                        <br><a href="/gestion-sagrilaft/public/approval/<?= $correctedByToken ?>" class="btn-link btn-blue">Ver formulario actualizado #<?= $form['corrected_by_form_id'] ?> →</a>
+                        <br><a href="index.php?route=/approval/<?= $correctedByToken ?>" class="btn-link btn-blue">Ver formulario actualizado #<?= $form['corrected_by_form_id'] ?> →</a>
                         <?php endif; ?>
 
                     <?php else: ?>
@@ -139,11 +139,11 @@
                             </p>
                         </div>
                         <div style="display:flex; gap:0.5rem; flex-wrap:wrap; justify-content:flex-end;">
-                            <a href="/gestion-sagrilaft/public/reviewer/form/<?= $form['id'] ?>/pdf" target="_blank" class="btn-pdf">👁 Ver PDF</a>
+                            <a href="<?= rtrim($_ENV['APP_URL'] ?? '', '/') ?>/view-pdf.php?id=<?= $form['id'] ?>" target="_blank" class="btn-pdf">👁 Ver PDF</a>
                             <?php if ($isApproved && $consolidatedPdf): ?>
-                                <a href="/gestion-sagrilaft/public/forms/consolidated/<?= $consolidatedPdf['id'] ?>/download" class="btn-pdf" style="background:#15803d;">⬇ Descargar</a>
+                                <a href="/gestion-sagrilaft/public/index.php?route=/forms/consolidated/<?= $consolidatedPdf['id'] ?>/download" class="btn-pdf" style="background:#15803d;">⬇ Descargar</a>
                             <?php elseif ($isApproved): ?>
-                                <a href="/gestion-sagrilaft/public/reviewer/form/<?= $form['id'] ?>/pdf?download=1" target="_blank" class="btn-pdf" style="background:#15803d;">⬇ Descargar</a>
+                                <a href="<?= rtrim($_ENV['APP_URL'] ?? '', '/') ?>/view-pdf.php?id=<?= $form['id'] ?>&download=1" target="_blank" class="btn-pdf" style="background:#15803d;">⬇ Descargar</a>
                             <?php endif; ?>
                         </div>
                     </div>
@@ -163,7 +163,7 @@
                             </div>
                             <div style="display:flex; flex-direction:column; gap:0.5rem;">
                                 <?php foreach ($attachments as $attachment): ?>
-                                    <a href="/gestion-sagrilaft/public/reviewer/attachment/<?= $attachment['id'] ?>" target="_blank" class="btn-pdf">
+                                    <a href="/gestion-sagrilaft/public/index.php?route=/reviewer/attachment/<?= $attachment['id'] ?>" target="_blank" class="btn-pdf">
                                         <?= htmlspecialchars($attachment['filename']) ?>
                                     </a>
                                 <?php endforeach; ?>

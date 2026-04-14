@@ -72,35 +72,58 @@ session_start();
 // ============================================================================
 // CONFIGURAR MANEJO DE ERRORES
 // ============================================================================
-// Detectar si es una petición AJAX o a endpoints JSON
-$uri = $_SERVER['REQUEST_URI'] ?? '';
-$isAjaxRequest = !empty($_SERVER['HTTP_X_REQUESTED_WITH']) && 
-                 strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest';
-$isJsonEndpoint = (strpos($uri, '/excel/') !== false || 
-                   strpos($uri, '/api/') !== false ||
-                   strpos($uri, '.json') !== false ||
-                   $isAjaxRequest);
-
-// En desarrollo: mostrar todos los errores (excepto en endpoints JSON)
-// En producción: ocultar errores
-if (($_ENV['APP_ENV'] ?? 'production') === 'development') {
-    if ($isJsonEndpoint) {
-        // Para endpoints JSON/AJAX, no mostrar errores HTML
-        error_reporting(E_ALL);
-        ini_set('display_errors', '0');
-        ini_set('log_errors', '1');
-    } else {
-        // Para páginas normales, mostrar errores
-        error_reporting(E_ALL);
-        ini_set('display_errors', '1');
-    }
-} else {
-    error_reporting(0);
-    ini_set('display_errors', '0');
-}
+// Siempre mostrar errores para diagnosticar
+error_reporting(E_ALL);
+ini_set('display_errors', '1');
+ini_set('log_errors', '1');
+ini_set('error_log', __DIR__ . '/../storage/logs/php-errors.log');
 
 // ============================================================================
 // INICIALIZAR Y EJECUTAR LA APLICACIÓN
 // ============================================================================
-$app = new App\Core\App();
-$app->run();
+
+try {
+    // Manejar rutas sin mod_rewrite (compatibilidad con WordPress)
+    if (isset($_GET['route'])) {
+        // Si hay parámetro route, usarlo como URI
+        $_SERVER['REQUEST_URI'] = $_GET['route'];
+    } else {
+        // Si no hay parámetro route, limpiar la URI actual
+        $uri = $_SERVER['REQUEST_URI'] ?? '/';
+        
+        // Remover query string
+        $uri = strtok($uri, '?');
+        
+        // Remover /gestion-sagrilaft/public/ de la URI si existe
+        $uri = preg_replace('#^/gestion-sagrilaft/public/#', '/', $uri);
+        
+        // Remover /index.php de la URI si existe
+        $uri = preg_replace('#^/index\.php#', '/', $uri);
+        
+        // Si la URI está vacía, usar /
+        if (empty($uri) || $uri === '') {
+            $uri = '/';
+        }
+        
+        $_SERVER['REQUEST_URI'] = $uri;
+    }
+
+    $app = new App\Core\App();
+    $app->run();
+    
+} catch (\Throwable $e) {
+    // Capturar cualquier error fatal
+    http_response_code(500);
+    echo '<h1>Error del Sistema</h1>';
+    echo '<pre>';
+    echo 'Mensaje: ' . $e->getMessage() . "\n";
+    echo 'Archivo: ' . $e->getFile() . "\n";
+    echo 'Línea: ' . $e->getLine() . "\n";
+    echo "\nStack Trace:\n" . $e->getTraceAsString();
+    echo '</pre>';
+    
+    // Registrar en archivo
+    $logFile = __DIR__ . '/../storage/logs/fatal-error.log';
+    $logEntry = date('[Y-m-d H:i:s] ') . $e->getMessage() . ' in ' . $e->getFile() . ':' . $e->getLine() . "\n";
+    file_put_contents($logFile, $logEntry, FILE_APPEND);
+}

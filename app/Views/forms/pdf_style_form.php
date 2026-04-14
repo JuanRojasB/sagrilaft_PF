@@ -1300,7 +1300,7 @@
                 const formData = new FormData(document.getElementById('pdfForm'));
                 formData.append('pdf_preview_only', '1'); // Indicar que es solo preview
 
-                const response = await fetch('<?= $_ENV['APP_URL'] ?>/form/pdf-preview', {
+                const response = await fetch('index.php?route=/form/pdf-preview', {
                     method: 'POST',
                     body: formData
                 });
@@ -1470,8 +1470,8 @@
             
             // Determinar URL de envío según el paso
             const submitUrl = isStep2 
-                ? '<?= $_ENV['APP_URL'] ?>/form/declaracion/store'
-                : '<?= $_ENV['APP_URL'] ?>/form/store-pdf';
+                ? 'index.php?route=/form/declaracion/store'
+                : 'index.php?route=/form/store-pdf';
             
             try {
                 const response = await fetch(submitUrl, {
@@ -1518,7 +1518,7 @@
                     } else {
                         // Si es paso 2 o no necesita declaración, ir a página de éxito
                         setTimeout(() => {
-                            window.location.href = '<?= $_ENV['APP_URL'] ?>/form/success';
+                            window.location.href = 'index.php?route=/form/success';
                         }, 2000);
                     }
                 } else {

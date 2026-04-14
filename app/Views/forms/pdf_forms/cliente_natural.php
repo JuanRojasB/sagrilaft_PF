@@ -248,7 +248,7 @@
 <script>
 let _sigModalCN = null;
 document.addEventListener('DOMContentLoaded', () => {
-    fetch('<?= $_ENV['APP_URL'] ?>/api/actividades-economicas.php')
+    fetch('api/actividades-economicas.php')
         .then(r => r.json()).then(data => {
             const s = document.getElementById('codigoCiiu_cn');
             data.forEach(a => { const o = document.createElement('option'); o.value = a.codigo; o.textContent = `${a.codigo} - ${a.descripcion}`; s.appendChild(o); });

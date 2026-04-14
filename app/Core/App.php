@@ -15,7 +15,7 @@ use App\Services\Logger;
 class App
 {
     private Router $router;
-    private Logger $logger;
+    private $logger; // Cambiar a tipo mixto para evitar errores si no existe
 
     /**
      * Constructor - Inicializa el router, logger y registra las rutas
@@ -23,7 +23,18 @@ class App
     public function __construct()
     {
         $this->router = new Router();
-        $this->logger = new Logger();
+        
+        // Intentar inicializar el logger, pero no fallar si no existe
+        try {
+            if (class_exists('App\Services\Logger')) {
+                $this->logger = new Logger();
+            } else {
+                $this->logger = null;
+            }
+        } catch (\Exception $e) {
+            $this->logger = null;
+        }
+        
         $this->registerRoutes();
     }
 
@@ -97,6 +108,7 @@ class App
         $this->router->post('/reviewer/login', 'ApprovalController@processLogin');
         $this->router->get('/reviewer/dashboard', 'ApprovalController@dashboard');
         $this->router->post('/reviewer/logout', 'ApprovalController@logout');
+        $this->router->post('/reviewer/upload-firma', 'ApprovalController@uploadFirma');
         
         // Rutas de evaluación de documentos - OBSOLETAS (comentadas)
         // $this->router->get('/reviewer/documentos', 'ReviewerController@documentos', ['auth', 'role:revisor']);
@@ -144,22 +156,32 @@ class App
             // Despachar la ruta actual
             $this->router->dispatch();
         } catch (\Exception $e) {
-            // Registrar el error en los logs
-            $this->logger->error('Application error: ' . $e->getMessage(), [
-                'file' => $e->getFile(),
-                'line' => $e->getLine(),
-                'trace' => $e->getTraceAsString()
-            ]);
+            // Registrar el error en los logs si el logger existe
+            if ($this->logger !== null) {
+                try {
+                    $this->logger->error('Application error: ' . $e->getMessage(), [
+                        'file' => $e->getFile(),
+                        'line' => $e->getLine(),
+                        'trace' => $e->getTraceAsString()
+                    ]);
+                } catch (\Exception $logError) {
+                    // Si falla el logger, escribir directamente en archivo
+                    $logFile = __DIR__ . '/../../storage/logs/app-error.log';
+                    file_put_contents($logFile, date('[Y-m-d H:i:s] ') . $e->getMessage() . "\n", FILE_APPEND);
+                }
+            }
             
             // Responder con error 500
             http_response_code(500);
             
-            // Mostrar detalles solo en desarrollo
-            if ($_ENV['APP_ENV'] === 'development') {
-                echo '<pre>' . $e->getMessage() . '</pre>';
-            } else {
-                echo 'Error interno del servidor';
-            }
+            // Mostrar detalles del error
+            echo '<h1>Error de Aplicación</h1>';
+            echo '<pre>';
+            echo 'Mensaje: ' . htmlspecialchars($e->getMessage()) . "\n";
+            echo 'Archivo: ' . htmlspecialchars($e->getFile()) . "\n";
+            echo 'Línea: ' . $e->getLine() . "\n\n";
+            echo "Stack Trace:\n" . htmlspecialchars($e->getTraceAsString());
+            echo '</pre>';
         }
     }
 }

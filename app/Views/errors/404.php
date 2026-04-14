@@ -54,7 +54,7 @@
         <h1>Página No Encontrada</h1>
         <div class="error-code">Error 404</div>
         <p>La página que buscas no existe o ha sido movida. Verifica la URL o regresa al inicio.</p>
-        <a href="/gestion-sagrilaft/public/" class="btn btn-primary">← Volver al Inicio</a>
+        <a href="index.php" class="btn btn-primary">← Volver al Inicio</a>
     </div>
 </body>
 </html>

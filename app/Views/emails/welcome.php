@@ -55,7 +55,7 @@
             </div>
             
             <div style="text-align: center; margin: 30px 0;">
-                <a href="<?= $_ENV['APP_URL'] ?? 'http://localhost' ?>/login" class="button">
+                <a href="index.php?route=/login" class="button">
                     Acceder al Sistema
                 </a>
             </div>

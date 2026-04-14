@@ -1,11 +1,19 @@
-# Redirect all requests to public folder
-<IfModule mod_rewrite.c>
-    RewriteEngine On
-    RewriteRule ^(.*)$ public/$1 [L]
-</IfModule>
-
-# Deny access to sensitive files
-<FilesMatch "^\.env">
+# Proteger archivo .env
+<Files .env>
     Order allow,deny
     Deny from all
-</FilesMatch>
+</Files>
+
+# Redirigir a public/ si no es un archivo que existe
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /gestion-sagrilaft/
+    
+    # Si es un archivo o directorio que existe, servirlo
+    RewriteCond %{REQUEST_FILENAME} -f [OR]
+    RewriteCond %{REQUEST_FILENAME} -d
+    RewriteRule ^ - [L]
+    
+    # Todo lo demás va a public/
+    RewriteRule ^(.*)$ public/$1 [L]
+</IfModule>

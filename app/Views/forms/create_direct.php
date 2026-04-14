@@ -483,7 +483,7 @@
         }
 
         // Cargar actividades económicas
-        fetch('<?= $_ENV['APP_URL'] ?>/api/actividades-economicas')
+        fetch('api/actividades-economicas.php')
             .then(res => res.json())
             .then(data => {
                 const select = document.getElementById('codigoCiiu');
@@ -715,7 +715,7 @@
                     xhr.onerror = () => reject(new Error('Error de conexión'));
                 });
                 
-                xhr.open('POST', '<?= $_ENV['APP_URL'] ?>/form/store');
+                xhr.open('POST', 'index.php?route=/form/store');
                 xhr.send(formData);
                 
                 const data = await uploadPromise;
@@ -729,7 +729,7 @@
                     messageDiv.textContent = data.message;
                     
                     setTimeout(() => {
-                        window.location.href = '<?= $_ENV['APP_URL'] ?>/form/success';
+                        window.location.href = 'index.php?route=/form/success';
                     }, 2000);
                 } else {
                     throw new Error(data.error || 'Error al enviar el formulario');

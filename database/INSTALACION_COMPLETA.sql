@@ -35,9 +35,9 @@ CREATE TABLE IF NOT EXISTS actividades_economicas (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ============================================================================
--- TABLA: forms_sagrilaft (TABLA PRINCIPAL)
+-- TABLA: forms (TABLA PRINCIPAL)
 -- ============================================================================
-CREATE TABLE IF NOT EXISTS forms_sagrilaft (
+CREATE TABLE IF NOT EXISTS forms (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
     title VARCHAR(255) NOT NULL,
@@ -915,3 +915,104 @@ ADD CONSTRAINT fk_asesor_comercial FOREIGN KEY (asesor_comercial_id) REFERENCES 
 SELECT 'Migración completada - Asesores comerciales agregados' AS mensaje;
 SELECT COUNT(*) as total_asesores FROM asesores_comerciales;
 SELECT sede, COUNT(*) as cantidad FROM asesores_comerciales GROUP BY sede;
+
+
+-- ============================================================================
+-- MIGRACIONES ADICIONALES CONSOLIDADAS
+-- ============================================================================
+
+-- ============================================================================
+-- MIGRACIÓN 1: Agregar tipo de persona (natural/jurídica)
+-- ============================================================================
+ALTER TABLE forms_sagrilaft
+ADD COLUMN IF NOT EXISTS person_type ENUM('natural', 'juridica') DEFAULT 'natural'
+    AFTER form_type;
+
+-- ============================================================================
+-- MIGRACIÓN 2: Tabla para empleados
+-- ============================================================================
+CREATE TABLE IF NOT EXISTS form_empleados (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    form_id INT NOT NULL,
+    empleado_nombre VARCHAR(255) NOT NULL,
+    empleado_cedula VARCHAR(50) NOT NULL,
+    empleado_cargo VARCHAR(255) NOT NULL,
+    empleado_ciudad_vacante VARCHAR(255) NULL,
+    empleado_ciudad_nacimiento VARCHAR(255) NULL,
+    empleado_fecha_nacimiento DATE NOT NULL,
+    empleado_celular VARCHAR(50) NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (form_id) REFERENCES forms_sagrilaft(id) ON DELETE CASCADE,
+    INDEX idx_form_id (form_id),
+    INDEX idx_cedula (empleado_cedula)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ============================================================================
+-- MIGRACIÓN 3: Agregar tipo 'empleado' al form_type
+-- ============================================================================
+ALTER TABLE forms_sagrilaft 
+MODIFY COLUMN form_type ENUM('cliente', 'proveedor', 'transportista', 'empleado') DEFAULT 'cliente';
+
+-- Agregar campos específicos para empleados en forms_sagrilaft
+ALTER TABLE forms_sagrilaft
+ADD COLUMN IF NOT EXISTS empleado_nombre VARCHAR(255) COMMENT 'Nombre completo del empleado' AFTER related_form_id,
+ADD COLUMN IF NOT EXISTS empleado_cedula VARCHAR(50) COMMENT 'Número de cédula del empleado' AFTER empleado_nombre,
+ADD COLUMN IF NOT EXISTS empleado_cargo VARCHAR(255) COMMENT 'Cargo del empleado' AFTER empleado_cedula,
+ADD COLUMN IF NOT EXISTS empleado_fecha_nacimiento DATE COMMENT 'Fecha de nacimiento del empleado' AFTER empleado_cargo,
+ADD COLUMN IF NOT EXISTS empleado_pdf_cedula_required BOOLEAN DEFAULT FALSE COMMENT 'Indica si el PDF de cédula es requerido para este empleado' AFTER empleado_fecha_nacimiento;
+
+-- Agregar índice para búsqueda por cédula de empleado
+ALTER TABLE forms_sagrilaft
+ADD INDEX IF NOT EXISTS idx_empleado_cedula (empleado_cedula);
+
+-- ============================================================================
+-- MIGRACIÓN 4: Verificar columna original_filename en form_attachments
+-- ============================================================================
+SET @dbname = DATABASE();
+SET @tablename = 'form_attachments';
+SET @columnname = 'original_filename';
+SET @preparedStatement = (SELECT IF(
+  (
+    SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS
+    WHERE
+      (table_name = @tablename)
+      AND (table_schema = @dbname)
+      AND (column_name = @columnname)
+  ) > 0,
+  "SELECT 1",
+  CONCAT("ALTER TABLE ", @tablename, " ADD ", @columnname, " VARCHAR(255) NOT NULL AFTER filename")
+));
+PREPARE alterIfNotExists FROM @preparedStatement;
+EXECUTE alterIfNotExists;
+DEALLOCATE PREPARE alterIfNotExists;
+
+-- ============================================================================
+-- MIGRACIÓN 5: Aumentar max_allowed_packet para archivos grandes
+-- ============================================================================
+SET GLOBAL max_allowed_packet = 67108864;
+
+-- ============================================================================
+-- VERIFICACIÓN FINAL
+-- ============================================================================
+SELECT 'INSTALACIÓN COMPLETA - Todas las migraciones aplicadas exitosamente' AS mensaje;
+SELECT 
+    TABLE_NAME as 'Tabla',
+    TABLE_ROWS as 'Filas',
+    ROUND(((DATA_LENGTH + INDEX_LENGTH) / 1024 / 1024), 2) as 'Tamaño (MB)'
+FROM information_schema.TABLES 
+WHERE TABLE_SCHEMA = DATABASE()
+ORDER BY TABLE_NAME;
+
+-- ============================================================================
+-- NOTAS IMPORTANTES
+-- ============================================================================
+-- 1. Este archivo contiene TODA la estructura de la base de datos
+-- 2. Incluye todas las migraciones consolidadas
+-- 3. El cambio de max_allowed_packet es temporal (se pierde al reiniciar MySQL)
+-- 4. Para hacer permanente max_allowed_packet, agregar en my.ini o my.cnf:
+--    [mysqld]
+--    max_allowed_packet = 64M
+-- 5. Usuarios por defecto:
+--    - admin@sagrilaft.com / password (cambiar en producción)
+--    - revisor@sagrilaft.com / password (cambiar en producción)
+-- ============================================================================

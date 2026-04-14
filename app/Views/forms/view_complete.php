@@ -255,7 +255,7 @@
                             <?php foreach ($relatedAttachments as $attachment): ?>
                             <div class="attachment-item">
                                 <span>Adjunto:</span>
-                                <a href="/gestion-sagrilaft/public/forms/attachment/<?= $attachment['id'] ?>" target="_blank">
+                                <a href="index.php?route=/forms/attachment/<?= $attachment['id'] ?>" target="_blank">
                                     <?= htmlspecialchars($attachment['filename'] ?? $attachment['original_filename'] ?? 'Documento ' . $attachment['id']) ?>
                                 </a>
                                 <?php if (!empty($attachment['filesize']) || !empty($attachment['file_size'])): ?>
@@ -284,7 +284,7 @@
                 <?php foreach ($attachments as $attachment): ?>
                 <div class="attachment-item">
                     <span>Adjunto:</span>
-                    <a href="/gestion-sagrilaft/public/forms/attachment/<?= $attachment['id'] ?>" target="_blank">
+                    <a href="index.php?route=/forms/attachment/<?= $attachment['id'] ?>" target="_blank">
                         <?= htmlspecialchars($attachment['filename'] ?? $attachment['original_filename'] ?? 'Documento ' . $attachment['id']) ?>
                     </a>
                     <?php if (!empty($attachment['filesize']) || !empty($attachment['file_size'])): ?>
