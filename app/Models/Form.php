@@ -239,11 +239,14 @@ class Form
                  approved_by = ?, 
                  approval_observations = ?, 
                  approval_date = NOW(),
+                 reviewed_at = NOW(),
+                 reviewed_by = ?,
+                 reviewed_by_name = ?,
                  updated_at = NOW()
              WHERE id = ?"
         );
         
-        return $stmt->execute([$status, $approvedBy, $observations, $id]);
+        return $stmt->execute([$status, $approvedBy, $observations, $approvedBy, $approvedBy, $id]);
     }
 
     /**

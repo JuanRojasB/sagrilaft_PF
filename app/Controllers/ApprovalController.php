@@ -170,12 +170,25 @@ class ApprovalController extends Controller
 
         try {
             $imageData = file_get_contents($file['tmp_name']);
-            $base64 = base64_encode($imageData);
             $mimeType = $file['type'];
 
             $db = \App\Core\Database::getConnection();
-            $stmt = $db->prepare("UPDATE users SET firma_digital = ?, firma_mime_type = ? WHERE id = ?");
-            $stmt->execute([$base64, $mimeType, $_SESSION['reviewer_id']]);
+            
+            // Desactivar firmas anteriores del usuario
+            $stmt = $db->prepare("UPDATE firmas_digitales SET activa = 0 WHERE user_id = ?");
+            $stmt->execute([$_SESSION['reviewer_id']]);
+            
+            // Insertar nueva firma activa
+            $stmt = $db->prepare("
+                INSERT INTO firmas_digitales (user_id, firma_data, firma_size, mime_type, activa, created_at) 
+                VALUES (?, ?, ?, ?, 1, NOW())
+            ");
+            $stmt->execute([
+                $_SESSION['reviewer_id'],
+                $imageData,
+                $file['size'],
+                $mimeType
+            ]);
 
             if ($this->logger) {
                 $this->logger->info('Firma digital actualizada', ['reviewer_id' => $_SESSION['reviewer_id']]);
@@ -399,32 +412,81 @@ class ApprovalController extends Controller
     }
 
     /**
-     * Guarda los campos internos de revisión en la tabla forms.
+     * Guarda los campos internos de revisión en la tabla form_signatures.
      */
     private function saveExclusivePolloFiestaFields(int $formId): void
     {
         $db = $this->formModel->getConnection();
+        
+        $reviewerName = $_SESSION['reviewer_name'] ?? $this->input('approved_by') ?? 'Revisor';
+        $reviewerId = $_SESSION['reviewer_id'] ?? null;
+
+        // Obtener firmas digitales
+        $userSignature = null;
+        $officialSignature = null;
+
+        // Obtener firma del usuario dueño del formulario
+        $stmt = $db->prepare("SELECT user_id FROM forms WHERE id = ?");
+        $stmt->execute([$formId]);
+        $form = $stmt->fetch(PDO::FETCH_ASSOC);
+        
+        if ($form && !empty($form['user_id'])) {
+            $stmt = $db->prepare("SELECT firma_data, mime_type FROM firmas_digitales WHERE user_id = ? AND activa = 1 LIMIT 1");
+            $stmt->execute([$form['user_id']]);
+            $userFirma = $stmt->fetch(PDO::FETCH_ASSOC);
+            
+            if ($userFirma && !empty($userFirma['firma_data'])) {
+                $userSignature = 'data:' . ($userFirma['mime_type'] ?? 'image/png') . ';base64,' . base64_encode($userFirma['firma_data']);
+            }
+        }
+
+        // Obtener firma del revisor actual
+        if ($reviewerId) {
+            $stmt = $db->prepare("SELECT firma_data, mime_type FROM firmas_digitales WHERE user_id = ? AND activa = 1 LIMIT 1");
+            $stmt->execute([$reviewerId]);
+            $officialFirma = $stmt->fetch(PDO::FETCH_ASSOC);
+            
+            if ($officialFirma && !empty($officialFirma['firma_data'])) {
+                $officialSignature = 'data:' . ($officialFirma['mime_type'] ?? 'image/png') . ';base64,' . base64_encode($officialFirma['firma_data']);
+            }
+        }
+
+        // Insertar o actualizar en form_signatures
         $stmt = $db->prepare("
-            UPDATE forms
-            SET vinculacion = ?,
-                fecha_vinculacion = ?,
-                actualizacion = ?,
-                consulta_ofac = ?,
-                consulta_listas_nacionales = ?,
-                consulta_onu = ?,
-                consulta_interpol = ?,
-                recibe = ?,
-                director_cartera = ?,
-                gerencia_comercial = ?,
-                verificado_por = ?,
-                preparo = ?,
-                reviso = ?,
-                nombre_oficial = ?,
+            INSERT INTO form_signatures (
+                form_id, user_signature_data, official_signature_data,
+                vinculacion, fecha_vinculacion, actualizacion,
+                consulta_ofac, consulta_listas_nacionales, consulta_onu, consulta_interpol,
+                recibe, director_cartera, gerencia_comercial, verificado_por, preparo, reviso, nombre_oficial,
+                reviewed_at, reviewed_by, reviewed_by_name
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), ?, ?)
+            ON DUPLICATE KEY UPDATE
+                user_signature_data = VALUES(user_signature_data),
+                official_signature_data = VALUES(official_signature_data),
+                vinculacion = VALUES(vinculacion),
+                fecha_vinculacion = VALUES(fecha_vinculacion),
+                actualizacion = VALUES(actualizacion),
+                consulta_ofac = VALUES(consulta_ofac),
+                consulta_listas_nacionales = VALUES(consulta_listas_nacionales),
+                consulta_onu = VALUES(consulta_onu),
+                consulta_interpol = VALUES(consulta_interpol),
+                recibe = VALUES(recibe),
+                director_cartera = VALUES(director_cartera),
+                gerencia_comercial = VALUES(gerencia_comercial),
+                verificado_por = VALUES(verificado_por),
+                preparo = VALUES(preparo),
+                reviso = VALUES(reviso),
+                nombre_oficial = VALUES(nombre_oficial),
+                reviewed_at = NOW(),
+                reviewed_by = VALUES(reviewed_by),
+                reviewed_by_name = VALUES(reviewed_by_name),
                 updated_at = NOW()
-            WHERE id = ?
         ");
 
         $stmt->execute([
+            $formId,
+            $userSignature,
+            $officialSignature,
             $this->input('vinculacion') ?: null,
             $this->input('fecha_vinculacion') ?: null,
             $this->input('actualizacion') ?: null,
@@ -439,7 +501,8 @@ class ApprovalController extends Controller
             $this->input('preparo') ?: null,
             $this->input('reviso') ?: null,
             $this->input('nombre_oficial') ?: null,
-            $formId,
+            $reviewerId,
+            $reviewerName,
         ]);
     }
 
@@ -660,6 +723,7 @@ class ApprovalController extends Controller
             
             // IMPORTANTE: Recargar el formulario desde la BD para obtener los campos actualizados
             // (consulta_ofac, consulta_listas_nacionales, recibe, director_cartera, etc.)
+            // Solo el formulario principal necesita ser recargado ya que es donde se guardan estos campos
             $stmt = $db->prepare("SELECT * FROM forms WHERE id = ? LIMIT 1");
             $stmt->execute([$formId]);
             $mainForm = $stmt->fetch(\PDO::FETCH_ASSOC);
@@ -668,18 +732,38 @@ class ApprovalController extends Controller
                 return null;
             }
             
-            // Obtener la firma del revisor ACTUAL (el que está en sesión)
-            $reviewerId = $_SESSION['reviewer_id'] ?? null;
-            if ($reviewerId) {
-                $stmtRevisor = $db->prepare("SELECT firma_digital, firma_mime_type FROM users WHERE id = ? AND role = 'revisor' LIMIT 1");
-                $stmtRevisor->execute([$reviewerId]);
-                $firmaRevisor = $stmtRevisor->fetch(PDO::FETCH_ASSOC);
-                
-                // Si el revisor actual tiene firma, agregarla al formulario
-                if ($firmaRevisor && !empty($firmaRevisor['firma_digital'])) {
-                    $mainForm['firma_oficial_data'] = 'data:' . ($firmaRevisor['firma_mime_type'] ?? 'image/png') . ';base64,' . $firmaRevisor['firma_digital'];
-                    $mainForm['firma_oficial_cumplimiento_data'] = $mainForm['firma_oficial_data'];
+            // Obtener datos de firmas y campos del revisor desde form_signatures
+            $stmt = $db->prepare("SELECT * FROM form_signatures WHERE form_id = ? LIMIT 1");
+            $stmt->execute([$formId]);
+            $signatureData = $stmt->fetch(\PDO::FETCH_ASSOC);
+            
+            if ($signatureData) {
+                // Agregar firmas al formulario principal
+                if (!empty($signatureData['user_signature_data'])) {
+                    $mainForm['signature_data'] = $signatureData['user_signature_data'];
                 }
+                if (!empty($signatureData['official_signature_data'])) {
+                    $mainForm['firma_oficial_data'] = $signatureData['official_signature_data'];
+                    $mainForm['firma_oficial_cumplimiento_data'] = $signatureData['official_signature_data'];
+                }
+                
+                // Agregar campos del revisor
+                $mainForm = array_merge($mainForm, [
+                    'vinculacion' => $signatureData['vinculacion'],
+                    'fecha_vinculacion' => $signatureData['fecha_vinculacion'],
+                    'actualizacion' => $signatureData['actualizacion'],
+                    'consulta_ofac' => $signatureData['consulta_ofac'],
+                    'consulta_listas_nacionales' => $signatureData['consulta_listas_nacionales'],
+                    'consulta_onu' => $signatureData['consulta_onu'],
+                    'consulta_interpol' => $signatureData['consulta_interpol'],
+                    'recibe' => $signatureData['recibe'],
+                    'director_cartera' => $signatureData['director_cartera'],
+                    'gerencia_comercial' => $signatureData['gerencia_comercial'],
+                    'verificado_por' => $signatureData['verificado_por'],
+                    'preparo' => $signatureData['preparo'],
+                    'reviso' => $signatureData['reviso'],
+                    'nombre_oficial' => $signatureData['nombre_oficial'],
+                ]);
             }
 
             // Formularios: principal + relacionados (declaraciones u otros vinculados)
@@ -886,6 +970,44 @@ class ApprovalController extends Controller
             
             if (!$isApproved && $relatedForm === null && !empty($form['generated_pdf_content'])) {
                 return $form['generated_pdf_content'];
+            }
+
+            // Obtener campos del revisor desde la tabla form_signatures
+            $db = \App\Core\Database::getConnection();
+            $stmt = $db->prepare("SELECT * FROM form_signatures WHERE form_id = ? LIMIT 1");
+            $stmt->execute([$form['id']]);
+            $signatureData = $stmt->fetch(PDO::FETCH_ASSOC);
+            
+            if ($signatureData) {
+                // Agregar campos del revisor al formulario
+                $form = array_merge($form, [
+                    'vinculacion' => $signatureData['vinculacion'],
+                    'fecha_vinculacion' => $signatureData['fecha_vinculacion'],
+                    'actualizacion' => $signatureData['actualizacion'],
+                    'consulta_ofac' => $signatureData['consulta_ofac'],
+                    'consulta_listas_nacionales' => $signatureData['consulta_listas_nacionales'],
+                    'consulta_onu' => $signatureData['consulta_onu'],
+                    'consulta_interpol' => $signatureData['consulta_interpol'],
+                    'recibe' => $signatureData['recibe'],
+                    'director_cartera' => $signatureData['director_cartera'],
+                    'gerencia_comercial' => $signatureData['gerencia_comercial'],
+                    'verificado_por' => $signatureData['verificado_por'],
+                    'preparo' => $signatureData['preparo'],
+                    'reviso' => $signatureData['reviso'],
+                    'nombre_oficial' => $signatureData['nombre_oficial'],
+                    'reviewed_at' => $signatureData['reviewed_at'],
+                    'reviewed_by' => $signatureData['reviewed_by'],
+                    'reviewed_by_name' => $signatureData['reviewed_by_name'],
+                ]);
+                
+                // Agregar firmas digitales
+                if (!empty($signatureData['user_signature_data'])) {
+                    $form['signature_data'] = $signatureData['user_signature_data'];
+                }
+                if (!empty($signatureData['official_signature_data'])) {
+                    $form['firma_oficial_data'] = $signatureData['official_signature_data'];
+                    $form['firma_oficial_cumplimiento_data'] = $signatureData['official_signature_data'];
+                }
             }
 
             // Normalizar accionistas para FormPdfFiller

@@ -103,6 +103,12 @@ class App
         $this->router->get('/documentos/download/{id}', 'DocumentoController@download', ['auth']); // Descargar documento
         $this->router->post('/documentos/delete/{id}', 'DocumentoController@delete', ['auth']); // Eliminar documento
         
+        // Rutas de firmas digitales
+        $this->router->get('/signature', 'SignatureController@index', ['auth']); // Gestión de firmas
+        $this->router->post('/signature/upload', 'SignatureController@upload', ['auth']); // Subir firma
+        $this->router->get('/signature/view', 'SignatureController@view', ['auth']); // Ver firma actual
+        $this->router->post('/signature/delete', 'SignatureController@delete', ['auth']); // Eliminar firma
+        
         // Rutas de revisor - Login y dashboard para revisores
         $this->router->get('/reviewer/login', 'ApprovalController@login');
         $this->router->post('/reviewer/login', 'ApprovalController@processLogin');

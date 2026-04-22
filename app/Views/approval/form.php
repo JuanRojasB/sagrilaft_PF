@@ -254,6 +254,17 @@
                         <?php 
                         $isEmpleado = ($form['form_type'] ?? '') === 'empleado';
                         if (!$isEmpleado): 
+                        
+                        // Obtener datos existentes del revisor desde form_signatures
+                        $db = \App\Core\Database::getConnection();
+                        $stmt = $db->prepare("SELECT * FROM form_signatures WHERE form_id = ? LIMIT 1");
+                        $stmt->execute([$form['id']]);
+                        $signatureData = $stmt->fetch(\PDO::FETCH_ASSOC);
+                        
+                        // Función helper para obtener valores con fallback
+                        $getSignatureValue = function($field, $default = '') use ($signatureData, $form) {
+                            return $signatureData[$field] ?? $form[$field] ?? $default;
+                        };
                         ?>
                         
                         <!-- Espacio para ser tramitado por el departamento de Cartera/Compras -->
@@ -273,17 +284,17 @@
                                     <label style="display:block; font-size:0.72rem; color:#475569; margin-bottom:0.3rem; text-transform:uppercase;">Vinculación</label>
                                     <select name="vinculacion" style="width:100%; padding:0.6rem; background:#ffffff; border:1px solid #cbd5e1; border-radius:0.25rem; color:#0f172a; font-size:0.82rem;">
                                         <option value="">Seleccione</option>
-                                        <option value="nueva" <?= (($form['vinculacion'] ?? '') === 'nueva') ? 'selected' : '' ?>>Nueva</option>
-                                        <option value="actualizacion" <?= (($form['vinculacion'] ?? '') === 'actualizacion') ? 'selected' : '' ?>>Actualización</option>
+                                        <option value="nueva" <?= ($getSignatureValue('vinculacion') === 'nueva') ? 'selected' : '' ?>>Nueva</option>
+                                        <option value="actualizacion" <?= ($getSignatureValue('vinculacion') === 'actualizacion') ? 'selected' : '' ?>>Actualización</option>
                                     </select>
                                 </div>
                                 <div>
                                     <label style="display:block; font-size:0.72rem; color:#475569; margin-bottom:0.3rem; text-transform:uppercase;">Fecha de Vinculación</label>
-                                    <input type="date" name="fecha_vinculacion" value="<?= htmlspecialchars((string)($form['fecha_vinculacion'] ?? date('Y-m-d'))) ?>" style="width:100%; padding:0.6rem; background:#ffffff; border:1px solid #cbd5e1; border-radius:0.25rem; color:#0f172a; font-size:0.82rem;">
+                                    <input type="date" name="fecha_vinculacion" value="<?= htmlspecialchars($getSignatureValue('fecha_vinculacion', date('Y-m-d'))) ?>" style="width:100%; padding:0.6rem; background:#ffffff; border:1px solid #cbd5e1; border-radius:0.25rem; color:#0f172a; font-size:0.82rem;">
                                 </div>
                                 <div style="grid-column:1/-1;">
                                     <label style="display:block; font-size:0.72rem; color:#475569; margin-bottom:0.3rem; text-transform:uppercase;">Actualización</label>
-                                    <input type="text" name="actualizacion" value="<?= htmlspecialchars((string)($form['actualizacion'] ?? '')) ?>" placeholder="Ej: Primera actualización, Segunda actualización..." style="width:100%; padding:0.6rem; background:#ffffff; border:1px solid #cbd5e1; border-radius:0.25rem; color:#0f172a; font-size:0.82rem;">
+                                    <input type="text" name="actualizacion" value="<?= htmlspecialchars($getSignatureValue('actualizacion')) ?>" placeholder="Ej: Primera actualización, Segunda actualización..." style="width:100%; padding:0.6rem; background:#ffffff; border:1px solid #cbd5e1; border-radius:0.25rem; color:#0f172a; font-size:0.82rem;">
                                 </div>
                             </div>
                         </div>
@@ -298,16 +309,16 @@
                                     <label style="display:block; font-size:0.72rem; color:#475569; margin-bottom:0.3rem; text-transform:uppercase;">Consulta OFAC</label>
                                     <select name="consulta_ofac" style="width:100%; padding:0.6rem; background:#ffffff; border:1px solid #cbd5e1; border-radius:0.25rem; color:#0f172a; font-size:0.82rem;">
                                         <option value="">Seleccione</option>
-                                        <option value="negativa" <?= (($form['consulta_ofac'] ?? '') === 'negativa') ? 'selected' : '' ?>>Negativa</option>
-                                        <option value="positiva" <?= (($form['consulta_ofac'] ?? '') === 'positiva') ? 'selected' : '' ?>>Positiva</option>
+                                        <option value="negativa" <?= ($getSignatureValue('consulta_ofac') === 'negativa') ? 'selected' : '' ?>>Negativa</option>
+                                        <option value="positiva" <?= ($getSignatureValue('consulta_ofac') === 'positiva') ? 'selected' : '' ?>>Positiva</option>
                                     </select>
                                 </div>
                                 <div>
                                     <label style="display:block; font-size:0.72rem; color:#475569; margin-bottom:0.3rem; text-transform:uppercase;">Listas Nacionales</label>
                                     <select name="consulta_listas_nacionales" style="width:100%; padding:0.6rem; background:#ffffff; border:1px solid #cbd5e1; border-radius:0.25rem; color:#0f172a; font-size:0.82rem;">
                                         <option value="">Seleccione</option>
-                                        <option value="negativa" <?= (($form['consulta_listas_nacionales'] ?? '') === 'negativa') ? 'selected' : '' ?>>Negativa</option>
-                                        <option value="positiva" <?= (($form['consulta_listas_nacionales'] ?? '') === 'positiva') ? 'selected' : '' ?>>Positiva</option>
+                                        <option value="negativa" <?= ($getSignatureValue('consulta_listas_nacionales') === 'negativa') ? 'selected' : '' ?>>Negativa</option>
+                                        <option value="positiva" <?= ($getSignatureValue('consulta_listas_nacionales') === 'positiva') ? 'selected' : '' ?>>Positiva</option>
                                     </select>
                                 </div>
                             </div>
@@ -316,37 +327,37 @@
                                     <label style="display:block; font-size:0.72rem; color:#475569; margin-bottom:0.3rem; text-transform:uppercase;">Consulta ONU</label>
                                     <select name="consulta_onu" style="width:100%; padding:0.6rem; background:#ffffff; border:1px solid #cbd5e1; border-radius:0.25rem; color:#0f172a; font-size:0.82rem;">
                                         <option value="">Seleccione</option>
-                                        <option value="negativa" <?= (($form['consulta_onu'] ?? '') === 'negativa') ? 'selected' : '' ?>>Negativa</option>
-                                        <option value="positiva" <?= (($form['consulta_onu'] ?? '') === 'positiva') ? 'selected' : '' ?>>Positiva</option>
+                                        <option value="negativa" <?= ($getSignatureValue('consulta_onu') === 'negativa') ? 'selected' : '' ?>>Negativa</option>
+                                        <option value="positiva" <?= ($getSignatureValue('consulta_onu') === 'positiva') ? 'selected' : '' ?>>Positiva</option>
                                     </select>
                                 </div>
                                 <div>
                                     <label style="display:block; font-size:0.72rem; color:#475569; margin-bottom:0.3rem; text-transform:uppercase;">Consulta Interpol</label>
                                     <select name="consulta_interpol" style="width:100%; padding:0.6rem; background:#ffffff; border:1px solid #cbd5e1; border-radius:0.25rem; color:#0f172a; font-size:0.82rem;">
                                         <option value="">Seleccione</option>
-                                        <option value="negativa" <?= (($form['consulta_interpol'] ?? '') === 'negativa') ? 'selected' : '' ?>>Negativa</option>
-                                        <option value="positiva" <?= (($form['consulta_interpol'] ?? '') === 'positiva') ? 'selected' : '' ?>>Positiva</option>
+                                        <option value="negativa" <?= ($getSignatureValue('consulta_interpol') === 'negativa') ? 'selected' : '' ?>>Negativa</option>
+                                        <option value="positiva" <?= ($getSignatureValue('consulta_interpol') === 'positiva') ? 'selected' : '' ?>>Positiva</option>
                                     </select>
                                 </div>
                             </div>
                             <div style="display:grid; grid-template-columns:repeat(2,1fr); gap:0.75rem;">
                                 <div>
                                     <label style="display:block; font-size:0.72rem; color:#475569; margin-bottom:0.3rem; text-transform:uppercase;">Recibe</label>
-                                    <input type="text" name="recibe" value="<?= htmlspecialchars((string)($form['recibe'] ?? 'Angie Paola Martínez Paredes')) ?>" style="width:100%; padding:0.6rem; background:#ffffff; border:1px solid #cbd5e1; border-radius:0.25rem; color:#0f172a; font-size:0.82rem;">
+                                    <input type="text" name="recibe" value="<?= htmlspecialchars($getSignatureValue('recibe', 'Angie Paola Martínez Paredes')) ?>" style="width:100%; padding:0.6rem; background:#ffffff; border:1px solid #cbd5e1; border-radius:0.25rem; color:#0f172a; font-size:0.82rem;">
                                 </div>
                                 <div>
                                     <label style="display:block; font-size:0.72rem; color:#475569; margin-bottom:0.3rem; text-transform:uppercase;">Verificado por</label>
-                                    <input type="text" name="verificado_por" value="<?= htmlspecialchars((string)($form['verificado_por'] ?? 'Angie Paola Martínez Paredes')) ?>" style="width:100%; padding:0.6rem; background:#ffffff; border:1px solid #cbd5e1; border-radius:0.25rem; color:#0f172a; font-size:0.82rem;">
+                                    <input type="text" name="verificado_por" value="<?= htmlspecialchars($getSignatureValue('verificado_por', 'Angie Paola Martínez Paredes')) ?>" style="width:100%; padding:0.6rem; background:#ffffff; border:1px solid #cbd5e1; border-radius:0.25rem; color:#0f172a; font-size:0.82rem;">
                                 </div>
                                 <div>
                                     <label style="display:block; font-size:0.72rem; color:#475569; margin-bottom:0.3rem; text-transform:uppercase;">Director de cartera</label>
-                                    <input type="text" name="director_cartera" value="<?= htmlspecialchars((string)($form['director_cartera'] ?? 'Luz Mery Murillo')) ?>" style="width:100%; padding:0.6rem; background:#ffffff; border:1px solid #cbd5e1; border-radius:0.25rem; color:#0f172a; font-size:0.82rem;">
+                                    <input type="text" name="director_cartera" value="<?= htmlspecialchars($getSignatureValue('director_cartera', 'Luz Mery Murillo')) ?>" style="width:100%; padding:0.6rem; background:#ffffff; border:1px solid #cbd5e1; border-radius:0.25rem; color:#0f172a; font-size:0.82rem;">
                                 </div>
                                 <div>
                                     <label style="display:block; font-size:0.72rem; color:#475569; margin-bottom:0.3rem; text-transform:uppercase;">Gerencia comercial</label>
                                     <select name="gerencia_comercial" style="width:100%; padding:0.6rem; background:#ffffff; border:1px solid #cbd5e1; border-radius:0.25rem; color:#0f172a; font-size:0.82rem;">
                                         <?php 
-                                        $gerenciaValue = (string)($form['gerencia_comercial'] ?? '');
+                                        $gerenciaValue = $getSignatureValue('gerencia_comercial');
                                         $gerenciaOptions = ['Hernan Mateo Benito', 'German Rodriguez'];
                                         ?>
                                         <option value="">Seleccionar...</option>
@@ -362,7 +373,7 @@
                                     $db = \App\Core\Database::getConnection();
                                     $stmt = $db->query("SELECT id, nombre_completo FROM asesores_comerciales WHERE activo = 1 ORDER BY nombre_completo");
                                     $asesores = $stmt->fetchAll(PDO::FETCH_ASSOC);
-                                    $preparoValue = (string)($form['preparo'] ?? '');
+                                    $preparoValue = $getSignatureValue('preparo');
                                     ?>
                                     <select name="preparo" style="width:100%; padding:0.6rem; background:#ffffff; border:1px solid #cbd5e1; border-radius:0.25rem; color:#0f172a; font-size:0.82rem;">
                                         <option value="">Seleccionar...</option>
@@ -376,14 +387,11 @@
                                 </div>
                                 <div>
                                     <label style="display:block; font-size:0.72rem; color:#475569; margin-bottom:0.3rem; text-transform:uppercase;">Revisó</label>
-                                    <input type="text" name="reviso" value="<?= htmlspecialchars((string)($form['reviso'] ?? 'Angie Paola Martínez Paredes')) ?>" style="width:100%; padding:0.6rem; background:#ffffff; border:1px solid #cbd5e1; border-radius:0.25rem; color:#0f172a; font-size:0.82rem;">
+                                    <input type="text" name="reviso" value="<?= htmlspecialchars($getSignatureValue('reviso', 'Angie Paola Martínez Paredes')) ?>" style="width:100%; padding:0.6rem; background:#ffffff; border:1px solid #cbd5e1; border-radius:0.25rem; color:#0f172a; font-size:0.82rem;">
                                 </div>
                                 <div style="grid-column:1/-1;">
                                     <?php
-                                    $nombreOficialValue = trim((string)($form['nombre_oficial'] ?? ''));
-                                    if ($nombreOficialValue === '') {
-                                        $nombreOficialValue = 'Angie Paola Martínez Paredes';
-                                    }
+                                    $nombreOficialValue = trim($getSignatureValue('nombre_oficial', 'Angie Paola Martínez Paredes'));
                                     ?>
                                     <label style="display:block; font-size:0.72rem; color:#475569; margin-bottom:0.3rem; text-transform:uppercase;">Nombre Oficial de Cumplimiento</label>
                                     <input type="text" name="nombre_oficial" value="<?= htmlspecialchars($nombreOficialValue) ?>" style="width:100%; padding:0.6rem; background:#ffffff; border:1px solid #cbd5e1; border-radius:0.25rem; color:#0f172a; font-size:0.82rem;">

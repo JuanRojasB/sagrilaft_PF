@@ -25,7 +25,7 @@ class EmailRecipientsConfig
         if (self::TEST_MODE) {
             return [
                 ['email' => self::TEST_EMAIL, 'name' => 'Test - Sistemas', 'type' => 'test']
-            ];
+            ];                  
         }
         
         // En producción: solo Angie recibe el link de aprobación

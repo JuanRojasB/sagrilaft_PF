@@ -1,0 +1,54 @@
+# Archivos de configuración sensibles
+.env
+.env.local
+.env.production
+
+# Logs
+storage/logs/*.log
+storage/logs/*.txt
+*.log
+
+# Cache y temporales
+storage/cache/*
+storage/temp/*
+storage/sessions/*
+!storage/cache/.gitkeep
+!storage/temp/.gitkeep
+!storage/sessions/.gitkeep
+
+# Uploads y archivos generados
+public/uploads/*
+public/pdfs/*
+public/signatures/*
+!public/uploads/.gitkeep
+!public/pdfs/.gitkeep
+!public/signatures/.gitkeep
+
+# Archivos de base de datos
+*.sql.backup
+*.db
+*.sqlite
+
+# Archivos del sistema
+.DS_Store
+Thumbs.db
+*.tmp
+*.swp
+*.swo
+
+# Dependencias (si usas Composer)
+vendor/
+composer.lock
+
+# IDEs
+.vscode/
+.idea/
+*.sublime-*
+
+# Archivos de prueba temporales
+test_*.php
+debug_*.php
+temp_*.php
+
+# Archivos de Windows
+desktop.ini

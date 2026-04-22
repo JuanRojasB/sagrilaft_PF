@@ -221,16 +221,17 @@ CREATE TABLE IF NOT EXISTS form_consolidated_pdfs (
 CREATE TABLE IF NOT EXISTS firmas_digitales (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
-    firma_path VARCHAR(500) NOT NULL,
-    firma_filename VARCHAR(255) NOT NULL,
+    firma_path VARCHAR(500),
+    firma_filename VARCHAR(255),
+    firma_data LONGBLOB NOT NULL COMMENT 'Datos binarios de la firma (imagen)',
     firma_size INT NOT NULL,
-    mime_type VARCHAR(100) NOT NULL,
-    is_active BOOLEAN DEFAULT TRUE,
+    mime_type VARCHAR(100) NOT NULL DEFAULT 'image/png',
+    activa BOOLEAN DEFAULT TRUE COMMENT 'Solo una firma activa por usuario',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     
     INDEX idx_user_id (user_id),
-    INDEX idx_is_active (is_active),
+    INDEX idx_activa (activa),
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 

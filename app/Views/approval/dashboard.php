@@ -177,9 +177,9 @@
                 <button onclick="exportarFiltrados()" class="btn-export" style="background: rgba(16, 185, 129, 0.2); color: #6ee7b7; border: 1px solid rgba(16, 185, 129, 0.4); padding: 0.4rem 0.75rem; border-radius: 0.25rem; cursor: pointer; font-weight: 600; font-size: 0.8rem; transition: all 0.15s; display: flex; align-items: center; gap: 0.3rem; white-space: nowrap;">
                     <span>Exportar a Excel</span>
                 </button>
-                <button onclick="mostrarModalFirma()" class="btn-firma" style="background: #f1f5f9; color: #334155; border: 1px solid #cbd5e1; padding: 0.4rem 0.75rem; border-radius: 0.25rem; cursor: pointer; font-weight: 600; font-size: 0.8rem; transition: all 0.15s; display: flex; align-items: center; gap: 0.3rem; white-space: nowrap;">
-                    <span>Firma Digital</span>
-                </button>
+                <a href="index.php?route=/signature" class="btn-firma" style="background: #f1f5f9; color: #334155; border: 1px solid #cbd5e1; padding: 0.4rem 0.75rem; border-radius: 0.25rem; text-decoration: none; font-weight: 600; font-size: 0.8rem; transition: all 0.15s; display: flex; align-items: center; gap: 0.3rem; white-space: nowrap;">
+                    <span>Gestionar Firma</span>
+                </a>
                 <form method="POST" action="index.php?route=/reviewer/logout" style="margin: 0;">
                     <button type="submit" class="btn-logout" style="background: #fee2e2; color: #dc2626; border: 1px solid #fca5a5; padding: 0.4rem 0.75rem; border-radius: 0.25rem; cursor: pointer; font-weight: 600; font-size: 0.8rem; transition: all 0.15s; white-space: nowrap;">Salir</button>
                 </form>
