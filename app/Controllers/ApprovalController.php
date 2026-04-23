@@ -234,10 +234,6 @@ class ApprovalController extends Controller
                 
                 // Restaurar el ID correcto del formulario (no el de form_empleados)
                 $form['id'] = $formId;
-                
-                error_log("Empleado data obtenida para form_id: " . $formId);
-            } else {
-                error_log("NO se encontró empleado data para form_id: " . $form['id']);
             }
         }
 
@@ -273,11 +269,6 @@ class ApprovalController extends Controller
         // Adjuntos del formulario principal (evidencias del usuario)
         $attachmentModel = new \App\Models\Attachment();
         $attachments = $attachmentModel->getByFormId((int)$form['id']);
-        
-        // Debug temporal
-        error_log("Form ID: " . $form['id']);
-        error_log("Attachments count: " . count($attachments));
-        error_log("Attachments: " . print_r($attachments, true));
 
         // Check if reviewer is logged in
         $isLoggedIn = isset($_SESSION['reviewer_id']);

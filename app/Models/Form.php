@@ -150,9 +150,6 @@ class Form
         $stmt->execute($values);
         
         $insertedId = (int)$this->db->lastInsertId();
-        error_log("Form INSERT - SQL: $sql");
-        error_log("Form INSERT - Last Insert ID: $insertedId");
-        error_log("Form INSERT - Columns: $colList");
 
         return $insertedId;
     }

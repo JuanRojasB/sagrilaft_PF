@@ -207,10 +207,6 @@ class HomeController extends Controller
     private function registerEmpleado(): void
     {
         try {
-            // Debug: ver qué se está recibiendo
-            error_log("POST data: " . print_r($_POST, true));
-            error_log("FILES data: " . print_r($_FILES, true));
-            
             // Validar datos de empleado
             $empleadoNombre = $_POST['empleado_nombre'] ?? '';
             $empleadoCedula = $_POST['empleado_cedula'] ?? '';
@@ -230,7 +226,6 @@ class HomeController extends Controller
             
             // Crear usuario temporal para el empleado
             $conn = Database::getConnection();
-            error_log("Conexión DB: " . $conn->getAttribute(\PDO::ATTR_CONNECTION_STATUS));
             
             $randomPassword = password_hash(bin2hex(random_bytes(16)), PASSWORD_DEFAULT);
             $email = 'empleado_' . $empleadoCedula . '_' . time() . '@temp.local'; // Email temporal único
@@ -254,7 +249,6 @@ class HomeController extends Controller
             
             // Crear formulario de empleado (sin campos de empleado en forms)
             $formModel = new \App\Models\Form();
-            error_log("Modelo Form usando conexión: " . get_class($formModel));
             
             $formData = [
                 'user_id' => $userId,
@@ -267,11 +261,6 @@ class HomeController extends Controller
             ];
             
             $formId = $formModel->create($formData);
-            
-            // Debug: verificar el ID del formulario creado
-            error_log("Formulario creado con ID: " . $formId);
-            error_log("User ID: " . $userId);
-            error_log("Approval Token: " . $approvalToken);
             
             // Guardar datos de empleado en tabla separada
             $stmt = $conn->prepare("
@@ -317,26 +306,18 @@ class HomeController extends Controller
                     
                     $stmt->execute([
                         $formId,
-                        $_FILES['cedula_pdf']['name'],  // Nombre original del archivo
-                        $fileName,  // Nombre único en el servidor
-                        $fileData,  // Contenido binario del archivo (BLOB) - máximo 2MB
+                        $_FILES['cedula_pdf']['name'],
+                        $fileName,
+                        $fileData,
                         $_FILES['cedula_pdf']['size'],
                         $_FILES['cedula_pdf']['type']
                     ]);
-                    
-                    error_log("PDF guardado con form_id: " . $formId . ", attachment_id: " . $conn->lastInsertId());
                     
                     $uploadedFiles[] = [
                         'filename' => $_FILES['cedula_pdf']['name'],
                         'size' => $_FILES['cedula_pdf']['size']
                     ];
-                    
-                    error_log("PDF guardado: form_id=$formId, filename=$fileName");
-                } else {
-                    error_log("Error al mover archivo PDF");
                 }
-            } else {
-                error_log("No se recibió archivo PDF o hubo error: " . ($_FILES['cedula_pdf']['error'] ?? 'no isset'));
             }
             
             // Mantener el tipo de usuario en sesión para el próximo registro
