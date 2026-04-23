@@ -729,12 +729,16 @@ class ApprovalController extends Controller
             $signatureData = $stmt->fetch(\PDO::FETCH_ASSOC);
             
             if ($signatureData) {
-                // Agregar firmas al formulario principal
+                // Firma del usuario — todos los alias
                 if (!empty($signatureData['user_signature_data'])) {
-                    $mainForm['signature_data'] = $signatureData['user_signature_data'];
+                    $mainForm['signature_data']           = $signatureData['user_signature_data'];
+                    $mainForm['firma_declarante_data']    = $signatureData['user_signature_data'];
+                    $mainForm['firma_representante_data'] = $signatureData['user_signature_data'];
+                    $mainForm['firma_data']               = $signatureData['user_signature_data'];
                 }
+                // Firma del oficial — todos los alias
                 if (!empty($signatureData['official_signature_data'])) {
-                    $mainForm['firma_oficial_data'] = $signatureData['official_signature_data'];
+                    $mainForm['firma_oficial_data']              = $signatureData['official_signature_data'];
                     $mainForm['firma_oficial_cumplimiento_data'] = $signatureData['official_signature_data'];
                 }
                 
@@ -788,16 +792,16 @@ class ApprovalController extends Controller
             // 2) PDFs de formularios relacionados (declaraciones)
             $relatedIndex = 2;
             foreach ($relatedForms as $rf) {
-                // Agregar firmas del revisor y usuario a las declaraciones
+                // Propagar firmas del formulario principal a la declaración (todos los alias)
                 if (!empty($mainForm['firma_oficial_data'])) {
-                    $rf['firma_oficial_data'] = $mainForm['firma_oficial_data'];
+                    $rf['firma_oficial_data']              = $mainForm['firma_oficial_data'];
                     $rf['firma_oficial_cumplimiento_data'] = $mainForm['firma_oficial_data'];
                 }
                 if (!empty($mainForm['signature_data'])) {
-                    $rf['signature_data'] = $mainForm['signature_data'];
-                    $rf['firma_declarante_data'] = $mainForm['signature_data'];
-                    $rf['firma_representante_data'] = $mainForm['signature_data'];
-                    $rf['firma_data'] = $mainForm['signature_data'];
+                    $rf['signature_data']             = $mainForm['signature_data'];
+                    $rf['firma_declarante_data']      = $mainForm['signature_data'];
+                    $rf['firma_representante_data']   = $mainForm['signature_data'];
+                    $rf['firma_data']                 = $mainForm['signature_data'];
                 }
                 
                 $rfPdf = $this->buildFormPdfBinary($rf, $mainForm, $filler);
@@ -840,8 +844,8 @@ class ApprovalController extends Controller
                 $attachmentIndex++;
             }
             
-            // 4) Hoja del revisor al final (si el formulario ya fue revisado)
-            if (!empty($mainForm['reviewed_at']) || !empty($mainForm['status']) && in_array($mainForm['status'], ['approved', 'rejected', 'approved_pending'])) {
+            // 4) Hoja del revisor al final
+            if (!empty($mainForm['reviewed_at']) || in_array($mainForm['approval_status'] ?? '', ['approved', 'rejected', 'approved_pending'])) {
                 $reviewerPagePdf = $this->generateReviewerPage($mainForm);
                 if ($reviewerPagePdf !== null) {
                     $reviewerPath = $tempDir . '/99_hoja_revisor.pdf';
@@ -954,81 +958,77 @@ class ApprovalController extends Controller
     private function buildFormPdfBinary(array $form, ?array $relatedForm, \App\Services\FormPdfFiller $filler): ?string
     {
         try {
-            // IMPORTANTE: NO usar el PDF cacheado cuando se está consolidando después de aprobación
-            // porque necesitamos los campos actualizados (consulta_ofac, recibe, director_cartera, etc.)
-            // Solo usar cache si el formulario NO ha sido aprobado aún
             $isApproved = !empty($form['approval_status']) && in_array($form['approval_status'], ['approved', 'rejected', 'approved_pending']);
-            
+
             if (!$isApproved && $relatedForm === null && !empty($form['generated_pdf_content'])) {
                 return $form['generated_pdf_content'];
             }
 
-            // Obtener campos del revisor desde la tabla form_signatures
+            // Cargar campos del revisor desde form_signatures usando el ID del formulario PRINCIPAL
+            // Para declaraciones (related_form != null), usar el ID del formulario principal
+            $lookupId = $relatedForm !== null ? ($relatedForm['id'] ?? $form['id']) : $form['id'];
+
             $db = \App\Core\Database::getConnection();
             $stmt = $db->prepare("SELECT * FROM form_signatures WHERE form_id = ? LIMIT 1");
-            $stmt->execute([$form['id']]);
-            $signatureData = $stmt->fetch(PDO::FETCH_ASSOC);
-            
+            $stmt->execute([$lookupId]);
+            $signatureData = $stmt->fetch(\PDO::FETCH_ASSOC);
+
             if ($signatureData) {
-                // Agregar campos del revisor al formulario
-                $form = array_merge($form, [
-                    'vinculacion' => $signatureData['vinculacion'],
-                    'fecha_vinculacion' => $signatureData['fecha_vinculacion'],
-                    'actualizacion' => $signatureData['actualizacion'],
-                    'consulta_ofac' => $signatureData['consulta_ofac'],
-                    'consulta_listas_nacionales' => $signatureData['consulta_listas_nacionales'],
-                    'consulta_onu' => $signatureData['consulta_onu'],
-                    'consulta_interpol' => $signatureData['consulta_interpol'],
-                    'recibe' => $signatureData['recibe'],
-                    'director_cartera' => $signatureData['director_cartera'],
-                    'gerencia_comercial' => $signatureData['gerencia_comercial'],
-                    'verificado_por' => $signatureData['verificado_por'],
-                    'preparo' => $signatureData['preparo'],
-                    'reviso' => $signatureData['reviso'],
-                    'nombre_oficial' => $signatureData['nombre_oficial'],
-                    'reviewed_at' => $signatureData['reviewed_at'],
-                    'reviewed_by' => $signatureData['reviewed_by'],
-                    'reviewed_by_name' => $signatureData['reviewed_by_name'],
-                ]);
-                
-                // Agregar firmas digitales
-                if (!empty($signatureData['user_signature_data'])) {
-                    $form['signature_data'] = $signatureData['user_signature_data'];
+                // Campos del revisor — solo sobreescribir si no están ya en el array
+                $reviewerFields = [
+                    'vinculacion', 'fecha_vinculacion', 'actualizacion',
+                    'consulta_ofac', 'consulta_listas_nacionales', 'consulta_onu', 'consulta_interpol',
+                    'recibe', 'director_cartera', 'gerencia_comercial',
+                    'verificado_por', 'preparo', 'reviso', 'nombre_oficial',
+                    'reviewed_at', 'reviewed_by', 'reviewed_by_name',
+                ];
+                foreach ($reviewerFields as $field) {
+                    if (!empty($signatureData[$field])) {
+                        $form[$field] = $signatureData[$field];
+                    }
                 }
-                if (!empty($signatureData['official_signature_data'])) {
-                    $form['firma_oficial_data'] = $signatureData['official_signature_data'];
+
+                // Firma del usuario — solo si no viene ya en el array (declaraciones la reciben del padre)
+                if (empty($form['signature_data']) && !empty($signatureData['user_signature_data'])) {
+                    $form['signature_data']           = $signatureData['user_signature_data'];
+                    $form['firma_declarante_data']    = $signatureData['user_signature_data'];
+                    $form['firma_representante_data'] = $signatureData['user_signature_data'];
+                    $form['firma_data']               = $signatureData['user_signature_data'];
+                }
+
+                // Firma del oficial — solo si no viene ya en el array
+                if (empty($form['firma_oficial_data']) && !empty($signatureData['official_signature_data'])) {
+                    $form['firma_oficial_data']              = $signatureData['official_signature_data'];
                     $form['firma_oficial_cumplimiento_data'] = $signatureData['official_signature_data'];
                 }
             }
 
-            // Normalizar accionistas para FormPdfFiller
+            // Normalizar accionistas (JSON → arrays)
             if (!empty($form['accionistas']) && is_string($form['accionistas'])) {
                 $accionistas = json_decode($form['accionistas'], true);
                 if (is_array($accionistas)) {
-                    $form['accionista_nombre'] = array_column($accionistas, 'nombre');
-                    $form['accionista_documento'] = array_column($accionistas, 'documento');
+                    $form['accionista_nombre']        = array_column($accionistas, 'nombre');
+                    $form['accionista_documento']     = array_column($accionistas, 'documento');
                     $form['accionista_participacion'] = array_column($accionistas, 'participacion');
-                    $form['accionista_nacionalidad'] = array_column($accionistas, 'nacionalidad');
-                    $form['accionista_cc'] = array_column($accionistas, 'cc');
-                    $form['accionista_ce'] = array_column($accionistas, 'ce');
+                    $form['accionista_nacionalidad']  = array_column($accionistas, 'nacionalidad');
+                    $form['accionista_cc']            = array_column($accionistas, 'cc');
+                    $form['accionista_ce']            = array_column($accionistas, 'ce');
                 }
             }
 
-            // Determinar el tipo de formulario correctamente
-            $formType = $form['form_type'] ?? 'cliente';
+            $formType   = $form['form_type'] ?? 'cliente';
             $personType = $form['person_type'] ?? 'natural';
-            
-            // Para declaraciones, mantener el form_type original
+
             if (str_starts_with($formType, 'declaracion')) {
                 $tempData = [
-                    'role' => $formType,
-                    'user_type' => $formType,
+                    'role'        => $formType,
+                    'user_type'   => $formType,
                     'person_type' => 'declaracion',
                 ];
             } else {
                 $tempData = [
-                    'role' => $formType,
-                    'user_type' => $formType,
+                    'role'        => $formType,
+                    'user_type'   => $formType,
                     'person_type' => $personType,
                 ];
             }
@@ -1038,10 +1038,11 @@ class ApprovalController extends Controller
             }
 
             return $filler->generate($form, $tempData);
+
         } catch (\Throwable $e) {
             $this->logger->warning('Failed building form PDF for consolidation', [
                 'form_id' => $form['id'] ?? null,
-                'error' => $e->getMessage()
+                'error'   => $e->getMessage()
             ]);
             return null;
         }
@@ -1106,7 +1107,7 @@ class ApprovalController extends Controller
             $pdf->Cell(0, 8, 'RESULTADO DE LA REVISION', 0, 1, 'L', true);
             $pdf->Ln(2);
             
-            $status = $form['status'] ?? 'pending';
+            $status = $form['approval_status'] ?? $form['status'] ?? 'pending';
             $statusText = [
                 'approved' => 'APROBADO',
                 'rejected' => 'RECHAZADO',
@@ -1169,7 +1170,8 @@ class ApprovalController extends Controller
             }
             
             // Observaciones
-            if (!empty($form['observations'])) {
+            $obsText = $form['approval_observations'] ?? $form['observations'] ?? '';
+            if (!empty($obsText)) {
                 $pdf->Ln(5);
                 $pdf->SetFillColor(241, 245, 249);
                 $pdf->SetFont('Arial', 'B', 12);
@@ -1177,7 +1179,7 @@ class ApprovalController extends Controller
                 $pdf->Ln(2);
                 
                 $pdf->SetFont('Arial', '', 10);
-                $pdf->MultiCell(0, 5, $form['observations']);
+                $pdf->MultiCell(0, 5, $obsText);
             }
             
             // Pie de página

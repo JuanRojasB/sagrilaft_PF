@@ -1033,10 +1033,28 @@ class FormPdfFiller
 
     private function sigImage(string $field, float $x, float $y, float $w, float $h): void
     {
+        // Intentar el campo solicitado; si no existe, probar aliases comunes
+        $aliases = [
+            'firma_oficial_data'              => ['firma_oficial_cumplimiento_data'],
+            'firma_oficial_cumplimiento_data' => ['firma_oficial_data'],
+            'signature_data'                  => ['firma_representante_data', 'firma_data'],
+            'firma_declarante_data'           => ['signature_data', 'firma_representante_data', 'firma_data'],
+        ];
+
         $uri = $this->d[$field] ?? '';
+        if (empty($uri) || strpos($uri, 'data:image') !== 0) {
+            foreach ($aliases[$field] ?? [] as $alt) {
+                $candidate = $this->d[$alt] ?? '';
+                if (!empty($candidate) && strpos($candidate, 'data:image') === 0) {
+                    $uri = $candidate;
+                    break;
+                }
+            }
+        }
+
         if (empty($uri) || strpos($uri, 'data:image') !== 0) return;
         if (!preg_match('/^data:image\/(\w+);base64,(.+)$/', $uri, $m)) return;
-        $ext = strtolower($m[1]);
+        $ext  = strtolower($m[1]);
         $data = base64_decode($m[2]);
         if (!$data) return;
         $tmp = tempnam(sys_get_temp_dir(), 'sig_') . '.' . $ext;
