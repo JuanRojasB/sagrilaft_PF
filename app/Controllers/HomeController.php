@@ -197,7 +197,7 @@ class HomeController extends Controller
                 'error' => $e->getMessage()
             ]);
             
-            die('<h2>ERROR DE BD:</h2><pre>' . htmlspecialchars($e->getMessage()) . '</pre>');
+            die('<h2>Error</h2><p>No fue posible completar el registro. Por favor intente de nuevo.</p>');
         }
     }
     
